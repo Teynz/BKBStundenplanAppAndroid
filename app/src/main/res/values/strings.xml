@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BKBStundenplan</string>
+    <string name="bkb_name">BKB</string>
+    <string name="Stundenplan">Stundenplan</string>
+    <string name="settings">Einstellungen</string>
+
+</resources>
