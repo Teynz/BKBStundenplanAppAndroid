@@ -27,11 +27,12 @@ object SettingsPage
 {
 
 
-
     @Composable
-    fun MainPage(modifier: Modifier = Modifier, login: MutableState<StundenplanData>)
+    fun MainPage(
+            modifier: Modifier = Modifier,
+            login: MutableState<StundenplanData>
+                )
     {
-
 
 
         Column(
@@ -58,7 +59,10 @@ object SettingsPage
 
 
     @Composable
-    fun Login(modifier: Modifier = Modifier,  login: MutableState<StundenplanData>)
+    fun Login(
+            modifier: Modifier = Modifier,
+            login: MutableState<StundenplanData>
+             )
     {
         Surface(
                 modifier = modifier
@@ -69,23 +73,25 @@ object SettingsPage
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(
-                        value = login.value.LoginName.value,
-                        onValueChange = { login.value.LoginName.value = it },
+                        value = login.value.loginName.value,
+                        onValueChange = { login.value.loginName.value = it },
                         label = { Text("Benutzername") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next)
-                                                                                       )
+                                imeAction = ImeAction.Next
+                                                                      )
+                         )
 
                 TextField(
-                        value = login.value.Passwort.value,
-                        onValueChange = {  login.value.Passwort.value = it  },
+                        value = login.value.passwort.value,
+                        onValueChange = { login.value.passwort.value = it },
                         label = { Text("passwort") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Text,
-                                imeAction = ImeAction.Next)
+                                imeAction = ImeAction.Next
+                                                                      )
                          )
 
 
@@ -94,14 +100,6 @@ object SettingsPage
 
         }
     }
-
-    @Composable
-    fun ClassSelector(modifier: Modifier = Modifier)
-    {}
-
-    @Composable
-    fun DateSelector(modifier: Modifier = Modifier)
-    {}
 
 
 }

@@ -1,8 +1,13 @@
 package com.example.bkbstundenplan
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import org.junit.Test
 
 import org.junit.Assert.*
+import java.time.LocalDate
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -19,4 +24,7 @@ class ExampleUnitTest
                 2 + 2
                     )
     }
+
+
+
 }

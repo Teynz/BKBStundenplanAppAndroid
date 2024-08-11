@@ -24,7 +24,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -35,10 +34,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import com.example.bkbstundenplan.ui.MenuContent
 import com.example.bkbstundenplan.ui.SettingsPage
 import com.example.bkbstundenplan.ui.StateSelectedEnum
+import com.example.bkbstundenplan.ui.StundenplanPage
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity()
@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity()
     {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             AppContent(modifier = Modifier.fillMaxSize())
 
@@ -103,17 +104,15 @@ fun LeftSideBar(modifier: Modifier = Modifier)
 
                                   MenuContent.LoadMenuContent(
                                           OnStateSettingsChange = {
-                                              if(stateSelected == StateSelectedEnum.SETTINGS)
-                                                  stateSelected = StateSelectedEnum.UNSELECTED
-                                              else
-                                                  stateSelected = StateSelectedEnum.SETTINGS
+                                              stateSelected =
+                                                  if(stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
+                                                  else StateSelectedEnum.SETTINGS
 
                                           },
                                           OnStateStundenplanChange={
-                                              if(stateSelected == StateSelectedEnum.STUNDENPLAN)
-                                                  stateSelected = StateSelectedEnum.UNSELECTED
-                                              else
-                                                  stateSelected = StateSelectedEnum.STUNDENPLAN
+                                              stateSelected =
+                                                  if(stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
+                                                  else StateSelectedEnum.STUNDENPLAN
                                           },
                                           StateSelected = stateSelected
                                                              )
@@ -154,6 +153,18 @@ fun LeftSideBar(modifier: Modifier = Modifier)
                         login = login
                                      )
             }
+            else if (stateSelected == StateSelectedEnum.STUNDENPLAN)
+            {
+                StundenplanPage.MainPage(
+                        Modifier
+                            .padding(contentPadding)
+                            .fillMaxSize(),
+                        login = login
+                                        )
+            }
+
+
+
 
         }
     }
