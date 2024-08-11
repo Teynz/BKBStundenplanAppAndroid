@@ -4,18 +4,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.bkbstundenplan.Stundenplan
+import com.example.bkbstundenplan.StundenplanData
 
 object SettingsPage
 {
@@ -23,7 +29,7 @@ object SettingsPage
 
 
     @Composable
-    fun MainPage(modifier: Modifier = Modifier, login: Stundenplan)
+    fun MainPage(modifier: Modifier = Modifier, login: MutableState<StundenplanData>)
     {
 
 
@@ -52,7 +58,7 @@ object SettingsPage
 
 
     @Composable
-    fun Login(modifier: Modifier = Modifier, login: Stundenplan)
+    fun Login(modifier: Modifier = Modifier,  login: MutableState<StundenplanData>)
     {
         Surface(
                 modifier = modifier
@@ -63,17 +69,23 @@ object SettingsPage
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(
-                        value = login.LoginName,
-                        onValueChange = { login.LoginName = it },
+                        value = login.value.LoginName.value,
+                        onValueChange = { login.value.LoginName.value = it },
                         label = { Text("Benutzername") },
-                        singleLine = true
-                         )
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next)
+                                                                                       )
 
                 TextField(
-                        value = login.Passwort,
-                        onValueChange = { login.Passwort = it },
+                        value = login.value.Passwort.value,
+                        onValueChange = {  login.value.Passwort.value = it  },
                         label = { Text("passwort") },
-                        singleLine = true
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next)
                          )
 
 
@@ -98,6 +110,7 @@ object SettingsPage
 @Composable
 fun AppPreview()
 {
-    SettingsPage.MainPage(login = Stundenplan())
+    val loginState = remember { mutableStateOf(StundenplanData()) }
+    SettingsPage.MainPage(login = loginState)
 }
 

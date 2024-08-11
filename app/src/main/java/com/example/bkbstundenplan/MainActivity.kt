@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import com.example.bkbstundenplan.ui.MenuContent
 import com.example.bkbstundenplan.ui.SettingsPage
+import com.example.bkbstundenplan.ui.StateSelectedEnum
+
 
 class MainActivity : ComponentActivity()
 {
@@ -59,9 +61,9 @@ class MainActivity : ComponentActivity()
 fun LeftSideBar(modifier: Modifier = Modifier)
 {
 
-    var login by remember { mutableStateOf(Stundenplan()) }
+    var login = rememberSaveable { mutableStateOf(StundenplanData()) }
 
-    var stateSettings by rememberSaveable { mutableStateOf(true) }
+    var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.UNSELECTED) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -101,9 +103,19 @@ fun LeftSideBar(modifier: Modifier = Modifier)
 
                                   MenuContent.LoadMenuContent(
                                           OnStateSettingsChange = {
-                                              stateSettings = !stateSettings
+                                              if(stateSelected == StateSelectedEnum.SETTINGS)
+                                                  stateSelected = StateSelectedEnum.UNSELECTED
+                                              else
+                                                  stateSelected = StateSelectedEnum.SETTINGS
+
                                           },
-                                          StateSettings = stateSettings
+                                          OnStateStundenplanChange={
+                                              if(stateSelected == StateSelectedEnum.STUNDENPLAN)
+                                                  stateSelected = StateSelectedEnum.UNSELECTED
+                                              else
+                                                  stateSelected = StateSelectedEnum.STUNDENPLAN
+                                          },
+                                          StateSelected = stateSelected
                                                              )
                               }
                           }) {
@@ -133,7 +145,7 @@ fun LeftSideBar(modifier: Modifier = Modifier)
 
             // Screen content
 
-            if (stateSettings)
+            if (stateSelected == StateSelectedEnum.SETTINGS)
             {
                 SettingsPage.MainPage(
                         Modifier
