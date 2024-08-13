@@ -101,9 +101,9 @@ object StundenplanPage
             login: MutableState<StundenplanData>
                           )
     {
-        var html: String = stringResource(id = R.string.HTMLStringResFull);
+        var html: String = stringResource(id = R.string.HTMLStringResMOD)
         var pathUrl: String =
-            "http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm"
+            "https://www.berufskolleg-bottrop.de/index.php"
 
 
 
@@ -119,11 +119,16 @@ object StundenplanPage
                     }
                 },
                 update = {
+                    it.loadUrl("file:///android_asset/HTMLStundenplanExample.html")
+
+
+
+                   /*
                     it.loadData(
                             html,
                             "text/html",
                             "UTF-8"
-                               )
+                               )*/
                 })
 
 
