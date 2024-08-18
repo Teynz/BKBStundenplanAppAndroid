@@ -5,6 +5,7 @@ import android.webkit.WebView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.bkbstundenplan.R
@@ -46,10 +48,10 @@ object StundenplanPage
 
 
 
-            Surface(modifier = modifier.fillMaxSize()) {
+            Surface(modifier = modifier.fillMaxSize().padding(12.dp)) {
 
                 StundenplanWebview(
-                        modifier = modifier,
+                        modifier = modifier.padding(12.dp),
                         login = login
                                   )
             }
@@ -119,16 +121,14 @@ object StundenplanPage
                     }
                 },
                 update = {
-                    it.loadUrl("file:///android_asset/HTMLStundenplanExample.html")
+
+                    //it.loadUrl("file:///android_asset/HTMLStundenplanExample.html")
+                    it.loadUrl("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/") //authorization missing
 
 
 
-                   /*
-                    it.loadData(
-                            html,
-                            "text/html",
-                            "UTF-8"
-                               )*/
+
+
                 })
 
 
