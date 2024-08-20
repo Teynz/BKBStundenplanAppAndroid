@@ -2,58 +2,104 @@ package com.example.bkbstundenplan.ui
 
 import android.view.ViewGroup
 import android.webkit.WebView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import com.example.bkbstundenplan.R
 import com.example.bkbstundenplan.StundenplanData
 
 object StundenplanPage
 {
+    enum class DialogStateEnum
+    {
+        NONE, DATE, CLASS;
+    }
+
+
     @Composable
     fun MainPage(
             modifier: Modifier = Modifier,
             login: MutableState<StundenplanData>
                 )
     {
+        var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
 
 
         Column(
                 modifier = modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
               ) {
             Text(
                     text = "Stundenplan",
                     style = TextStyle(fontSize = 30.sp),
                 )
-            HorizontalDivider(Modifier.fillMaxWidth())
+            HorizontalDivider(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
+                             )
+
+            Selection(modifier = modifier,
+                      login = login,
+                      onStateSelectedChange = { newState ->
+                          dialogState = newState
+                      })
+
+            Surface(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                   ) {
+
+
+                login.value.SelectionDialog(
+                        dialogState = dialogState,
+                        ondialogStateChange = { newState ->
+                            dialogState = newState
+                        })
 
 
 
+                if (!LocalInspectionMode.current) //returns false if preview
+                {
+                    StundenplanWebview(
+                            modifier = modifier,
+                            login = login
+                                      )
+                } else
+                {
+                    Text(
+                            modifier = modifier,
+                            text = "WebView not available in preview"
+                        )
+                }
 
-            Surface(modifier = modifier.fillMaxSize().padding(12.dp)) {
-
-                StundenplanWebview(
-                        modifier = modifier.padding(12.dp),
-                        login = login
-                                  )
             }
 
 
@@ -72,30 +118,22 @@ object StundenplanPage
     @Composable
     fun Selection(
             modifier: Modifier = Modifier,
-            login: MutableState<StundenplanData>
+            login: MutableState<StundenplanData>,
+            onStateSelectedChange: (DialogStateEnum) -> Unit
                  )
     {
+        Row() {
+            Button(onClick = { onStateSelectedChange(DialogStateEnum.DATE) }) {
+                Text(text = "Datum auswählen")
+            }
+            Spacer(modifier = Modifier.padding(10.dp))
+            Button(onClick = { onStateSelectedChange(DialogStateEnum.CLASS) }) {
+                Text(text = "Klasse auswählen")
+            }
 
-
+        }
     }
 
-    @Composable
-    fun ClassSelector(
-            modifier: Modifier = Modifier,
-            login: MutableState<StundenplanData>
-                     )
-    {
-
-
-    }
-
-    @Composable
-    fun DateSelector(
-            modifier: Modifier = Modifier,
-            login: MutableState<StundenplanData>
-                    )
-    {
-    }
 
     @Composable
     fun StundenplanWebview(
@@ -103,33 +141,20 @@ object StundenplanPage
             login: MutableState<StundenplanData>
                           )
     {
-        var html: String = stringResource(id = R.string.HTMLStringResMOD)
-        var pathUrl: String =
-            "https://www.berufskolleg-bottrop.de/index.php"
-
-
-
-        //https://medium.com/@kevinnzou/using-webview-in-jetpack-compose-bbf5991cfd14
-        AndroidView(
-                modifier = modifier.fillMaxSize(),
-                factory = {
-                    WebView(it).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                                                             )
-                    }
-                },
-                update = {
-
-                    //it.loadUrl("file:///android_asset/HTMLStundenplanExample.html")
-                    it.loadUrl("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/") //authorization missing
-
-
-
-
-
-                })
+        AndroidView(modifier = modifier.fillMaxSize(),
+                    factory = {
+                        WebView(it).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                                                 )
+                        }
+                    },
+                    update = {
+                        it.loadUrl("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+                        it.getSettings().setLoadWithOverviewMode(true);
+                        it.getSettings().setUseWideViewPort(true);
+                    })
 
 
     }

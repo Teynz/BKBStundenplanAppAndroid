@@ -71,4 +71,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.webkit:webkit:1.8.0")
+    implementation("it.skrape:skrapeit:1.2.2")
 }
