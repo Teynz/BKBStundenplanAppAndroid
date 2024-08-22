@@ -1,31 +1,29 @@
 package com.example.bkbstundenplan
 
-import org.junit.Assert.assertEquals
+
 import org.junit.Test
 
 class SkrapeItTest
 {
     @Test
-    fun MainStundenplanWebsiteScrapeOutput()
+    fun getSelectBoxesTest()
     {
-        var StundenplanDataObjectect = Scraping()
+        var ScrapingObject = Scraping()
 
-        var ArrayClasses = StundenplanDataObjectect.getClasses()
-
-        for (i in ArrayClasses!!)
+        for (index in ScrapingObject.getSelectBoxes()!!)
         {
-            println(i)
 
+            println("\nContent:  \n")
+            println(index)
         }
 
     }
 
-
     @Test
-    fun OutputHTMLSourceCode()
+    fun getClassListTest()
     {
-        var StundenplanDataObjectect = Scraping()
-        StundenplanDataObjectect.outputHTMLSourceCode()
+
     }
+
 
 }
