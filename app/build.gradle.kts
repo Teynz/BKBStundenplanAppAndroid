@@ -6,6 +6,10 @@ plugins {
 }
 
 android {
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("mozilla/public-suffix-list.txt")
+    }
     namespace = "com.example.bkbstundenplan"
     compileSdk = 34
 

@@ -28,20 +28,15 @@ class StundenplanData(
         var passwort: @RawValue MutableState<String> = mutableStateOf("stundenplan")
                      ) : Parcelable
 {
-
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun firstMondayofWeek(): LocalDate
+    object ScrapingLists
     {
-        val now = LocalDate.now()
-        val fieldISO = WeekFields.of(Locale.GERMANY).dayOfWeek()
-        return (now.with(
-                fieldISO,
-                1
-                        ))
-
+        var ScrapingSelectBoxes = Scraping().getSelectBoxes()
+        var datesList: List<String>? = Scraping().getDates(ScrapingSelectBoxes)
+        var classList: List<String>? = Scraping().getClasses(ScrapingSelectBoxes)
 
     }
+
+
 
 
     @Composable
@@ -79,12 +74,20 @@ class StundenplanData(
 
 
 
-    data class ScrapingResult(
-            val Classes: MutableList<String> = mutableListOf(),
-            var count: Int = 0
-                             )
 
 
+    /*@RequiresApi(Build.VERSION_CODES.O)
+      fun firstMondayofWeek(): LocalDate
+      {
+          val now = LocalDate.now()
+          val fieldISO = WeekFields.of(Locale.GERMANY).dayOfWeek()
+          return (now.with(
+                  fieldISO,
+                  1
+                          ))
+
+
+      }*/
 }
 
 

@@ -20,8 +20,32 @@ class SkrapeItTest
     }
 
     @Test
+    fun getDatesListTest()
+    {
+        var ScrapingObject = Scraping()
+        println("\nContent:  \n")
+        for (index in ScrapingObject.getDates()!!)
+        {
+
+
+            println(index)
+        }
+
+    }
+
+
+
+    @Test
     fun getClassListTest()
     {
+        var ScrapingObject = Scraping()
+        println("\nContent:  \n")
+        for (index in ScrapingObject.getClasses()!!)
+        {
+
+
+            println(index)
+        }
 
     }
 

@@ -1,6 +1,6 @@
 package com.example.bkbstundenplan
 
-import com.example.bkbstundenplan.StundenplanData.ScrapingResult
+
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.HttpFetcher
@@ -12,15 +12,14 @@ import it.skrape.selects.DocElement
 import org.junit.Test
 
 
-class Scraping
-{
+class Scraping {
 
-    fun getSelectBoxes(): List<DocElement>?
-    {
+    fun getSelectBoxes(): List<DocElement>? {
 
 
         //https://www.scrapingbee.com/blog/web-scraping-kotlin/ good guide
-        val MainStundenplanURL = "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/frames/navbar.htm"
+        val MainStundenplanURL =
+            "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/frames/navbar.htm"
         var selectBoxes: List<DocElement> = listOf()
         skrape(BrowserFetcher) {
             request {
@@ -42,15 +41,44 @@ class Scraping
         }
         return selectBoxes
     }
-/*
-    fun getDateList(HTMLListDocElement: List<DocElement>? = this.getSelectBoxes())
-    {
-        var dateList: List<DocElement> = HTMLListDocElement?.first()
+    fun getDates(selectionBoxes: List<DocElement>? = this.getSelectBoxes()): List<String>? {
+        var classList: MutableList<String> = mutableListOf()
+
+        selectionBoxes?.get(0)?.findAll("option")?.forEach {
+            classList.add(it.text)
+        }
 
 
 
-    }*/
+        return classList
+    }
 
+    fun getClasses(selectionBoxes: List<DocElement>? = this.getSelectBoxes()): List<String>? {
+        var classList: MutableList<String> = mutableListOf()
+
+        selectionBoxes?.get(2)?.findAll("option")?.forEach {
+             classList.add(it.text)
+        }
+
+
+
+        return classList
+    }
+
+
+    /*
+        fun getDateList(HTMLListDocElement: List<DocElement>? = this.getSelectBoxes())
+        {
+            var dateList: List<DocElement> = HTMLListDocElement?.first()
+
+
+
+        }*/
 
 
 }
+
+data class ScrapingResult(
+    val Classes: MutableList<String> = mutableListOf(),
+    var count: Int = 0
+)
