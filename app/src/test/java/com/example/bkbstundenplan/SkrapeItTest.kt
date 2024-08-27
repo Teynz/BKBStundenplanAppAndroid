@@ -1,52 +1,83 @@
 package com.example.bkbstundenplan
 
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-class SkrapeItTest
-{
+class SkrapeItTest {
     @Test
-    fun getSelectBoxesTest()
-    {
-        var ScrapingObject = Scraping()
+    fun getSelectBoxesTest() {
+        runBlocking {
+            var ScrapingObject = Scraping()
 
-        for (index in ScrapingObject.getSelectBoxes()!!)
-        {
 
+
+            for (index in ScrapingObject.getSelectBoxes()!!) {
+
+                println("\nContent:  \n")
+                println(index)
+            }
+        }
+
+    }
+
+    @Test
+    fun getDatesListTest() {
+        runBlocking {
+            var ScrapingObject = Scraping()
             println("\nContent:  \n")
-            println(index)
+            for (index in ScrapingObject.getDates(null)!!) {
+
+
+                println(index)
+            }
         }
-
-    }
-
-    @Test
-    fun getDatesListTest()
-    {
-        var ScrapingObject = Scraping()
-        println("\nContent:  \n")
-        for (index in ScrapingObject.getDates()!!)
-        {
-
-
-            println(index)
-        }
-
     }
 
 
+    @Test
+    fun getClassListTest() {
+        runBlocking {
+            var ScrapingObject = Scraping()
+            println("\nContent:  \n")
+
+            ScrapingObject.getDatesMap(null)!!.forEach()
+            {entry ->
+                println("${entry.key} | ${entry.value}")
+            }
+        }
+    }
 
     @Test
-    fun getClassListTest()
+   fun getDatesMapTest()
     {
-        var ScrapingObject = Scraping()
-        println("\nContent:  \n")
-        for (index in ScrapingObject.getClasses()!!)
-        {
+       runBlocking{
+           var ScrapingObject = Scraping()
+           println("\nContent:\n")
+
+          ScrapingObject.getDatesMap(null)!!.forEach()
+          {
+              index -> println("${index.key} | ${index.value}")
+
+          }
 
 
-            println(index)
+       }
+   }
+
+    @Test
+    fun getClassesMapTest()
+    {
+        runBlocking{
+            var ScrapingObject = Scraping()
+            println("\nContent:\n")
+
+            ScrapingObject.getClassesMap(null)!!.forEach()
+            {
+                    index -> println("${index.key} | ${index.value}")
+
+            }
         }
-
     }
 
 
