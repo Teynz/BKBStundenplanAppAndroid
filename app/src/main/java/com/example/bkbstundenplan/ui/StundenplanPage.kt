@@ -100,14 +100,6 @@ object StundenplanPage
 
             }
 
-
-            /*
-                                    var text:String = stringResource(id = R.string.HTMLStringResFull)
-                                    AndroidView(factory = { context ->
-                                        TextView(context).apply {
-                                            setText(HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_LEGACY))
-                                        }
-                                    })*/
         }
 
     }
