@@ -1,6 +1,7 @@
 package com.example.bkbstundenplan
 
 
+import android.annotation.SuppressLint
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.extractIt
@@ -10,16 +11,17 @@ import it.skrape.selects.DocElement
 
 class Scraping {
 
-    suspend fun getSelectBoxes(): List<DocElement>? {
+    @SuppressLint("AuthLeak")
+    suspend fun getSelectBoxes(): List<DocElement> {
 
 
         //https://www.scrapingbee.com/blog/web-scraping-kotlin/ good guide
-        val MainStundenplanURL =
+        val mainStundenplanURL =
             "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/frames/navbar.htm"
         var selectBoxes: List<DocElement> = listOf()
         skrape(BrowserFetcher) {
             request {
-                url = MainStundenplanURL
+                url = mainStundenplanURL
                 //timeout = 10000
             }
 
@@ -38,52 +40,51 @@ class Scraping {
         return selectBoxes
     }
 
-    suspend fun getDates(selectionBoxes: List<DocElement>?): List<String>? {
+    suspend fun getDates(selectionBoxes: List<DocElement>?): List<String> {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        var classList: MutableList<String> = mutableListOf()
+        val datesList: MutableList<String> = mutableListOf()
 
-        selectionBoxes?.get(0)?.findAll("option")?.forEach {
+        selectionBoxes[0].findAll("option").forEach {
+            datesList.add(it.text)
+        }
+        return datesList
+    }
+
+    suspend fun getClasses(selectionBoxes: List<DocElement>?): List<String> {
+        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
+        val classList: MutableList<String> = mutableListOf()
+
+        selectionBoxes[2].findAll("option").forEach {
             classList.add(it.text)
         }
-
-
-
         return classList
     }
 
-    suspend fun getDatesMap(selectionBoxes: List<DocElement>?): Map<Int, String>? {
+    suspend fun getDatesMap(selectionBoxes: List<DocElement>?): Map<Int, String> {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        var classList: MutableMap<Int, String> = mutableMapOf()
+        val datesList: MutableMap<Int, String> = mutableMapOf()
 
-        selectionBoxes?.get(0)?.findAll("option")?.forEach {
-            it.attributes["value"]?.let { it1 -> classList.put(it1.toInt(), it.text) }
+        for (i in 0..2) {
+            if (datesList.isNotEmpty()) break
+            selectionBoxes[0].findAll("option").forEach {
+                it.attributes["value"]?.let { it1 -> datesList[it1.toInt()] = it.text }
+            }
         }
-
-
-
-        return classList
+        return datesList
     }
 
-    suspend fun getClasses(selectionBoxes: List<DocElement>?): List<String>? {
-        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        var classList: MutableList<String> = mutableListOf()
 
-        selectionBoxes?.get(2)?.findAll("option")?.forEach {
-            classList.add(it.text)
+    suspend fun getClassesMap(selectionBoxes: List<DocElement>?): Map<Int, String> {
+        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
+        val classList: MutableMap<Int, String> = mutableMapOf()
+
+        for (i in 0..2) {
+            if (classList.isNotEmpty()) break
+            selectionBoxes[2].findAll("option").forEach {
+                it.attributes["value"]?.let { it1 -> classList[it1.toInt()] = it.text }
+            }
         }
 
-
-
-        return classList
-    }
-
-    suspend fun getClassesMap(selectionBoxes: List<DocElement>?): Map<Int, String>? {
-        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        var classList: MutableMap<Int, String> = mutableMapOf()
-
-        selectionBoxes?.get(2)?.findAll("option")?.forEach {
-            it.attributes["value"]?.let { it1 -> classList.put(it1.toInt(), it.text) }
-        }
         return classList
 
 
@@ -91,6 +92,6 @@ class Scraping {
 }
 
 data class ScrapingResult(
-    val Classes: MutableList<String> = mutableListOf(),
+    val classes: MutableList<String> = mutableListOf(),
     var count: Int = 0
 )

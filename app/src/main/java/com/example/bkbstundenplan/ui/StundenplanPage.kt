@@ -1,5 +1,6 @@
 package com.example.bkbstundenplan.ui
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
@@ -23,14 +24,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import com.example.bkbstundenplan.R
 import com.example.bkbstundenplan.StundenplanData
 
 object StundenplanPage
@@ -122,7 +120,7 @@ object StundenplanPage
             onStateSelectedChange: (DialogStateEnum) -> Unit
                  )
     {
-        Row() {
+        Row {
             Button(onClick = { onStateSelectedChange(DialogStateEnum.DATE) }) {
                 Text(text = "Datum auswählen")
             }
@@ -135,6 +133,7 @@ object StundenplanPage
     }
 
 
+    @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
             modifier: Modifier = Modifier,
@@ -152,8 +151,8 @@ object StundenplanPage
                     },
                     update = {
                         it.loadUrl("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
-                        it.getSettings().setLoadWithOverviewMode(true);
-                        it.getSettings().setUseWideViewPort(true);
+                        it.getSettings().loadWithOverviewMode = true
+                        it.getSettings().useWideViewPort = true
                     })
 
 

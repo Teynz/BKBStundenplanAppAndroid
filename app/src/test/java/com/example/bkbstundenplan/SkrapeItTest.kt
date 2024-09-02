@@ -8,11 +8,11 @@ class SkrapeItTest {
     @Test
     fun getSelectBoxesTest() {
         runBlocking {
-            var ScrapingObject = Scraping()
+            val scrapingObject = Scraping()
 
 
 
-            for (index in ScrapingObject.getSelectBoxes()!!) {
+            for (index in scrapingObject.getSelectBoxes()) {
 
                 println("\nContent:  \n")
                 println(index)
@@ -24,9 +24,9 @@ class SkrapeItTest {
     @Test
     fun getDatesListTest() {
         runBlocking {
-            var ScrapingObject = Scraping()
+            val scrapingObject = Scraping()
             println("\nContent:  \n")
-            for (index in ScrapingObject.getDates(null)!!) {
+            for (index in scrapingObject.getDates(null)) {
 
 
                 println(index)
@@ -38,43 +38,41 @@ class SkrapeItTest {
     @Test
     fun getClassListTest() {
         runBlocking {
-            var ScrapingObject = Scraping()
+            val scrapingObject = Scraping()
             println("\nContent:  \n")
-
-            ScrapingObject.getDatesMap(null)!!.forEach()
-            {entry ->
+            
+            scrapingObject.getDatesMap(null).forEach()
+            { entry ->
                 println("${entry.key} | ${entry.value}")
             }
         }
     }
 
     @Test
-   fun getDatesMapTest()
-    {
-       runBlocking{
-           var ScrapingObject = Scraping()
-           println("\nContent:\n")
-
-          ScrapingObject.getDatesMap(null)!!.forEach()
-          {
-              index -> println("${index.key} | ${index.value}")
-
-          }
-
-
-       }
-   }
-
-    @Test
-    fun getClassesMapTest()
-    {
-        runBlocking{
-            var ScrapingObject = Scraping()
+    fun getDatesMapTest() {
+        runBlocking {
+            val scrapingObject = Scraping()
             println("\nContent:\n")
 
-            ScrapingObject.getClassesMap(null)!!.forEach()
-            {
-                    index -> println("${index.key} | ${index.value}")
+            scrapingObject.getDatesMap(null).forEach()
+            { index ->
+                println("${index.key} | ${index.value}")
+
+            }
+
+
+        }
+    }
+
+    @Test
+    fun getClassesMapTest() {
+        runBlocking {
+            val scrapingObject = Scraping()
+            println("\nContent:\n")
+
+            scrapingObject.getClassesMap(null).forEach()
+            { index ->
+                println("${index.key} | ${index.value}")
 
             }
         }
