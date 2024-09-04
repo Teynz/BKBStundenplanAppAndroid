@@ -45,6 +45,8 @@ object StundenplanPage
             login: MutableState<StundenplanData>
                 )
     {
+
+        var URLStundenplan by rememberSaveable{ mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")};
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
 
 
@@ -80,7 +82,9 @@ object StundenplanPage
                         dialogState = dialogState,
                         ondialogStateChange = { newState ->
                             dialogState = newState
-                        })
+                        },
+                        URLStundenplan = URLStundenplan
+                    )
 
 
 
@@ -88,7 +92,8 @@ object StundenplanPage
                 {
                     StundenplanWebview(
                             modifier = modifier,
-                            login = login
+                            login = login,
+                        URLStundenplan = URLStundenplan,
                                       )
                 } else
                 {
@@ -129,7 +134,8 @@ object StundenplanPage
     @Composable
     fun StundenplanWebview(
             modifier: Modifier = Modifier,
-            login: MutableState<StundenplanData>
+            login: MutableState<StundenplanData>,
+            URLStundenplan:String,
                           )
     {
         AndroidView(modifier = modifier.fillMaxSize(),
@@ -142,7 +148,7 @@ object StundenplanPage
                         }
                     },
                     update = {
-                        it.loadUrl("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+                        it.loadUrl(URLStundenplan)
                         it.getSettings().loadWithOverviewMode = true
                         it.getSettings().useWideViewPort = true
                     })

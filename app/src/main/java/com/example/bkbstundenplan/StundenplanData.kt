@@ -81,7 +81,8 @@ class StundenplanData(
     @Composable
     fun SelectionDialog(
         dialogState: DialogStateEnum,
-        ondialogStateChange: (DialogStateEnum) -> Unit
+        ondialogStateChange: (DialogStateEnum) -> Unit,
+        URLStundenplan: String
     ) {
         if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.CLASS) {
             Dialog(onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) },
@@ -98,7 +99,9 @@ class StundenplanData(
                                         }
                                     }
                                 }
-                            } else {item {Text(text = "keine Daten vorhanden")}}
+                            } else {
+                                item { Text(text = "keine Daten vorhanden") }
+                            }
                         }
                     } else if (dialogState == DialogStateEnum.CLASS) {
                         LazyColumn() {
@@ -113,7 +116,9 @@ class StundenplanData(
                                         }
                                     }
                                 }
-                            } else {item {Text(text = "keine Daten vorhanden")}}
+                            } else {
+                                item { Text(text = "keine Daten vorhanden") }
+                            }
                         }
                     }
 
@@ -138,6 +143,66 @@ class StundenplanData(
 
 
       }*/
+
+    fun classAsString(): MutableState<String?>? {
+        var stringClasses: MutableState<String?>? = null
+        if (valueClasses == null)
+            {
+            return null
+            }
+
+
+        if (valueDates?.value != null && valueClasses?.value != null) {
+            if (valueClasses!!.value.toInt() < 10)
+                stringClasses = mutableStateOf("c0000$valueClasses")
+            else if (valueClasses!!.value.toInt() > 9)
+                stringClasses = mutableStateOf("c000$valueClasses")
+        }
+
+        return stringClasses ?: null
+    }
+
+    fun UpdateURLStundenplan(): String? {
+        var URLStundenplan: String? = null
+        if (valueDates?.value != null && valueClasses?.value != null) {
+            URLStundenplan =
+                "https://stundenplan.bkb.nrw/schueler/$valueDates/c/c0000${classAsString()}.htm"
+        }
+
+        return URLStundenplan ?: null
+    }
+
+
 }
+
+
+/*          This is just a plain copy paste from the website js code
+
+*
+function n2str(nr)
+{
+	var str = nr.toString();
+	while (str.length < 5) str = "0" + str;
+	return(str);
+}
+
+
+function doDisplayTimetable(Form, topDir) {
+    if (Form.element.selectedIndex < 0)
+        return;
+    var week = Form.week[Form.week.selectedIndex].value;
+    var type = Form.type[Form.type.selectedIndex].value;
+    var FileName = type + n2str(Form.element[Form.element.selectedIndex].value) + ".htm";
+    var url;
+    if (topDir == "w")
+        url =  week + "/" + type + "/" + FileName;
+    else
+        url =  type + "/" + week + "/" + FileName;
+    //parent.main.location = url; In Firefox it is not allowed to just set the location (CORS issue)
+    //Instead use postMessage to tell the parent that it should change its location
+    parent.postMessage(url, '*');
+}
+*
+* */
 
 
