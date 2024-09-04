@@ -60,9 +60,9 @@ object StundenplanPage
                     style = TextStyle(fontSize = 30.sp),
                 )
             HorizontalDivider(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
                              )
 
             Selection(modifier = modifier,
@@ -70,6 +70,12 @@ object StundenplanPage
                       onStateSelectedChange = { newState ->
                           dialogState = newState
                       })
+            Row {
+                Text(text = "Datum:${login.value.valueDates?.value}  ")
+                Spacer(modifier = Modifier.padding(10.dp))
+                Text(text = "Klasse:${login.value.valueClasses?.value}  ")
+
+            }
 
             Surface(
                     modifier = modifier
@@ -85,6 +91,9 @@ object StundenplanPage
                         },
                         URLStundenplan = URLStundenplan
                     )
+
+
+
 
 
 
@@ -148,7 +157,7 @@ object StundenplanPage
                         }
                     },
                     update = {
-                        it.loadUrl(URLStundenplan)
+                        it.loadUrl(login.value.URLStundenplan.value)
                         it.getSettings().loadWithOverviewMode = true
                         it.getSettings().useWideViewPort = true
                     })

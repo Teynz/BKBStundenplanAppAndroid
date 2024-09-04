@@ -1,8 +1,6 @@
 package com.example.bkbstundenplan
 
 import android.os.Parcelable
-import android.os.StrictMode
-import android.os.StrictMode.ThreadPolicy
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -23,8 +21,10 @@ class StundenplanData(
     var loginName: @RawValue MutableState<String> = mutableStateOf("schueler"),
     var passwort: @RawValue MutableState<String> = mutableStateOf("stundenplan")
 ) : Parcelable {
-    var valueDates: MutableState<Int>? = null
-    var valueClasses: MutableState<Int>? = null
+    var valueDates: MutableState<Int> = mutableStateOf(0)
+
+    var valueClasses: MutableState<Int> = mutableStateOf(0)
+    var URLStundenplan:MutableState<String> = mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
 
     var ScrapingSelectBoxes: List<DocElement>? = null
         get() {
@@ -32,7 +32,7 @@ class StundenplanData(
             if (field != null) {
                 return field
             } else {
-                val job = runBlocking { field = Scraping().getSelectBoxes() }
+                runBlocking { field = Scraping().getSelectBoxes() }
 
 
                 return field
@@ -93,7 +93,8 @@ class StundenplanData(
                                 datesMap!!.forEach()
                                 {
                                     item {
-                                        Button(onClick = { valueDates = mutableStateOf(it.key) })
+                                        Button(onClick = { valueDates.value = it.key
+                                            UpdateURLStundenplan()})
                                         {
                                             Text(text = datesMap!!.getValue(it.key))
                                         }
@@ -110,7 +111,8 @@ class StundenplanData(
                                 classMap!!.forEach()
                                 {
                                     item {
-                                        Button(onClick = { valueClasses = mutableStateOf(it.key) })
+                                        Button(onClick = { valueClasses.value = it.key
+                                            UpdateURLStundenplan()})
                                         {
                                             Text(text = classMap!!.getValue(it.key))
                                         }
@@ -153,23 +155,24 @@ class StundenplanData(
 
 
         if (valueDates?.value != null && valueClasses?.value != null) {
-            if (valueClasses!!.value.toInt() < 10)
-                stringClasses = mutableStateOf("c0000$valueClasses")
-            else if (valueClasses!!.value.toInt() > 9)
-                stringClasses = mutableStateOf("c000$valueClasses")
+            if (valueClasses!!.value!!.toInt() < 10)
+                stringClasses = mutableStateOf("0${valueClasses.value}")
+            else if (valueClasses!!.value!!.toInt() > 9)
+                stringClasses = mutableStateOf("${valueClasses.value}")
         }
 
         return stringClasses ?: null
     }
 
-    fun UpdateURLStundenplan(): String? {
-        var URLStundenplan: String? = null
+    fun UpdateURLStundenplan() {
+
         if (valueDates?.value != null && valueClasses?.value != null) {
-            URLStundenplan =
-                "https://stundenplan.bkb.nrw/schueler/$valueDates/c/c0000${classAsString()}.htm"
+            URLStundenplan.value =
+                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates.value}/c/c000${classAsString()!!.value}.htm"
+
         }
 
-        return URLStundenplan ?: null
+
     }
 
 
