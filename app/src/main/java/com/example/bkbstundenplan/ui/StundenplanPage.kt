@@ -3,6 +3,7 @@ package com.example.bkbstundenplan.ui
 import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.webkit.WebView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +41,7 @@ object StundenplanPage
     }
 
 
+    @SuppressLint("AuthLeak")
     @Composable
     fun MainPage(
             modifier: Modifier = Modifier,
@@ -46,24 +49,16 @@ object StundenplanPage
                 )
     {
 
-        var URLStundenplan by rememberSaveable{ mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")};
+        val urlStundenplan by rememberSaveable{ mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")}
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
 
 
         Column(
-                modifier = modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
               ) {
-            Text(
-                    text = "Stundenplan",
-                    style = TextStyle(fontSize = 30.sp),
-                )
-            HorizontalDivider(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-                             )
+
 
             Selection(modifier = modifier,
                       login = login,
@@ -71,38 +66,21 @@ object StundenplanPage
                           dialogState = newState
                       })
             Row {
-                Text(text = "Datum:${login.value.valueDates?.value}  ")
+                Text(text = "Datum:${login.value.valueDates.value}  ")
                 Spacer(modifier = Modifier.padding(10.dp))
-                Text(text = "Klasse:${login.value.valueClasses?.value}  ")
+                Text(text = "Klasse:${login.value.valueClasses.value}  ")
 
             }
 
             Surface(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(2.dp)
                    ) {
-
-
-                login.value.SelectionDialog(
-                        dialogState = dialogState,
-                        ondialogStateChange = { newState ->
-                            dialogState = newState
-                        },
-                        URLStundenplan = URLStundenplan
-                    )
-
-
-
-
 
 
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
                     StundenplanWebview(
-                            modifier = modifier,
                             login = login,
-                        URLStundenplan = URLStundenplan,
+                        urlStundenplan = urlStundenplan,
                                       )
                 } else
                 {
@@ -111,6 +89,13 @@ object StundenplanPage
                             text = "WebView not available in preview"
                         )
                 }
+                login.value.SelectionDialog(
+                    dialogState = dialogState,
+                    ondialogStateChange = { newState ->
+                        dialogState = newState
+                    },
+                    urlStundenplan = urlStundenplan
+                )
 
             }
 
@@ -142,9 +127,9 @@ object StundenplanPage
     @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
-            modifier: Modifier = Modifier,
-            login: MutableState<StundenplanData>,
-            URLStundenplan:String,
+        modifier: Modifier = Modifier,
+        login: MutableState<StundenplanData>,
+        urlStundenplan:String,
                           )
     {
         AndroidView(modifier = modifier.fillMaxSize(),
@@ -157,7 +142,7 @@ object StundenplanPage
                         }
                     },
                     update = {
-                        it.loadUrl(login.value.URLStundenplan.value)
+                        it.loadUrl(login.value.urlStundenplan.value)
                         it.getSettings().loadWithOverviewMode = true
                         it.getSettings().useWideViewPort = true
                     })
@@ -168,7 +153,7 @@ object StundenplanPage
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 31, device = "id:pixel_8")
 @Composable
 fun StundenplanAppPreview()
 {

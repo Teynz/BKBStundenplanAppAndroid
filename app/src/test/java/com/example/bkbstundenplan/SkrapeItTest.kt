@@ -21,18 +21,7 @@ class SkrapeItTest {
 
     }
 
-    @Test
-    fun getDatesListTest() {
-        runBlocking {
-            val scrapingObject = Scraping()
-            println("\nContent:  \n")
-            for (index in scrapingObject.getDates(null)) {
 
-
-                println(index)
-            }
-        }
-    }
 
 
     @Test

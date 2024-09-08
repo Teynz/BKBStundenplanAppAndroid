@@ -22,9 +22,9 @@ object MenuContent
 
     @Composable
     fun LoadMenuContent(
-            OnStateSettingsChange: ()-> Unit,//teil vor -> sind die parameter, der darauffolgende teil sind die Rückgabewerte
-            OnStateStundenplanChange: ()-> Unit,
-            StateSelected: StateSelectedEnum
+        onStateSettingsChange: ()-> Unit,//teil vor -> sind die parameter, der darauffolgende teil sind die Rückgabewerte
+        onStateStundenplanChange: ()-> Unit,
+        stateSelected: StateSelectedEnum
                        )
     {
         NavigationDrawerItem(label = { Text(text = "Stundenplan") },
@@ -36,8 +36,8 @@ object MenuContent
                                          tint = Color.Unspecified
                                      )
                              },
-                             selected = StateSelected == StateSelectedEnum.STUNDENPLAN,
-                             onClick =  {OnStateStundenplanChange()})
+                             selected = stateSelected == StateSelectedEnum.STUNDENPLAN,
+                             onClick =  {onStateStundenplanChange()})
 
 
 
@@ -50,8 +50,8 @@ object MenuContent
                                          tint = Color.Unspecified
                                      )
                              },
-                             selected = StateSelected == StateSelectedEnum.SETTINGS,
-                             onClick =  {OnStateSettingsChange()})//() Sehr wichtig, sonst wird die Funktion nicht aufgerufen, sondern nur weitergereicht
+                             selected = stateSelected == StateSelectedEnum.SETTINGS,
+                             onClick =  {onStateSettingsChange()})//() Sehr wichtig, sonst wird die Funktion nicht aufgerufen, sondern nur weitergereicht
     }
 
 

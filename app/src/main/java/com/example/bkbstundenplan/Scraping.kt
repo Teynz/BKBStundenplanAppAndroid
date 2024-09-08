@@ -7,6 +7,7 @@ import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.extractIt
 import it.skrape.fetcher.skrape
 import it.skrape.selects.DocElement
+import java.lang.Thread.sleep
 
 
 class Scraping {
@@ -40,26 +41,6 @@ class Scraping {
         return selectBoxes
     }
 
-    suspend fun getDates(selectionBoxes: List<DocElement>?): List<String> {
-        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        val datesList: MutableList<String> = mutableListOf()
-
-        selectionBoxes[0].findAll("option").forEach {
-            datesList.add(it.text)
-        }
-        return datesList
-    }
-
-    suspend fun getClasses(selectionBoxes: List<DocElement>?): List<String> {
-        val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
-        val classList: MutableList<String> = mutableListOf()
-
-        selectionBoxes[2].findAll("option").forEach {
-            classList.add(it.text)
-        }
-        return classList
-    }
-
     suspend fun getDatesMap(selectionBoxes: List<DocElement>?): Map<Int, String> {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
         val datesList: MutableMap<Int, String> = mutableMapOf()
@@ -70,6 +51,8 @@ class Scraping {
                 it.attributes["value"]?.let { it1 -> datesList[it1.toInt()] = it.text }
             }
         }
+
+
         return datesList
     }
 

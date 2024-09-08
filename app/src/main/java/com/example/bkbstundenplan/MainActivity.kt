@@ -61,10 +61,11 @@ class MainActivity : ComponentActivity()
 @Composable
 fun LeftSideBar(modifier: Modifier = Modifier)
 {
+    val Title = rememberSaveable{ mutableStateOf("BKBStundenplan")}
 
-    var login = rememberSaveable { mutableStateOf(StundenplanData()) }
+    val login = rememberSaveable { mutableStateOf(StundenplanData()) }
 
-    var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.UNSELECTED) }
+    var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -98,24 +99,30 @@ fun LeftSideBar(modifier: Modifier = Modifier)
                                                          )
                                                  })
 
-
+                                    
+                                      
+                                      
+                                      
                                   }
                                   HorizontalDivider()
 
                                   MenuContent.LoadMenuContent(
-                                          OnStateSettingsChange = {
+                                          onStateSettingsChange = {
                                               stateSelected =
                                                   if(stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
                                                   else StateSelectedEnum.SETTINGS
 
                                           },
-                                          OnStateStundenplanChange={
+                                          onStateStundenplanChange={
                                               stateSelected =
                                                   if(stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
                                                   else StateSelectedEnum.STUNDENPLAN
                                           },
-                                          StateSelected = stateSelected
+                                          stateSelected = stateSelected
                                                              )
+                                  Text(text = "Beta 2.5 \n Entwickelt von Paul Brandt",
+                                      modifier = Modifier.weight(1f))
+                                  
                               }
                           }) {
         Scaffold(topBar = {
@@ -146,19 +153,20 @@ fun LeftSideBar(modifier: Modifier = Modifier)
 
             if (stateSelected == StateSelectedEnum.SETTINGS)
             {
+
                 SettingsPage.MainPage(
-                        Modifier
-                            .padding(contentPadding)
-                            .fillMaxSize(),
+                    Modifier
+                        .padding(contentPadding)
+                        .fillMaxSize(),
                         login = login
                                      )
             }
             else if (stateSelected == StateSelectedEnum.STUNDENPLAN)
             {
                 StundenplanPage.MainPage(
-                        Modifier
-                            .padding(contentPadding)
-                            .fillMaxSize(),
+                    Modifier
+                        .padding(contentPadding)
+                        .fillMaxSize(),
                         login = login
                                         )
             }
