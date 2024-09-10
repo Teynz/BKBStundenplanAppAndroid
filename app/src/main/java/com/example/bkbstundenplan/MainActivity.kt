@@ -38,6 +38,7 @@ import com.example.bkbstundenplan.ui.MenuContent
 import com.example.bkbstundenplan.ui.SettingsPage
 import com.example.bkbstundenplan.ui.StateSelectedEnum
 import com.example.bkbstundenplan.ui.StundenplanPage
+import com.example.bkbstundenplan.ui.theme.BKBStundenplanTheme
 import kotlinx.coroutines.launch
 
 
@@ -49,13 +50,20 @@ class MainActivity : ComponentActivity()
         enableEdgeToEdge()
 
         setContent {
-            AppContent(modifier = Modifier.fillMaxSize())
+            BKBStundenplanTheme {
+                AppContent(modifier = Modifier.fillMaxSize())
+            }
+
 
 
         }
     }
 }
-
+@Composable
+fun AppContent(modifier: Modifier = Modifier)
+{
+    LeftSideBar(modifier)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,11 +187,7 @@ fun LeftSideBar(modifier: Modifier = Modifier)
 
 }
 
-@Composable
-fun AppContent(modifier: Modifier = Modifier)
-{
-    LeftSideBar(modifier)
-}
+
 
 @Preview(showBackground = true)
 @Composable

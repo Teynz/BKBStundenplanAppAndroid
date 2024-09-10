@@ -38,7 +38,7 @@ class StundenplanData(
     var valueClasses: MutableState<Int> = mutableIntStateOf(0)
 
     var experimentellerStundenplan: MutableState<Boolean> = mutableStateOf(false)
-
+    var Darkmode: MutableState<Boolean> = mutableStateOf(false)
 
     @SuppressLint("AuthLeak")
     var urlStundenplan: MutableState<String> =

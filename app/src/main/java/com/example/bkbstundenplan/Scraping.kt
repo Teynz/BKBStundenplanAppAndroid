@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.example.bkbstundenplan
 
 
@@ -7,7 +9,7 @@ import it.skrape.fetcher.BrowserFetcher
 import it.skrape.fetcher.extractIt
 import it.skrape.fetcher.skrape
 import it.skrape.selects.DocElement
-import java.lang.Thread.sleep
+import it.skrape.selects.html5.table
 
 
 class Scraping {
@@ -23,7 +25,7 @@ class Scraping {
         skrape(BrowserFetcher) {
             request {
                 url = mainStundenplanURL
-                //timeout = 10000
+                timeout = 10000
             }
 
             extractIt<ScrapingResult> { results ->
@@ -45,13 +47,9 @@ class Scraping {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
         val datesList: MutableMap<Int, String> = mutableMapOf()
 
-        for (i in 0..2) {
-            if (datesList.isNotEmpty()) break
             selectionBoxes[0].findAll("option").forEach {
                 it.attributes["value"]?.let { it1 -> datesList[it1.toInt()] = it.text }
             }
-        }
-
 
         return datesList
     }
@@ -61,18 +59,48 @@ class Scraping {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
         val classList: MutableMap<Int, String> = mutableMapOf()
 
-        for (i in 0..2) {
-            if (classList.isNotEmpty()) break
+
             selectionBoxes[2].findAll("option").forEach {
                 it.attributes["value"]?.let { it1 -> classList[it1.toInt()] = it.text }
             }
-        }
 
         return classList
-
-
     }
 }
+
+suspend fun getTables(stundenplanurl: String): Stundenplan?
+{
+var stundenplan:Stundenplan? = null
+    skrape(BrowserFetcher) {
+        request {
+            url = stundenplanurl
+            timeout = 10000
+        }
+
+        stundenplan = extractIt<Stundenplan> { results ->
+            htmlDocument {
+
+                val tables: List<DocElement> = table { findAll { this } }
+
+                results.stundenplanTable = tables[0]
+                results.lehrerTable = tables[1]
+                results.faecherTable = tables[2]
+
+            }
+            }
+        }
+    return stundenplan
+    }
+
+
+
+
+
+data class Stundenplan(
+    var stundenplanTable:DocElement? = null,
+    var lehrerTable:DocElement? = null,
+    var faecherTable:DocElement? = null
+)
 
 data class ScrapingResult(
     val classes: MutableList<String> = mutableListOf(),

@@ -1,18 +1,14 @@
 package com.example.bkbstundenplan.ui
 
-import android.widget.Switch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -49,12 +45,15 @@ object SettingsPage {
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
         ) {
 
-            SwitchAbfrage(login = login, mainText = "DarkMode", subText = null)
+            SwitchAbfrage(login = login, mainText = "DarkMode", subText = null, checked = login.value.Darkmode.value,
+                onCheckedChange = { login.value.Darkmode.value = it})
             Spacer(modifier = Modifier.padding(10.dp))
             SwitchAbfrage(
                 login = login,
                 mainText = "Experimentelle Stundenpläne",
-                subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen"
+                subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
+                checked = login.value.experimentellerStundenplan.value,
+                onCheckedChange = { login.value.experimentellerStundenplan.value = it }
             )
 
 
@@ -68,7 +67,9 @@ object SettingsPage {
         modifier: Modifier = Modifier,
         login: MutableState<StundenplanData>,
         mainText: String,
-        subText: String?
+        subText: String? = null,
+        checked: Boolean,
+        onCheckedChange: ((Boolean) -> Unit)?
     ) {
         Row(horizontalArrangement = Arrangement.Absolute.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
 
@@ -95,8 +96,8 @@ object SettingsPage {
             }
             
             Switch(
-                checked = login.value.experimentellerStundenplan.value,
-                onCheckedChange = { login.value.experimentellerStundenplan.value = it })
+                checked = checked,
+                onCheckedChange = onCheckedChange)
         }
     }
 
