@@ -6,10 +6,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
 import it.skrape.selects.DocElement
@@ -24,18 +24,28 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.Locale
 
+
+//help can be found here: https://developer.android.com/topic/libraries/architecture/viewmodel#kotlin
+
+
 class ViewModelStundenplanData: ViewModel() {
 
-    var valueDates = MutableLiveData<Int>(0)
-    var valueClasses= MutableLiveData<Int>(0)
 
-    var experimentellerStundenplan =  MutableLiveData<Boolean>(false)
-    var Darkmode=  MutableLiveData<Boolean>(false)
+    var experimentellerStundenplan by mutableStateOf(false)
+
+    var darkmode by mutableStateOf(true)
+
+
+    var valueDates by mutableStateOf(0)
+    var valueClasses by mutableStateOf(0)
+
+    var loginName by mutableStateOf("schueler")
+    var passwort by mutableStateOf("stundenplan")
+
 
     @SuppressLint("AuthLeak")
-    var urlStundenplan =  MutableLiveData<String>("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
-
-
+    var urlStundenplan: MutableState<String> =
+        mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
 
     private var scrapingSelectBoxes: List<DocElement>? = null
         get() {
@@ -44,8 +54,6 @@ class ViewModelStundenplanData: ViewModel() {
                 return field
             } else {
                 runBlocking { field = Scraping().getSelectBoxes() }
-
-
                 return field
             }
         }
@@ -58,17 +66,9 @@ class ViewModelStundenplanData: ViewModel() {
                 runBlocking(Dispatchers.IO) {
                     field = Scraping().getDatesMap(scrapingSelectBoxes)
                 }
-
-
                 return field
             }
         }
-
-
-
-
-
-
 
 
     private var classMap: Map<Int, String>? = null
@@ -85,7 +85,6 @@ class ViewModelStundenplanData: ViewModel() {
                 return field
             }
         }
-
     init {
         val job = Job()
         CoroutineScope(Dispatchers.IO + job).launch {
@@ -100,8 +99,6 @@ class ViewModelStundenplanData: ViewModel() {
         }
 
     }
-
-
     @Composable
     fun SelectionDialog(
         dialogState: DialogStateEnum,
@@ -119,7 +116,7 @@ class ViewModelStundenplanData: ViewModel() {
                                 {
                                     item {
                                         Button(onClick = {
-                                            valueDates.value = it.key
+                                            valueDates = it.key
                                             newURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
@@ -140,7 +137,7 @@ class ViewModelStundenplanData: ViewModel() {
                                 {
                                     item {
                                         Button(onClick = {
-                                            valueClasses.value = it.key
+                                            valueClasses = it.key
                                             newURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
@@ -174,18 +171,18 @@ class ViewModelStundenplanData: ViewModel() {
     }
 
     private fun classAsString(): String? {
-        if (valueClasses.value!! < 10)
-            return "0${valueClasses.value}"
-        else if (valueClasses.value!! > 9)
-            return "${valueClasses.value}"
+        if (valueClasses < 10)
+            return "0${valueClasses}"
+        else if (valueClasses > 9)
+            return "${valueClasses}"
         return null
     }
 
     @SuppressLint("AuthLeak")
     fun newURLStundenplan(): String? {
-        if (valueDates.value != 0 && valueClasses.value != 0) {
+        if (valueDates != 0 && valueClasses != 0) {
             urlStundenplan.value =
-                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates.value}/c/c000${classAsString()!!}.htm"
+                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()!!}.htm"
             return urlStundenplan.value
         }
         return null
@@ -196,8 +193,8 @@ class ViewModelStundenplanData: ViewModel() {
         datesMap!!.forEach()
         {
             if (it.value == firstMondayofWeek()) {
-                if (valueDates.value == 0)
-                    valueDates.value = it.key
+                if (valueDates == 0)
+                    valueDates = it.key
             }
         }
     }

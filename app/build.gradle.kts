@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
    // id("org.jetbrains.kotlin.plugin.parcelize") version "1.7.20"  Updated to latest version
     id("org.jetbrains.kotlin.plugin.parcelize")
+    id ("org.jetbrains.kotlin.kapt")
 }
 
 android {
@@ -76,4 +77,28 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.webkit:webkit:1.8.0")
     implementation("it.skrape:skrapeit:1.2.2")
+
+
+
+    val lifecycle_version = "2.8.5"
+    val arch_version = "2.2.0"
+
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
+    // ViewModel utilities for Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
+    // LiveData
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+    // Lifecycle utilities for Compose
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
+
+    // Saved state module for ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version")
+
+    // Annotation processor
+    kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
+    // alternately - if using Java8, use the following instead of lifecycle-compiler
+    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
+
+
 }

@@ -1,5 +1,6 @@
 package com.example.bkbstundenplan.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -27,15 +27,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.StundenplanData
+import com.example.bkbstundenplan.ViewModelStundenplanData
 
 object SettingsPage {
 
 
+    @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
     fun MainPage(
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>
+        viewModel: ViewModelStundenplanData
     ) {
 
 
@@ -45,15 +49,19 @@ object SettingsPage {
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
         ) {
 
-            SwitchAbfrage(login = login, mainText = "DarkMode", subText = null, checked = login.value.Darkmode.value,
-                onCheckedChange = { login.value.Darkmode.value = it})
+            SwitchAbfrage(mainText = "DarkMode",
+                subText = null,
+                checked = viewModel.darkmode,
+                onCheckedChange = { viewModel.darkmode = it }
+            )
             Spacer(modifier = Modifier.padding(10.dp))
             SwitchAbfrage(
-                login = login,
                 mainText = "Experimentelle Stundenpläne",
                 subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
-                checked = login.value.experimentellerStundenplan.value,
-                onCheckedChange = { login.value.experimentellerStundenplan.value = it }
+                checked = viewModel.experimentellerStundenplan,
+                onCheckedChange = {
+                    viewModel.experimentellerStundenplan = it
+                }
             )
 
 
@@ -65,13 +73,15 @@ object SettingsPage {
     fun SwitchAbfrage(
 
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>,
         mainText: String,
         subText: String? = null,
         checked: Boolean,
         onCheckedChange: ((Boolean) -> Unit)?
     ) {
-        Row(horizontalArrangement = Arrangement.Absolute.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
 
             Column(modifier = Modifier.align(Alignment.CenterVertically)) {
 
@@ -94,10 +104,11 @@ object SettingsPage {
                     )
                 }
             }
-            
+
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange)
+                onCheckedChange = onCheckedChange
+            )
         }
     }
 
@@ -153,8 +164,8 @@ fun AppPreview() {
     Surface(modifier = Modifier.fillMaxSize()) {
 
 
-        val loginState = remember { mutableStateOf(StundenplanData()) }
-        SettingsPage.MainPage(login = loginState)
+        val appViewModel: ViewModelStundenplanData = viewModel()
+        SettingsPage.MainPage(viewModel = appViewModel)
     }
 
 }

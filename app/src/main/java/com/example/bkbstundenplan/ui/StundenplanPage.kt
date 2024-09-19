@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -25,8 +24,10 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.Stundenplan
 import com.example.bkbstundenplan.StundenplanData
+import com.example.bkbstundenplan.ViewModelStundenplanData
 
 object StundenplanPage {
     enum class DialogStateEnum {
@@ -38,7 +39,7 @@ object StundenplanPage {
     @Composable
     fun MainPage(
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>
+        viewModel: ViewModelStundenplanData
     ) {
 
         val urlStundenplan by rememberSaveable { mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/") }
@@ -53,14 +54,14 @@ object StundenplanPage {
 
 
             Selection(modifier = modifier,
-                login = login,
+                viewModel = viewModel,
                 onStateSelectedChange = { newState ->
                     dialogState = newState
                 })
             Row {
-                Text(text = "Datum:${login.value.valueDates.value}  ")
+                Text(text = "Datum:${viewModel.valueDates}  ")
                 Spacer(modifier = Modifier.padding(10.dp))
-                Text(text = "Klasse:${login.value.valueClasses.value}  ")
+                Text(text = "Klasse:${viewModel.valueClasses}  ")
 
             }
 
@@ -70,9 +71,9 @@ object StundenplanPage {
 
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
-                    if (login.value.valueDates.value != 0 && login.value.valueClasses.value != 0) {
+                    if (viewModel.valueDates != 0 && viewModel.valueClasses != 0) {
                         StundenplanWebview(
-                            login = login,
+                            viewModel = viewModel,
                             urlStundenplan = urlStundenplan,
                         )
                     }
@@ -82,7 +83,7 @@ object StundenplanPage {
                         text = "WebView not available in preview"
                     )
                 }
-                login.value.SelectionDialog(
+                viewModel.SelectionDialog(
                     dialogState = dialogState,
                     ondialogStateChange = { newState ->
                         dialogState = newState
@@ -100,7 +101,7 @@ object StundenplanPage {
     @Composable
     fun Selection(
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>,
+        viewModel: ViewModelStundenplanData,
         onStateSelectedChange: (DialogStateEnum) -> Unit
     ) {
         Row {
@@ -120,7 +121,7 @@ object StundenplanPage {
     @Composable
     fun StundenplanWebview(
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>,
+        viewModel: ViewModelStundenplanData,
         urlStundenplan: String,
         tables: Stundenplan? = null
     ) {
@@ -141,7 +142,7 @@ object StundenplanPage {
                 },
 
                 update = {
-                    it.loadUrl(login.value.urlStundenplan.value)
+                    it.loadUrl(viewModel.urlStundenplan.value)
                     it.getSettings().loadWithOverviewMode = true
                     it.getSettings().useWideViewPort = true
                 })
@@ -159,7 +160,7 @@ object StundenplanPage {
                     }
                 },
                 update = {
-                    it.loadUrl(login.value.urlStundenplan.value)
+                    it.loadUrl(viewModel.urlStundenplan.value)
                     it.getSettings().loadWithOverviewMode = true
                     it.getSettings().useWideViewPort = true
                 })
@@ -174,6 +175,6 @@ object StundenplanPage {
 @Preview(showBackground = true, apiLevel = 31, device = "id:pixel_8")
 @Composable
 fun StundenplanAppPreview() {
-    val loginState = remember { mutableStateOf(StundenplanData()) }
-    StundenplanPage.MainPage(login = loginState)
+    val appViewModel: ViewModelStundenplanData = viewModel()
+    StundenplanPage.MainPage(viewModel = appViewModel)
 }

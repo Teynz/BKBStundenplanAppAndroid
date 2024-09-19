@@ -1,5 +1,6 @@
 package com.example.bkbstundenplan
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.ui.MenuContent
 import com.example.bkbstundenplan.ui.SettingsPage
 import com.example.bkbstundenplan.ui.StateSelectedEnum
@@ -44,14 +46,21 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity()
 {
+    @SuppressLint("StateFlowValueCalledInComposition")
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            BKBStundenplanTheme {
-                AppContent(modifier = Modifier.fillMaxSize())
+            val appViewModel: ViewModelStundenplanData = viewModel()
+
+            BKBStundenplanTheme(darkTheme = appViewModel.darkmode) {
+
+
+
+
+                AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
             }
 
 
@@ -60,14 +69,14 @@ class MainActivity : ComponentActivity()
     }
 }
 @Composable
-fun AppContent(modifier: Modifier = Modifier)
+fun AppContent(modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel())
 {
-    LeftSideBar(modifier)
+    LeftSideBar(modifier,appViewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeftSideBar(modifier: Modifier = Modifier)
+fun LeftSideBar(modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel())
 {
     val Title = rememberSaveable{ mutableStateOf("BKBStundenplan")}
 
@@ -166,7 +175,7 @@ fun LeftSideBar(modifier: Modifier = Modifier)
                     Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                        login = login
+                        viewModel = appViewModel
                                      )
             }
             else if (stateSelected == StateSelectedEnum.STUNDENPLAN)
@@ -175,7 +184,7 @@ fun LeftSideBar(modifier: Modifier = Modifier)
                     Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                        login = login
+                        viewModel = appViewModel
                                         )
             }
 

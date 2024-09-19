@@ -51,8 +51,6 @@ class StundenplanData(
                 return field
             } else {
                 runBlocking { field = Scraping().getSelectBoxes() }
-
-
                 return field
             }
         }
@@ -65,8 +63,6 @@ class StundenplanData(
                 runBlocking(Dispatchers.IO) {
                     field = Scraping().getDatesMap(scrapingSelectBoxes)
                 }
-
-
                 return field
             }
         }
