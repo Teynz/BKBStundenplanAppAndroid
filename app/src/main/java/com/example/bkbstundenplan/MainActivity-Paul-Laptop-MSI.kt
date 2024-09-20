@@ -1,5 +1,6 @@
 package com.example.bkbstundenplan
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -43,9 +44,9 @@ import com.example.bkbstundenplan.ui.theme.BKBStundenplanTheme
 import kotlinx.coroutines.launch
 
 
-
 class MainActivity : ComponentActivity()
 {
+    @SuppressLint("StateFlowValueCalledInComposition")
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
@@ -53,7 +54,8 @@ class MainActivity : ComponentActivity()
 
         setContent {
             val appViewModel: ViewModelStundenplanData = viewModel()
-            BKBStundenplanTheme {
+
+            BKBStundenplanTheme(darkTheme = appViewModel.darkmode) {
 
 
 
@@ -78,7 +80,7 @@ fun LeftSideBar(modifier: Modifier = Modifier, appViewModel: ViewModelStundenpla
 {
     val Title = rememberSaveable{ mutableStateOf("BKBStundenplan")}
 
-    val login = rememberSaveable { mutableStateOf(StundenplanData()) }
+
 
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -119,7 +121,7 @@ fun LeftSideBar(modifier: Modifier = Modifier, appViewModel: ViewModelStundenpla
                                       
                                       
                                   }
-                                  HorizontalDivider( )
+                                  HorizontalDivider()
 
                                   MenuContent.LoadMenuContent(
                                           onStateSettingsChange = {
@@ -182,7 +184,7 @@ fun LeftSideBar(modifier: Modifier = Modifier, appViewModel: ViewModelStundenpla
                     Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                        login = login
+                        viewModel = appViewModel
                                         )
             }
 

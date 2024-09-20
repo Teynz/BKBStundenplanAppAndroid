@@ -43,6 +43,7 @@ class Scraping {
         return selectBoxes
     }
 
+    @SuppressLint("SuspiciousIndentation")
     suspend fun getDatesMap(selectionBoxes: List<DocElement>?): Map<Int, String> {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
         val datesList: MutableMap<Int, String> = mutableMapOf()

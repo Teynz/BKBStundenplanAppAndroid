@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bkbstundenplan.StundenplanData
 import com.example.bkbstundenplan.ViewModelStundenplanData
 
 object SettingsPage {
@@ -116,7 +115,7 @@ object SettingsPage {
     @Composable
     fun Login(
         modifier: Modifier = Modifier,
-        login: MutableState<StundenplanData>
+        viewModel: ViewModelStundenplanData
     ) {
         Surface(
             modifier = modifier
@@ -127,8 +126,8 @@ object SettingsPage {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(
-                    value = login.value.loginName.value,
-                    onValueChange = { login.value.loginName.value = it },
+                    value = viewModel.loginName,
+                    onValueChange = { viewModel.loginName= it },
                     label = { Text("Benutzername") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
@@ -138,8 +137,8 @@ object SettingsPage {
                 )
 
                 TextField(
-                    value = login.value.passwort.value,
-                    onValueChange = { login.value.passwort.value = it },
+                    value = viewModel.passwort,
+                    onValueChange = { viewModel.passwort = it },
                     label = { Text("passwort") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
