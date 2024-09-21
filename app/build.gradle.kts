@@ -1,15 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-   // id("org.jetbrains.kotlin.plugin.parcelize") version "1.7.20"  Updated to latest version
-    id("org.jetbrains.kotlin.plugin.parcelize")
     id ("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
-    packagingOptions {
-        exclude("META-INF/DEPENDENCIES")
-        exclude("mozilla/public-suffix-list.txt")
+    packaging {
+        resources.excludes.add("META-INF/DEPENDENCIES")
+        resources.excludes.add("mozilla/public-suffix-list.txt")
     }
     namespace = "com.example.bkbstundenplan"
     compileSdk = 34
@@ -19,7 +18,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "Alpha 3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -47,13 +46,9 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1" // Consider updating this as well
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
+
 }
 
 dependencies {
@@ -75,30 +70,30 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation("androidx.webkit:webkit:1.8.0")
-    implementation("it.skrape:skrapeit:1.2.2")
+    implementation(libs.androidx.webkit)
+    implementation(libs.skrapeit)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
 
 
-    val lifecycle_version = "2.8.5"
-    val arch_version = "2.2.0"
+
 
     // ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     // ViewModel utilities for Compose
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     // LiveData
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+    implementation(libs.androidx.lifecycle.livedata.ktx)
     // Lifecycle utilities for Compose
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version")
+    implementation(libs.lifecycle.runtime.compose)
 
     // Saved state module for ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version")
+    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
 
     // Annotation processor
-    kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
+    kapt(libs.androidx.lifecycle.compiler)
     // alternately - if using Java8, use the following instead of lifecycle-compiler
-    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
+    //implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 
 
 }

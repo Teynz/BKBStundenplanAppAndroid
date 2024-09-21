@@ -24,16 +24,44 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.Locale
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.first
+
 
 //help can be found here: https://developer.android.com/topic/libraries/architecture/viewmodel#kotlin
 
+class ViewModelStundenplanData(val context: Context): ViewModel() {
 
-class ViewModelStundenplanData: ViewModel() {
+    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
+    fun getDarkModeSave(): Boolean
+    {
+        return runBlocking {
+            val preferences = context.dataStore.data.first()
+            preferences[booleanPreferencesKey("darkmode")] ?: true
+        }
+
+    }
+
+    var darkmode: Boolean by mutableStateOf(getDarkModeSave())
+
+    fun setDarkMode(value: Boolean) {
+        darkmode = value
+        viewModelScope.launch {
+            context.dataStore.edit { settings ->
+                settings[booleanPreferencesKey("darkmode")] = value
+            }
+        }
+    }
 
     var experimentellerStundenplan by mutableStateOf(false)
-
-    var darkmode by mutableStateOf(true)
 
 
     var valueDates by mutableStateOf(0)

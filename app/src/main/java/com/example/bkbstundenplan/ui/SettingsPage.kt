@@ -51,17 +51,18 @@ object SettingsPage {
             SwitchAbfrage(mainText = "DarkMode",
                 subText = null,
                 checked = viewModel.darkmode,
-                onCheckedChange = { viewModel.darkmode = it }
+                onCheckedChange = { viewModel.setDarkMode(it) }
             )
-            Spacer(modifier = Modifier.padding(10.dp))
-            SwitchAbfrage(
+            //Spacer(modifier = Modifier.padding(10.dp))
+
+           /* SwitchAbfrage(
                 mainText = "Experimentelle Stundenpläne",
                 subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
                 checked = viewModel.experimentellerStundenplan,
                 onCheckedChange = {
                     viewModel.experimentellerStundenplan = it
                 }
-            )
+            )*/
 
 
         }

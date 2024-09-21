@@ -61,9 +61,9 @@ class Scraping {
         val classList: MutableMap<Int, String> = mutableMapOf()
 
 
-            selectionBoxes[2].findAll("option").forEach {
-                it.attributes["value"]?.let { it1 -> classList[it1.toInt()] = it.text }
-            }
+        selectionBoxes[2].findAll("option").forEach {
+            it.attributes["value"]?.let { it1 -> classList[it1.toInt()] = it.text }
+        }
 
         return classList
     }

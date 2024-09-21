@@ -1,5 +1,6 @@
 package com.example.bkbstundenplan
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,171 +35,169 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.ui.MenuContent
 import com.example.bkbstundenplan.ui.SettingsPage
 import com.example.bkbstundenplan.ui.StateSelectedEnum
 import com.example.bkbstundenplan.ui.StundenplanPage
 import com.example.bkbstundenplan.ui.theme.BKBStundenplanTheme
+
 import kotlinx.coroutines.launch
 
 
-
-class MainActivity : ComponentActivity()
-{
-    override fun onCreate(savedInstanceState: Bundle?)
-    {
+class MainActivity : ComponentActivity() {
+    @SuppressLint("StateFlowValueCalledInComposition")
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        //Inhalt der APP
         setContent {
-            val appViewModel: ViewModelStundenplanData = viewModel()
-            BKBStundenplanTheme {
+            val appViewModel= viewModel<ViewModelStundenplanData>(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return ViewModelStundenplanData(context = applicationContext) as T
+                    }
+                }
+
+            ) //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
 
 
-
-
+            BKBStundenplanTheme(darkTheme = appViewModel.darkmode) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
             }
-
 
 
         }
     }
 }
+
 @Composable
-fun AppContent(modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel())
-{
-    LeftSideBar(modifier,appViewModel)
+fun AppContent(
+    modifier: Modifier = Modifier,
+    appViewModel: ViewModelStundenplanData = viewModel()
+) {
+    LeftSideBar(modifier, appViewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeftSideBar(modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel())
-{
-    val Title = rememberSaveable{ mutableStateOf("BKBStundenplan")}
-
-    val login = rememberSaveable { mutableStateOf(StundenplanData()) }
-
+fun LeftSideBar(
+    modifier: Modifier = Modifier,
+    appViewModel: ViewModelStundenplanData = viewModel()
+) {
+    //val Title = rememberSaveable { mutableStateOf("BKBStundenplan") }
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     val scope = rememberCoroutineScope()
 
 
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        modifier = modifier,
+        drawerContent = {
 
-    ModalNavigationDrawer(drawerState = drawerState,
-                          modifier = modifier,
-                          drawerContent = {
+            ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Menu",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    IconButton(onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                    },
+                        content = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.back),
+                                contentDescription = "Zurück Pfeil"
+                            )
+                        })
 
-                              ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
 
-                                  Row(
-                                          horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
-                                          verticalAlignment = Alignment.CenterVertically,
-                                     ) {
-                                      Text(
-                                              text = "Menu",
-                                              modifier = Modifier.padding(16.dp)
-                                          )
-                                      IconButton(onClick = {
-                                          scope.launch {
-                                              drawerState.apply {
-                                                  if (isClosed) open() else close()
-                                              }
-                                          }
-                                      },
-                                                 content = {
-                                                     Icon(
-                                                             painter = painterResource(id = R.drawable.back),
-                                                             contentDescription = "Zurück Pfeil"
-                                                         )
-                                                 })
+                }
 
-                                    
-                                      
-                                      
-                                      
-                                  }
-                                  HorizontalDivider( )
+                HorizontalDivider()
 
-                                  MenuContent.LoadMenuContent(
-                                          onStateSettingsChange = {
-                                              stateSelected =
-                                                  if(stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
-                                                  else StateSelectedEnum.SETTINGS
+                MenuContent.LoadMenuContent(
+                    onStateSettingsChange = {
+                        stateSelected =
+                            if (stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
+                            else StateSelectedEnum.SETTINGS
 
-                                          },
-                                          onStateStundenplanChange={
-                                              stateSelected =
-                                                  if(stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
-                                                  else StateSelectedEnum.STUNDENPLAN
-                                          },
-                                          stateSelected = stateSelected
-                                                             )
-                                  Text(text = "Beta 2.5 \n Entwickelt von Paul Brandt",
-                                      modifier = Modifier.weight(1f))
-                                  
-                              }
-                          }) {
+                    },
+                    onStateStundenplanChange = {
+                        stateSelected =
+                            if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
+                            else StateSelectedEnum.STUNDENPLAN
+                    },
+                    stateSelected = stateSelected
+                )
+                Text(
+                    text = " ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
+                    modifier = Modifier.weight(1f)
+                )
+
+            }
+        }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
-                                   colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
-                                   navigationIcon = {
-                                       IconButton(onClick = {
-                                           scope.launch {
-                                               drawerState.apply {
-                                                   if (isClosed) open() else close()
-                                               }
-                                           }
-                                       }) {
-                                           Icon(
-                                                   painter = painterResource(id = R.drawable.bkb_logo),
-                                                   contentDescription = "Menu",
-                                                   tint = Color.Unspecified
-                                               )
-                                       }
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
+                navigationIcon = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.bkb_logo),
+                            contentDescription = "Menu",
+                            tint = Color.Unspecified
+                        )
+                    }
 
-                                   })
+                })
         }
 
 
-                ) { contentPadding ->
-
+        ) { contentPadding ->
             // Screen content
 
-            if (stateSelected == StateSelectedEnum.SETTINGS)
-            {
+            if (stateSelected == StateSelectedEnum.SETTINGS) {
 
                 SettingsPage.MainPage(
                     Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                        viewModel = appViewModel
-                                     )
-            }
-            else if (stateSelected == StateSelectedEnum.STUNDENPLAN)
-            {
+                    viewModel = appViewModel
+                )
+            } else if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
                 StundenplanPage.MainPage(
                     Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                        login = login
-                                        )
+                    viewModel = appViewModel
+                )
             }
-
-
-
-
         }
     }
 
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
-fun AppPreview()
-{
+fun AppPreview() {
     AppContent()
 }
