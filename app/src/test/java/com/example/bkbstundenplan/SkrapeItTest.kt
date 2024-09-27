@@ -21,6 +21,28 @@ class SkrapeItTest {
 
     }
 
+    @Test
+    fun getTablesTest()
+    {
+        var tables: Scraping.Stundenplan? = null
+        runBlocking{
+            tables = Scraping().getTables("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/39/c/c00005.htm")
+
+        }
+        if(tables == null)
+        {
+            println("tables is null")
+        }
+        else
+        {
+           println("Content:\n\n ${tables!!.stundenplanTable}")
+            println("Content:\n\n ${tables!!.lehrerTable}")
+            println("Content:\n\n ${tables!!.faecherTable}")
+        }
+
+
+    }
+
 
 
 

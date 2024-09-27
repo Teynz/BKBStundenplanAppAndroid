@@ -25,7 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bkbstundenplan.Stundenplan
+import com.example.bkbstundenplan.Scraping
+
 import com.example.bkbstundenplan.ViewModelStundenplanData
 
 object StundenplanPage {
@@ -121,13 +122,33 @@ object StundenplanPage {
     fun StundenplanWebview(
         modifier: Modifier = Modifier,
         viewModel: ViewModelStundenplanData,
-        urlStundenplan: String,
-        tables: Stundenplan? = null
     ) {
 
 
+        if (viewModel.experimentellerStundenplan == true && tables != null){
+            AndroidView(modifier = modifier.fillMaxSize(),
+                factory = {
+                    WebView(it).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                update = {
+                    it.loadData(tables.value.stundenplanTable.toString(), "text/html", "UTF-8")
+                    it.getSettings().loadWithOverviewMode = true
+                    it.getSettings().useWideViewPort = true
+                })
 
-        if (tables != null) {
+
+
+            //other webview stuff
+
+
+
+        }
+        else  {
 
             AndroidView(modifier = modifier.fillMaxSize(),
 
@@ -148,21 +169,6 @@ object StundenplanPage {
 
 
 
-        } else {
-            AndroidView(modifier = modifier.fillMaxSize(),
-                factory = {
-                    WebView(it).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                    }
-                },
-                update = {
-                    it.loadUrl(viewModel.urlStundenplan.value)
-                    it.getSettings().loadWithOverviewMode = true
-                    it.getSettings().useWideViewPort = true
-                })
         }
 
 

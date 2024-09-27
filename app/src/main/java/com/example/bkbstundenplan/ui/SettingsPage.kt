@@ -15,8 +15,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -27,7 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.ViewModelStundenplanData
 
@@ -51,18 +48,18 @@ object SettingsPage {
             SwitchAbfrage(mainText = "DarkMode",
                 subText = null,
                 checked = viewModel.darkmode,
-                onCheckedChange = { viewModel.setDarkMode(it) }
+                onCheckedChange = { viewModel.updateDarkMode(it) }
             )
-            //Spacer(modifier = Modifier.padding(10.dp))
+            Spacer(modifier = Modifier.padding(10.dp))
 
-           /* SwitchAbfrage(
+            SwitchAbfrage(
                 mainText = "Experimentelle Stundenpläne",
                 subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
                 checked = viewModel.experimentellerStundenplan,
                 onCheckedChange = {
-                    viewModel.experimentellerStundenplan = it
+                    viewModel.updateExperimentellerStundenplan(it)
                 }
-            )*/
+            )
 
 
         }

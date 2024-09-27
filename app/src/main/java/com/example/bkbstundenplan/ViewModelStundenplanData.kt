@@ -1,6 +1,7 @@
 package com.example.bkbstundenplan
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -10,13 +11,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
 import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
@@ -24,35 +32,26 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.Locale
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.first
-
 
 //help can be found here: https://developer.android.com/topic/libraries/architecture/viewmodel#kotlin
 
-class ViewModelStundenplanData(val context: Context): ViewModel() {
+class ViewModelStundenplanData(val context: Context) : ViewModel() {
+
+
 
     val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-    fun getDarkModeSave(): Boolean
-    {
+
+
+
+    fun getDarkModeSave(): Boolean {
         return runBlocking {
             val preferences = context.dataStore.data.first()
             preferences[booleanPreferencesKey("darkmode")] ?: true
         }
-
     }
-
     var darkmode: Boolean by mutableStateOf(getDarkModeSave())
-
-    fun setDarkMode(value: Boolean) {
+    fun updateDarkMode(value: Boolean) {
         darkmode = value
         viewModelScope.launch {
             context.dataStore.edit { settings ->
@@ -61,7 +60,35 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
         }
     }
 
-    var experimentellerStundenplan by mutableStateOf(false)
+
+
+
+    fun getExperimentellerStundenplanSave(): Boolean {
+        return runBlocking {
+            val preferences = context.dataStore.data.first()
+            preferences[booleanPreferencesKey("ExperimentellerStundenplan")] ?: false
+        }
+    }
+    var experimentellerStundenplan by mutableStateOf(getExperimentellerStundenplanSave())
+    fun updateExperimentellerStundenplan(value: Boolean) {
+        experimentellerStundenplan = value
+        viewModelScope.launch {
+            context.dataStore.edit { settings ->
+                settings[booleanPreferencesKey("ExperimentellerStundenplan")] = value
+            }
+        }
+    }
+
+
+    var tablesState: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
+        get()
+        {
+            runBlocking{
+                field = mutableStateOf(Scraping().getTables(stundenplanURL = urlStundenplan.value))
+            }
+            return field
+        }
+
 
 
     var valueDates by mutableStateOf(0)
@@ -72,8 +99,33 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
 
 
     @SuppressLint("AuthLeak")
-    var urlStundenplan: MutableState<String> =
-        mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+    var urlStundenplan: MutableState<String> = mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+        get()
+        {
+            if (field.value == "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+            {
+                runBlocking {
+                    updateURLStundenplan()
+                }
+            }
+            return field
+        }
+    @SuppressLint("AuthLeak")
+    fun updateURLStundenplan(){
+        fun classAsString(): String? {
+            if (valueClasses < 10)
+                return "0${valueClasses}"
+            else if (valueClasses > 9)
+                return "${valueClasses}"
+            return null
+        }
+        if (valueDates != 0 && valueClasses != 0) {
+            urlStundenplan.value =
+                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()!!}.htm"
+
+        }
+    }
+
 
     private var scrapingSelectBoxes: List<DocElement>? = null
         get() {
@@ -85,6 +137,19 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
                 return field
             }
         }
+
+    private var scrapingTables: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
+        get() {
+
+            if (field != null) {
+                return field
+            } else {
+                runBlocking { field = mutableStateOf(Scraping().getTables(urlStundenplan.value)) }
+                return field
+            }
+        }
+
+
     private var datesMap: Map<Int, String>? = null
         get() {
 
@@ -113,12 +178,27 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
                 return field
             }
         }
+
     init {
         val job = Job()
         CoroutineScope(Dispatchers.IO + job).launch {
-            scrapingSelectBoxes = Scraping().getSelectBoxes()
+
+
+                scrapingSelectBoxes = Scraping().getSelectBoxes()
+
+
+
+                scrapingTables = mutableStateOf(Scraping().getTables(urlStundenplan.value))
+
             classMap = Scraping().getClassesMap(scrapingSelectBoxes)
             selectCurrentDate()//this function also creates the datesMap because of the getter function
+
+            if(experimentellerStundenplan == true)
+            {
+                tablesState = mutableStateOf(Scraping().getTables(urlStundenplan.value))
+
+
+            }
 
         }
         CoroutineScope(Dispatchers.IO).launch {
@@ -127,6 +207,7 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
         }
 
     }
+
     @Composable
     fun SelectionDialog(
         dialogState: DialogStateEnum,
@@ -145,7 +226,7 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
                                     item {
                                         Button(onClick = {
                                             valueDates = it.key
-                                            newURLStundenplan()
+                                            updateURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
                                         {
@@ -166,7 +247,7 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
                                     item {
                                         Button(onClick = {
                                             valueClasses = it.key
-                                            newURLStundenplan()
+                                            updateURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
                                         {
@@ -198,23 +279,9 @@ class ViewModelStundenplanData(val context: Context): ViewModel() {
 
     }
 
-    private fun classAsString(): String? {
-        if (valueClasses < 10)
-            return "0${valueClasses}"
-        else if (valueClasses > 9)
-            return "${valueClasses}"
-        return null
-    }
 
-    @SuppressLint("AuthLeak")
-    fun newURLStundenplan(): String? {
-        if (valueDates != 0 && valueClasses != 0) {
-            urlStundenplan.value =
-                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()!!}.htm"
-            return urlStundenplan.value
-        }
-        return null
-    }
+
+
 
 
     fun selectCurrentDate() {
