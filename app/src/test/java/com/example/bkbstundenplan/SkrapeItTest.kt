@@ -25,7 +25,7 @@ class SkrapeItTest {
     fun getTablesTest()
     {
         var tables: Scraping.Stundenplan? = null
-        runBlocking{Scraping().getTables("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/39/c/c00005.htm")
+        runBlocking{tables = Scraping().getTables("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/39/c/c00005.htm")
 
         }
         if(tables == null)

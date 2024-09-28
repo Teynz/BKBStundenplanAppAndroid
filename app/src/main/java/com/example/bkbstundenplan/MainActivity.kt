@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
                 }
             ) //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
 
-            BKBStundenplanTheme(darkTheme = appViewModel.darkmode) {
+            BKBStundenplanTheme(darkTheme = appViewModel.saveHandler.darkmode) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
             }
         }

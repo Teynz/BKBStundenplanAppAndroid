@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +28,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.HTMLStrings
 import com.example.bkbstundenplan.ViewModelStundenplanData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 object StundenplanPage {
     enum class DialogStateEnum {
@@ -55,9 +62,9 @@ object StundenplanPage {
                     dialogState = newState
                 })
             Row {
-                Text(text = "Datum:${viewModel.valueDates}  ")
+                Text(text = "Datum:${viewModel.saveHandler.valueDates}  ")
                 Spacer(modifier = Modifier.padding(10.dp))
-                Text(text = "Klasse:${viewModel.valueClasses}  ")
+                Text(text = "Klasse:${viewModel.saveHandler.valueClasses}  ")
 
             }
 
@@ -66,7 +73,7 @@ object StundenplanPage {
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
 
-                    if(viewModel.valueDates != 0 && viewModel.valueClasses != 0) {
+                    if (viewModel.saveHandler.valueDates != 0 && viewModel.saveHandler.valueClasses != 0) {
                         StundenplanWebview(
                             viewModel = viewModel,
                         )
@@ -120,58 +127,63 @@ object StundenplanPage {
     ) {
 
 
-        if (viewModel.experimentellerStundenplan == true) {
-
-            viewModel.updateTablesScraped()
-            if (viewModel.tablesScraped.value != null) {
-                AndroidView(modifier = modifier.fillMaxWidth().padding(horizontal = 2.dp),
-                    factory = {
-                        WebView(it).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                        }
-                    },
-                    update = {
-
-                        it.loadDataWithBaseURL(
-                            null, // Base URL (can be null)
-
-                            HTMLStrings.styleExperimentellerStundenplan(viewModel.darkmode) + (viewModel.tablesScraped.value!!.stundenplanTable.toString()),
-                            "text/html",
-                            "UTF-8",
-                            null // History URL (can be null)
-                        )
-
-                        it.getSettings().loadWithOverviewMode = true
-                        it.getSettings().useWideViewPort = true
-                    })
+                if (viewModel.saveHandler.experimentellerStundenplan == true) {
 
 
-                //other webview stuff
+                    //viewModel.updateURLStundenplan()
+                    //viewModel.updateTablesScraped()
+                    if (viewModel.tablesScraped.value != null) {
+                        AndroidView(modifier = modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 2.dp),
+                            factory = {
+                                WebView(it).apply {
+                                    layoutParams = ViewGroup.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.MATCH_PARENT
+                                    )
+                                }
+                            },
+                            update = {
+                                runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+                                it.loadDataWithBaseURL(
+                                    null, // Base URL (can be null)
+                                    HTMLStrings.styleExperimentellerStundenplan(viewModel.saveHandler.darkmode) + (viewModel.tablesScraped.value!!.stundenplanTable.toString()),
+                                    "text/html",
+                                    "UTF-8",
+                                    null // History URL (can be null)
+                                )
+
+                                it.getSettings().loadWithOverviewMode = true
+                                it.getSettings().useWideViewPort = true
+                            })
 
 
-            }
-        } else if (viewModel.experimentellerStundenplan == false) {
+                        //other webview stuff
 
-            AndroidView(modifier = modifier.fillMaxSize(),
 
-                factory = {
-                    WebView(it).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
                     }
-                },
+                } else if (viewModel.saveHandler.experimentellerStundenplan == false) {
 
-                update = {
-                    it.loadUrl(viewModel.urlStundenplan.value)
-                    it.getSettings().loadWithOverviewMode = true
-                    it.getSettings().useWideViewPort = true
-                })
-        }
+                    AndroidView(modifier = modifier.fillMaxSize(),
+
+                        factory = {
+                            WebView(it).apply {
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                            }
+                        },
+
+                        update = {
+                            it.loadUrl(viewModel.urlStundenplan.value)
+                            it.getSettings().loadWithOverviewMode = true
+                            it.getSettings().useWideViewPort = true
+                        })
+                }
+
+
 
 
     }

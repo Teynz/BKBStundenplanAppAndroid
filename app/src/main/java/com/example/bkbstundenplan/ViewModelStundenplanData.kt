@@ -8,15 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
@@ -24,7 +18,7 @@ import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
@@ -37,74 +31,32 @@ import java.util.Locale
 
 class ViewModelStundenplanData(val context: Context) : ViewModel() {
 
-
-
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
-
-
-
-    private fun getDarkModeSave(): Boolean {
-        return runBlocking {
-            val preferences = context.dataStore.data.first()
-            preferences[booleanPreferencesKey("darkmode")] ?: true
-        }
-    }
-    var darkmode: Boolean by mutableStateOf(getDarkModeSave())
-    fun updateDarkMode(value: Boolean) {
-        darkmode = value
-        viewModelScope.launch {
-            context.dataStore.edit { settings ->
-                settings[booleanPreferencesKey("darkmode")] = value
-            }
-        }
-    }
-
-
-
-
-    private fun getExperimentellerStundenplanSave(): Boolean {
-        return runBlocking {
-            val preferences = context.dataStore.data.first()
-            preferences[booleanPreferencesKey("ExperimentellerStundenplan")] ?: false
-        }
-    }
-    var experimentellerStundenplan by mutableStateOf(getExperimentellerStundenplanSave())
-    fun updateExperimentellerStundenplan(value: Boolean) {
-        experimentellerStundenplan = value
-        viewModelScope.launch {
-            context.dataStore.edit { settings ->
-                settings[booleanPreferencesKey("ExperimentellerStundenplan")] = value
-            }
-        }
-    }
+    var loginName by mutableStateOf("Schueler")
+    var loginPasswort by mutableStateOf("Schueler")
+    var saveHandler = SaveHandler(context, viewModelScope,this)
 
 
 
 
 
 
-    var valueDates by mutableIntStateOf(0)
-    var valueClasses by mutableIntStateOf(0)
 
-
-
-
+    @SuppressLint("AuthLeak")
     var urlStundenplan: MutableState<String> = mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
     @SuppressLint("AuthLeak")
     fun updateURLStundenplan(){
         fun classAsString(): String? {
-            if (valueClasses < 10)
-                return "0${valueClasses}"
-            else if (valueClasses > 9)
-                return "$valueClasses"
+            if (saveHandler.valueClasses < 10)
+                return "0${saveHandler.valueClasses}"
+            else if (saveHandler.valueClasses > 9)
+                return "${saveHandler.valueClasses}"
             return null
         }
-        if (valueDates != 0 && valueClasses != 0) {
+        if (saveHandler.valueDates != 0 && saveHandler.valueClasses != 0) {
 
 
 
-            urlStundenplan.value = "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
+            urlStundenplan.value = "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${saveHandler.valueDates}/c/c000${classAsString()}.htm"
             //"https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
 
 
@@ -124,8 +76,10 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
         }
 
     var tablesScraped: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
+    var tableJob = Job()
     fun updateTablesScraped() {
-        CoroutineScope(Dispatchers.IO).launch { tablesScraped.value = Scraping().getTables(urlStundenplan.value) }
+        CoroutineScope(Dispatchers.IO ).launch { tablesScraped.value = Scraping().getTables(urlStundenplan.value)
+        tableJob.complete()}
     }
 
 
@@ -159,23 +113,16 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
             }
         }
 
+    val viewModelInitJob = Job()
     init {
-
-
-            val job = Job()
-        CoroutineScope(Dispatchers.IO + job).launch {
+        CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
             scrapingSelectBoxes = Scraping().getSelectBoxes()
-            classMap = Scraping().getClassesMap(scrapingSelectBoxes)
-            selectCurrentDate()//this function also creates the datesMap because of the getter function
+            val first =async {classMap = Scraping().getClassesMap(scrapingSelectBoxes)}
+            val second =async {selectCurrentDate()}//this function also creates the datesMap because of the getter function
+            first.await()
+            second.await()
+            viewModelInitJob.complete()
         }
-
-
-
-        /*CoroutineScope(Dispatchers.IO).launch {
-            delay(15000)
-            job.cancel()
-        }*/
-
     }
 
     @Composable
@@ -194,7 +141,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
                                 {
                                     item {
                                         Button(onClick = {
-                                            valueDates = it.key
+                                            saveHandler.valueDates = it.key
                                             updateURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
@@ -215,7 +162,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
                                 {
                                     item {
                                         Button(onClick = {
-                                            valueClasses = it.key
+                                            saveHandler.saveValueClasses(it.key)
                                             updateURLStundenplan()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
@@ -257,9 +204,11 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
         datesMap!!.forEach()
         {
             if (it.value == firstMondayofWeek()) {
-                if (valueDates == 0)
-                    valueDates = it.key
+                if (saveHandler.valueDates == 0)
+                    saveHandler.valueDates = it.key
             }
+            updateURLStundenplan()
+            if (saveHandler.experimentellerStundenplan == true){updateTablesScraped()}
         }
     }
 

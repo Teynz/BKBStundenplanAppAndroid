@@ -6,6 +6,9 @@ object HTMLStrings {
     fun addDarkMode():String
     {
         return """
+            b{
+color: #ffffff;
+} 
         body {
 background-color: #000000;
 color: #ffffff;

@@ -47,17 +47,17 @@ object SettingsPage {
 
             SwitchAbfrage(mainText = "DarkMode",
                 subText = null,
-                checked = viewModel.darkmode,
-                onCheckedChange = { viewModel.updateDarkMode(it) }
+                checked = viewModel.saveHandler.darkmode,
+                onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) }
             )
             Spacer(modifier = Modifier.padding(10.dp))
 
             SwitchAbfrage(
                 mainText = "Experimentelle Stundenpläne",
                 subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
-                checked = viewModel.experimentellerStundenplan,
+                checked = viewModel.saveHandler.experimentellerStundenplan,
                 onCheckedChange = {
-                    viewModel.updateExperimentellerStundenplan(it)
+                    viewModel.saveHandler.saveExperimentellerStundenplan(it)
                 }
             )
 
@@ -135,8 +135,8 @@ object SettingsPage {
                 )
 
                 TextField(
-                    value = viewModel.passwort,
-                    onValueChange = { viewModel.passwort = it },
+                    value = viewModel.loginPasswort,
+                    onValueChange = { viewModel.loginPasswort = it },
                     label = { Text("passwort") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
