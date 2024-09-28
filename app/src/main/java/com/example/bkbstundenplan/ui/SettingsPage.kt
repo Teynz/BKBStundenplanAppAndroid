@@ -170,7 +170,6 @@ fun AppPreview() {
 
 /*todo
 *  Experimenteller Stundenplan Schalter
-*  Dark Theme
 *  Custom Timetable
 * 
 *  MorgenAlarm

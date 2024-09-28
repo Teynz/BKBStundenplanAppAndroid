@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
@@ -23,7 +24,6 @@ import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -39,12 +39,12 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
 
 
 
-    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 
 
 
-    fun getDarkModeSave(): Boolean {
+    private fun getDarkModeSave(): Boolean {
         return runBlocking {
             val preferences = context.dataStore.data.first()
             preferences[booleanPreferencesKey("darkmode")] ?: true
@@ -63,7 +63,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
 
 
 
-    fun getExperimentellerStundenplanSave(): Boolean {
+    private fun getExperimentellerStundenplanSave(): Boolean {
         return runBlocking {
             val preferences = context.dataStore.data.first()
             preferences[booleanPreferencesKey("ExperimentellerStundenplan")] ?: false
@@ -80,48 +80,33 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
     }
 
 
-    var tablesState: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
-        get()
-        {
-            runBlocking{
-                field = mutableStateOf(Scraping().getTables(stundenplanURL = urlStundenplan.value))
-            }
-            return field
-        }
 
 
 
-    var valueDates by mutableStateOf(0)
-    var valueClasses by mutableStateOf(0)
 
-    var loginName by mutableStateOf("schueler")
-    var passwort by mutableStateOf("stundenplan")
+    var valueDates by mutableIntStateOf(0)
+    var valueClasses by mutableIntStateOf(0)
 
 
-    @SuppressLint("AuthLeak")
+
+
     var urlStundenplan: MutableState<String> = mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
-        get()
-        {
-            if (field.value == "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
-            {
-                runBlocking {
-                    updateURLStundenplan()
-                }
-            }
-            return field
-        }
     @SuppressLint("AuthLeak")
     fun updateURLStundenplan(){
         fun classAsString(): String? {
             if (valueClasses < 10)
                 return "0${valueClasses}"
             else if (valueClasses > 9)
-                return "${valueClasses}"
+                return "$valueClasses"
             return null
         }
         if (valueDates != 0 && valueClasses != 0) {
-            urlStundenplan.value =
-                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()!!}.htm"
+
+
+
+            urlStundenplan.value = "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
+            //"https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
+
 
         }
     }
@@ -138,16 +123,11 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
             }
         }
 
-    private var scrapingTables: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
-        get() {
+    var tablesScraped: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
+    fun updateTablesScraped() {
+        CoroutineScope(Dispatchers.IO).launch { tablesScraped.value = Scraping().getTables(urlStundenplan.value) }
+    }
 
-            if (field != null) {
-                return field
-            } else {
-                runBlocking { field = mutableStateOf(Scraping().getTables(urlStundenplan.value)) }
-                return field
-            }
-        }
 
 
     private var datesMap: Map<Int, String>? = null
@@ -180,39 +160,28 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
         }
 
     init {
-        val job = Job()
+
+
+            val job = Job()
         CoroutineScope(Dispatchers.IO + job).launch {
-
-
-                scrapingSelectBoxes = Scraping().getSelectBoxes()
-
-
-
-                scrapingTables = mutableStateOf(Scraping().getTables(urlStundenplan.value))
-
+            scrapingSelectBoxes = Scraping().getSelectBoxes()
             classMap = Scraping().getClassesMap(scrapingSelectBoxes)
             selectCurrentDate()//this function also creates the datesMap because of the getter function
-
-            if(experimentellerStundenplan == true)
-            {
-                tablesState = mutableStateOf(Scraping().getTables(urlStundenplan.value))
-
-
-            }
-
         }
-        CoroutineScope(Dispatchers.IO).launch {
+
+
+
+        /*CoroutineScope(Dispatchers.IO).launch {
             delay(15000)
             job.cancel()
-        }
+        }*/
 
     }
 
     @Composable
     fun SelectionDialog(
         dialogState: DialogStateEnum,
-        ondialogStateChange: (DialogStateEnum) -> Unit,
-        urlStundenplan: String
+        ondialogStateChange: (DialogStateEnum) -> Unit
     ) {
         if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.CLASS) {
             Dialog(onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) },
@@ -284,7 +253,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
 
 
 
-    fun selectCurrentDate() {
+    private fun selectCurrentDate() {
         datesMap!!.forEach()
         {
             if (it.value == firstMondayofWeek()) {

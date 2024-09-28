@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -34,7 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -61,15 +64,11 @@ class MainActivity : ComponentActivity() {
                         return ViewModelStundenplanData(context = applicationContext) as T
                     }
                 }
-
             ) //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
-
 
             BKBStundenplanTheme(darkTheme = appViewModel.darkmode) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
             }
-
-
         }
     }
 }
@@ -88,18 +87,15 @@ fun LeftSideBar(
     modifier: Modifier = Modifier,
     appViewModel: ViewModelStundenplanData = viewModel()
 ) {
-    //val Title = rememberSaveable { mutableStateOf("BKBStundenplan") }
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val scope = rememberCoroutineScope()
 
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         modifier = modifier,
         drawerContent = {
-
             ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
                 Row(
                     horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
@@ -122,8 +118,6 @@ fun LeftSideBar(
                                 contentDescription = "Zurück Pfeil"
                             )
                         })
-
-
                 }
 
                 HorizontalDivider()
@@ -142,9 +136,12 @@ fun LeftSideBar(
                     },
                     stateSelected = stateSelected
                 )
+                Spacer(modifier.weight(1f))
                 Text(
+                    lineHeight = 10.sp,
+                    fontSize = 10.sp,
                     text = " ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
                 )
 
             }

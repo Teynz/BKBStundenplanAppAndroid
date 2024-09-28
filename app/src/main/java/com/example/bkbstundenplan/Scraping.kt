@@ -10,7 +10,6 @@ import it.skrape.fetcher.extractIt
 import it.skrape.fetcher.skrape
 import it.skrape.selects.DocElement
 import it.skrape.selects.html5.table
-import it.skrape.selects.text
 
 
 class Scraping {
@@ -66,15 +65,15 @@ class Scraping {
     }
 
 
-    suspend fun getTables(stundenplanURL: String): Stundenplan? {
-        var stundenplan: Stundenplan? = null
+    suspend fun getTables(stundenplanURL: String): Stundenplan {
+        val stundenplan: Stundenplan?
         //https://docs.skrape.it/docs/dsl/extracting-data-from-websites
         stundenplan = skrape(BrowserFetcher) {
             request {
                 url = stundenplanURL
             }
             extractIt<Stundenplan> { results ->
-                var content: MutableList<DocElement> = mutableListOf()
+                val content: MutableList<DocElement> = mutableListOf()
                 htmlDocument {
                     content.addAll(table {
                         findAll { this }

@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,8 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bkbstundenplan.Scraping
-
+import com.example.bkbstundenplan.HTMLStrings
 import com.example.bkbstundenplan.ViewModelStundenplanData
 
 object StundenplanPage {
@@ -41,10 +40,7 @@ object StundenplanPage {
         modifier: Modifier = Modifier,
         viewModel: ViewModelStundenplanData
     ) {
-
-        val urlStundenplan by rememberSaveable { mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/") }
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
-
 
         Column(
             modifier = modifier.fillMaxSize(),
@@ -67,16 +63,16 @@ object StundenplanPage {
 
             Surface(
             ) {
-
-
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
-                    if (viewModel.valueDates != 0 && viewModel.valueClasses != 0) {
+
+                    if(viewModel.valueDates != 0 && viewModel.valueClasses != 0) {
                         StundenplanWebview(
                             viewModel = viewModel,
-                            urlStundenplan = urlStundenplan,
                         )
                     }
+
+
                 } else {
                     Text(
                         modifier = modifier,
@@ -87,8 +83,7 @@ object StundenplanPage {
                     dialogState = dialogState,
                     ondialogStateChange = { newState ->
                         dialogState = newState
-                    },
-                    urlStundenplan = urlStundenplan
+                    }
                 )
 
             }
@@ -125,30 +120,40 @@ object StundenplanPage {
     ) {
 
 
-        if (viewModel.experimentellerStundenplan == true && tables != null){
-            AndroidView(modifier = modifier.fillMaxSize(),
-                factory = {
-                    WebView(it).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
+        if (viewModel.experimentellerStundenplan == true) {
+
+            viewModel.updateTablesScraped()
+            if (viewModel.tablesScraped.value != null) {
+                AndroidView(modifier = modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                    factory = {
+                        WebView(it).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                        }
+                    },
+                    update = {
+
+                        it.loadDataWithBaseURL(
+                            null, // Base URL (can be null)
+
+                            HTMLStrings.styleExperimentellerStundenplan(viewModel.darkmode) + (viewModel.tablesScraped.value!!.stundenplanTable.toString()),
+                            "text/html",
+                            "UTF-8",
+                            null // History URL (can be null)
                         )
-                    }
-                },
-                update = {
-                    it.loadData(tables.value.stundenplanTable.toString(), "text/html", "UTF-8")
-                    it.getSettings().loadWithOverviewMode = true
-                    it.getSettings().useWideViewPort = true
-                })
+
+                        it.getSettings().loadWithOverviewMode = true
+                        it.getSettings().useWideViewPort = true
+                    })
 
 
-
-            //other webview stuff
-
+                //other webview stuff
 
 
-        }
-        else  {
+            }
+        } else if (viewModel.experimentellerStundenplan == false) {
 
             AndroidView(modifier = modifier.fillMaxSize(),
 
@@ -166,9 +171,6 @@ object StundenplanPage {
                     it.getSettings().loadWithOverviewMode = true
                     it.getSettings().useWideViewPort = true
                 })
-
-
-
         }
 
 
