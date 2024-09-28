@@ -65,23 +65,22 @@ class Scraping {
     }
 
 
-    suspend fun getTables(stundenplanURL: String): Stundenplan {
-        val stundenplan: Stundenplan?
+    suspend fun getStundenplanTable(stundenplanURL: String): DocElement? {
+        var stundenplan: DocElement? = null
         //https://docs.skrape.it/docs/dsl/extracting-data-from-websites
-        stundenplan = skrape(BrowserFetcher) {
+
+        skrape(BrowserFetcher) {
             request {
                 url = stundenplanURL
             }
             extractIt<Stundenplan> { results ->
-                val content: MutableList<DocElement> = mutableListOf()
                 htmlDocument {
-                    content.addAll(table {
-                        findAll { this }
-                    })
+                    stundenplan = table {
+                        findFirst { this }
+                    }
+
                 }
-                results.stundenplanTable = content[0]
-                results.faecherTable = content[1]
-                results.lehrerTable = content[2]
+
             }
         }
         return stundenplan

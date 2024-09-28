@@ -14,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,11 +27,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.HTMLStrings
 import com.example.bkbstundenplan.ViewModelStundenplanData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 object StundenplanPage {
@@ -68,8 +62,7 @@ object StundenplanPage {
 
             }
 
-            Surface(
-            ) {
+            Surface {
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
 
@@ -127,66 +120,76 @@ object StundenplanPage {
     ) {
 
 
-                if (viewModel.saveHandler.experimentellerStundenplan == true) {
+        if (viewModel.saveHandler.experimentellerStundenplan) {
 
 
-                    //viewModel.updateURLStundenplan()
-                    //viewModel.updateTablesScraped()
-                    if (viewModel.tablesScraped.value != null) {
-                        AndroidView(modifier = modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 2.dp),
-                            factory = {
-                                WebView(it).apply {
-                                    layoutParams = ViewGroup.LayoutParams(
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                        ViewGroup.LayoutParams.MATCH_PARENT
-                                    )
-                                }
-                            },
-                            update = {
-                                runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
-                                it.loadDataWithBaseURL(
-                                    null, // Base URL (can be null)
-                                    HTMLStrings.styleExperimentellerStundenplan(viewModel.saveHandler.darkmode) + (viewModel.tablesScraped.value!!.stundenplanTable.toString()),
-                                    "text/html",
-                                    "UTF-8",
-                                    null // History URL (can be null)
-                                )
+            if (viewModel.tablesScraped.value != null) {
+                Column {
 
-                                it.getSettings().loadWithOverviewMode = true
-                                it.getSettings().useWideViewPort = true
-                            })
+                    TableWebView(
+                        viewModel = viewModel,
+                        htmlString = HTMLStrings.styleExperimentellerStundenplan(viewModel.saveHandler.darkmode) + (viewModel.tablesScraped.value.toString())
+                    )
 
 
-                        //other webview stuff
-
-
-                    }
-                } else if (viewModel.saveHandler.experimentellerStundenplan == false) {
-
-                    AndroidView(modifier = modifier.fillMaxSize(),
-
-                        factory = {
-                            WebView(it).apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                            }
-                        },
-
-                        update = {
-                            it.loadUrl(viewModel.urlStundenplan.value)
-                            it.getSettings().loadWithOverviewMode = true
-                            it.getSettings().useWideViewPort = true
-                        })
                 }
 
+            }
+        } else if (!viewModel.saveHandler.experimentellerStundenplan) {
 
+            AndroidView(modifier = modifier.fillMaxSize(),
+
+                factory = {
+                    WebView(it).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+
+                update = {
+                    it.loadUrl(viewModel.urlStundenplan.value)
+                    it.getSettings().loadWithOverviewMode = true
+                    it.getSettings().useWideViewPort = true
+                })
+        }
 
 
     }
+
+}
+
+@Composable
+fun TableWebView(
+    modifier: Modifier = Modifier,
+    viewModel: ViewModelStundenplanData,
+    htmlString: String
+) {
+    AndroidView(modifier = modifier
+        .fillMaxWidth()
+        .padding(horizontal = 2.dp),
+        factory = {
+            WebView(it).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            }
+        },
+        update = {
+            runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+            it.loadDataWithBaseURL(
+                null, // Base URL (can be null)
+                htmlString,
+                "text/html",
+                "UTF-8",
+                null // History URL (can be null)
+            )
+
+            it.getSettings().loadWithOverviewMode = true
+            it.getSettings().useWideViewPort = true
+        })
 
 }
 

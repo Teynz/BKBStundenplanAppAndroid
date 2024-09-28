@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -14,6 +16,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
+import it.skrape.selects.Doc
 import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +32,7 @@ import java.util.Locale
 
 //help can be found here: https://developer.android.com/topic/libraries/architecture/viewmodel#kotlin
 
-class ViewModelStundenplanData(val context: Context) : ViewModel() {
+class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     var loginName by mutableStateOf("Schueler")
     var loginPasswort by mutableStateOf("Schueler")
@@ -75,10 +78,12 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
             }
         }
 
-    var tablesScraped: MutableState<Scraping.Stundenplan?> = mutableStateOf(null)
+    var tablesScraped: MutableState<DocElement?> = mutableStateOf(null)
+    @Suppress("MemberVisibilityCanBePrivate")
     var tableJob = Job()
-    fun updateTablesScraped() {
-        CoroutineScope(Dispatchers.IO ).launch { tablesScraped.value = Scraping().getTables(urlStundenplan.value)
+    private fun updateTablesScraped() {
+        CoroutineScope(Dispatchers.IO ).launch { tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
+            if (tablesScraped.value == null) {saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0);throw Exception("StundenplanTable is null")}
         tableJob.complete()}
     }
 
@@ -113,6 +118,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
             }
         }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     val viewModelInitJob = Job()
     init {
         CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
@@ -140,9 +146,14 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
                                 datesMap!!.forEach()
                                 {
                                     item {
-                                        Button(onClick = {
+                                        Button(
+                                            colors =  if (it.key == saveHandler.valueDates) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
+                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                                            ,
+                                            onClick = {
                                             saveHandler.valueDates = it.key
                                             updateURLStundenplan()
+                                                updateTablesScraped()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
                                         {
@@ -161,9 +172,14 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
                                 classMap!!.forEach()
                                 {
                                     item {
-                                        Button(onClick = {
+                                        Button(
+                                            colors =  if (it.key == saveHandler.valueClasses) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
+                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                                            ,
+                                            onClick = {
                                             saveHandler.saveValueClasses(it.key)
                                             updateURLStundenplan()
+                                            updateTablesScraped()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         })
                                         {
@@ -208,7 +224,7 @@ class ViewModelStundenplanData(val context: Context) : ViewModel() {
                     saveHandler.valueDates = it.key
             }
             updateURLStundenplan()
-            if (saveHandler.experimentellerStundenplan == true){updateTablesScraped()}
+            if (saveHandler.experimentellerStundenplan){updateTablesScraped()}
         }
     }
 

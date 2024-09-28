@@ -34,8 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -46,7 +46,6 @@ import com.example.bkbstundenplan.ui.SettingsPage
 import com.example.bkbstundenplan.ui.StateSelectedEnum
 import com.example.bkbstundenplan.ui.StundenplanPage
 import com.example.bkbstundenplan.ui.theme.BKBStundenplanTheme
-
 import kotlinx.coroutines.launch
 
 
@@ -61,6 +60,7 @@ class MainActivity : ComponentActivity() {
             val appViewModel= viewModel<ViewModelStundenplanData>(
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
                         return ViewModelStundenplanData(context = applicationContext) as T
                     }
                 }
@@ -138,10 +138,11 @@ fun LeftSideBar(
                 )
                 Spacer(modifier.weight(1f))
                 Text(
+                    textAlign = TextAlign.Right,
                     lineHeight = 10.sp,
                     fontSize = 10.sp,
-                    text = " ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
-                    modifier = Modifier
+                    text = "Version: ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
+                    modifier = Modifier.align(Alignment.End).padding(2.dp)
                 )
 
             }

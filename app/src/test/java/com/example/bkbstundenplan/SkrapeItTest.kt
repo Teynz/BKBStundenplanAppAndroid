@@ -1,6 +1,7 @@
 package com.example.bkbstundenplan
 
 
+import it.skrape.selects.DocElement
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
@@ -24,19 +25,19 @@ class SkrapeItTest {
     @Test
     fun getTablesTest()
     {
-        var tables: Scraping.Stundenplan? = null
-        runBlocking{tables = Scraping().getTables("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/39/c/c00005.htm")
+        var Stundenplan: DocElement? = null
+        runBlocking{Stundenplan = Scraping().getStundenplanTable("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/39/c/c00005.htm")
 
         }
-        if(tables == null)
+        if(Stundenplan == null)
         {
             println("tables is null")
         }
         else
         {
-           println("Content:\n\n ${tables!!.stundenplanTable}")
+           //println("Content:\n\n ${tables!!.stundenplanTable}")
             //println("Content:\n\n ${tables!!.lehrerTable}")
-            //println("Content:\n\n ${tables!!.faecherTable}")
+            println("Content:\n\n ${Stundenplan!!}")
         }
 
 

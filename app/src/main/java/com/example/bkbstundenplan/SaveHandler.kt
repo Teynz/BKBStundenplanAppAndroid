@@ -1,3 +1,5 @@
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
 package com.example.bkbstundenplan
 
 import android.content.Context
@@ -24,17 +26,17 @@ import kotlinx.coroutines.runBlocking
 
 
 
-class SaveHandler(val context: Context, val scope: CoroutineScope,val viewModel: ViewModelStundenplanData) {
+class SaveHandler(private val context: Context,private val scope: CoroutineScope,val viewModel: ViewModelStundenplanData) {
     var saveHandlerInitJob: CompletableJob = Job()
-    companion object saveNames
+    companion object SaveNames
     {
-        val SETTINGS = "settings"
-            val DARKMODE = "darkmode"
-            val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
+        const val SETTINGS = "settings"
+            const val DARKMODE = "darkmode"
+            const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
 
-        val VALUES ="values"
-            val VALUEDATES = "ValueDates"
-            val VALUECLASSES = "ValueClasses"
+        const val VALUES ="values"
+            const val VALUEDATES = "ValueDates"
+            const val VALUECLASSES = "ValueClasses"
     }
 
 

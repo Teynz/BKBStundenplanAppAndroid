@@ -3,7 +3,7 @@ package com.example.bkbstundenplan
 object HTMLStrings {
 
 
-    fun addDarkMode():String
+    private fun addDarkMode():String
     {
         return """
             b{
