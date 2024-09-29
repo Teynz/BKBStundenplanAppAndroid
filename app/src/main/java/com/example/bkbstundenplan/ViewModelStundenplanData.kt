@@ -36,18 +36,15 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     var loginName by mutableStateOf("Schueler")
     var loginPasswort by mutableStateOf("Schueler")
-    var saveHandler = SaveHandler(context, viewModelScope,this)
-
-
-
-
-
+    var saveHandler = SaveHandler(context, viewModelScope, this)
 
 
     @SuppressLint("AuthLeak")
-    var urlStundenplan: MutableState<String> = mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+    var urlStundenplan: MutableState<String> =
+        mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+
     @SuppressLint("AuthLeak")
-    fun updateURLStundenplan(){
+    fun updateURLStundenplan() {
         fun classAsString(): String? {
             if (saveHandler.valueClasses < 10)
                 return "0${saveHandler.valueClasses}"
@@ -58,8 +55,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         if (saveHandler.valueDates != 0 && saveHandler.valueClasses != 0) {
 
 
-
-            urlStundenplan.value = "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${saveHandler.valueDates}/c/c000${classAsString()}.htm"
+            urlStundenplan.value =
+                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${saveHandler.valueDates}/c/c000${classAsString()}.htm"
             //"https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
 
 
@@ -79,14 +76,18 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         }
 
     var tablesScraped: MutableState<DocElement?> = mutableStateOf(null)
+
     @Suppress("MemberVisibilityCanBePrivate")
     var tableJob = Job()
     private fun updateTablesScraped() {
-        CoroutineScope(Dispatchers.IO ).launch { tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
-            if (tablesScraped.value == null) {saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0);throw Exception("StundenplanTable is null")}
-        tableJob.complete()}
+        CoroutineScope(Dispatchers.IO).launch {
+            tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
+            if (tablesScraped.value == null) {
+                saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0);throw Exception("StundenplanTable is null")
+            }
+            tableJob.complete()
+        }
     }
-
 
 
     private var datesMap: Map<Int, String>? = null
@@ -120,11 +121,13 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     @Suppress("MemberVisibilityCanBePrivate")
     val viewModelInitJob = Job()
+
     init {
         CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
             scrapingSelectBoxes = Scraping().getSelectBoxes()
-            val first =async {classMap = Scraping().getClassesMap(scrapingSelectBoxes)}
-            val second =async {selectCurrentDate()}//this function also creates the datesMap because of the getter function
+            val first = async { classMap = Scraping().getClassesMap(scrapingSelectBoxes) }
+            val second =
+                async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
             first.await()
             second.await()
             viewModelInitJob.complete()
@@ -147,15 +150,16 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                                 {
                                     item {
                                         Button(
-                                            colors =  if (it.key == saveHandler.valueDates) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
-                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-                                            ,
+                                            colors = if (it.key == saveHandler.valueDates) ButtonDefaults.buttonColors(
+                                                MaterialTheme.colorScheme.tertiary
+                                            )
+                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
                                             onClick = {
-                                            saveHandler.valueDates = it.key
-                                            updateURLStundenplan()
+                                                saveHandler.valueDates = it.key
+                                                updateURLStundenplan()
                                                 updateTablesScraped()
-                                            ondialogStateChange(DialogStateEnum.NONE)
-                                        })
+                                                ondialogStateChange(DialogStateEnum.NONE)
+                                            })
                                         {
                                             Text(text = datesMap!!.getValue(it.key))
                                         }
@@ -173,15 +177,16 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                                 {
                                     item {
                                         Button(
-                                            colors =  if (it.key == saveHandler.valueClasses) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary)
-                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-                                            ,
+                                            colors = if (it.key == saveHandler.valueClasses) ButtonDefaults.buttonColors(
+                                                MaterialTheme.colorScheme.tertiary
+                                            )
+                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
                                             onClick = {
-                                            saveHandler.saveValueClasses(it.key)
-                                            updateURLStundenplan()
-                                            updateTablesScraped()
-                                            ondialogStateChange(DialogStateEnum.NONE)
-                                        })
+                                                saveHandler.saveValueClasses(it.key)
+                                                updateURLStundenplan()
+                                                updateTablesScraped()
+                                                ondialogStateChange(DialogStateEnum.NONE)
+                                            })
                                         {
                                             Text(text = classMap!!.getValue(it.key))
                                         }
@@ -212,10 +217,6 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     }
 
 
-
-
-
-
     private fun selectCurrentDate() {
         datesMap!!.forEach()
         {
@@ -224,7 +225,9 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                     saveHandler.valueDates = it.key
             }
             updateURLStundenplan()
-            if (saveHandler.experimentellerStundenplan){updateTablesScraped()}
+            if (saveHandler.experimentellerStundenplan) {
+                updateTablesScraped()
+            }
         }
     }
 
