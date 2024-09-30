@@ -33,6 +33,7 @@ class SaveHandler(private val context: Context,private val scope: CoroutineScope
         const val SETTINGS = "settings"
             const val DARKMODE = "darkmode"
             const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
+        const val ALTESTUNDENPLENE = "AlteStundenplaene"
 
         const val VALUES ="values"
             const val VALUEDATES = "ValueDates"
@@ -74,6 +75,18 @@ class SaveHandler(private val context: Context,private val scope: CoroutineScope
     fun saveExperimentellerStundenplan(value: Boolean) {
         experimentellerStundenplan = value
         savePreference(context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value)
+    }
+
+    var alteStundenplaene by mutableStateOf(getAlteStundenplaeneSave())
+    private fun getAlteStundenplaeneSave(): Boolean {
+        return runBlocking {
+            getPreference(context.dataStoreSettings, booleanPreferencesKey(ALTESTUNDENPLENE), false)
+        }
+    }
+
+    fun saveAlteStundenplaene(value: Boolean) {
+        alteStundenplaene = value
+        savePreference(context.dataStoreSettings, booleanPreferencesKey(ALTESTUNDENPLENE), value)
     }
 
 

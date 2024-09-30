@@ -16,7 +16,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
-import it.skrape.selects.Doc
 import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -134,6 +133,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         }
     }
 
+
+    //Design fehler, Funktion kann in StundenplanPage verlagert werden
     @Composable
     fun SelectionDialog(
         dialogState: DialogStateEnum,
@@ -146,6 +147,51 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                     if (dialogState == DialogStateEnum.DATE) {
                         LazyColumn {
                             if (datesMap != null) {
+                                if (saveHandler.alteStundenplaene) {
+                                    val weeksBack = 8
+
+                                    val dateValue = (datesMap!!.keys.first() - weeksBack)
+                                    @Suppress("ReplaceRangeToWithRangeUntil")
+                                    for (iter in 0..(weeksBack - 1)) {
+
+
+                                        item {
+                                            Button(
+                                                colors = if ((dateValue + iter) == saveHandler.valueDates) ButtonDefaults.buttonColors(
+                                                    MaterialTheme.colorScheme.tertiary
+                                                )
+                                                else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
+                                                onClick = {
+                                                    saveHandler.valueDates = (dateValue + iter)
+                                                    updateURLStundenplan()
+                                                    updateTablesScraped()
+                                                    ondialogStateChange(DialogStateEnum.NONE)
+                                                })
+                                            {
+
+
+                                                Text(
+                                                    text = "Vor ${8 - iter} ${
+                                                        when (8 - iter) {
+                                                            1 -> "Woche"
+                                                            else -> "Wochen"
+                                                        }
+                                                    }"
+                                                )
+                                            }
+                                        }
+
+
+                                    }
+
+
+                                }
+
+
+
+
+
+
                                 datesMap!!.forEach()
                                 {
                                     item {

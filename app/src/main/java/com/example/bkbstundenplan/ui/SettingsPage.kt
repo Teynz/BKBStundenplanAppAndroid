@@ -45,7 +45,8 @@ object SettingsPage {
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
         ) {
 
-            SwitchAbfrage(mainText = "DarkMode",
+            SwitchAbfrage(
+                mainText = "Darkmode",
                 subText = null,
                 checked = viewModel.saveHandler.darkmode,
                 onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) }
@@ -53,11 +54,22 @@ object SettingsPage {
             Spacer(modifier = Modifier.padding(10.dp))
 
             SwitchAbfrage(
-                mainText = "Experimentelle Stundenpläne",
-                subText = "Aktiviert die Auswahl von Stundenplänen der letzten Wochen, kann zu fehlern führen",
+                mainText = "Experimenteller Stundenplan",
+                subText = "Aktiviert Darkmode Kompatitiblität mit dem Stundenplan und vergrößert diesen.",
                 checked = viewModel.saveHandler.experimentellerStundenplan,
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
+                }
+            )
+
+            Spacer(modifier = Modifier.padding(10.dp))
+
+            SwitchAbfrage(
+                mainText = "Alte Stundenpläne",
+                subText = "Lässt alte Stundenpläne anzeigen diese werden farblich abgehoben und funktionieren gegebenenfalls nicht (Maximal 8 Wochen)",
+                checked = viewModel.saveHandler.alteStundenplaene,
+                onCheckedChange = {
+                    viewModel.saveHandler.saveAlteStundenplaene(it)
                 }
             )
 
