@@ -61,20 +61,23 @@ object SettingsPage {
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
         ) {
 
-            SwitchAbfrage(mainText = "Darkmode",
+            SwitchAbfrage(
+                mainText = stringResource(R.string.darkmode),
                 subText = null,
                 checked = viewModel.saveHandler.darkmode,
                 onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) })
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(mainText = "Adaptive Farben",
-                subText = "Passt App farben dem Hintergrund an.",
+            SwitchAbfrage(
+                mainText = stringResource(R.string.adaptive_farben),
+                subText = stringResource(R.string.adaptive_farben_description),
                 checked = viewModel.saveHandler.adaptiveColor,
                 onCheckedChange = { viewModel.saveHandler.saveAdaptiveColor(it) })
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(mainText = "Experimenteller Stundenplan",
-                subText = "Aktiviert Darkmode Kompatitiblität mit dem Stundenplan und vergrößert diesen.",
+            SwitchAbfrage(
+                mainText = stringResource(R.string.experimenteller_stundenplan),
+                subText = stringResource(R.string.experimenteller_stundenplan_description),
                 checked = viewModel.saveHandler.experimentellerStundenplan,
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
@@ -82,8 +85,9 @@ object SettingsPage {
 
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(mainText = "Alte Stundenpläne",
-                subText = "Lässt alte Stundenpläne anzeigen diese werden farblich abgehoben und funktionieren gegebenenfalls nicht (Maximal 8 Wochen)",
+            SwitchAbfrage(
+                mainText = stringResource(R.string.alte_stundenpl_ne),
+                subText = stringResource(R.string.alte_stundenplaene_description),
                 checked = viewModel.saveHandler.alteStundenplaene,
                 onCheckedChange = {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
@@ -165,7 +169,7 @@ object SettingsPage {
                         Text(
                             modifier = modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center,
-                            text = "App Info"
+                            text = stringResource(id = R.string.app_information),
                         )
 
                         Card(
@@ -181,7 +185,9 @@ object SettingsPage {
                                     .align(Alignment.CenterHorizontally)
                                     .fillMaxWidth(),
                                 textAlign = TextAlign.Center,
-                                text = "Stundenplan App für das Berufskolleg der Stadt Bottrop\nentwickelt von Paul Brandt aus der 1i22a\n\n" + "Die App wurde in der Programmiersprache Kotlin mit dem Framework Jetpack Compose entwickelt. Damit die App die Stundenpläne von den Servern laden kann, wird die Skrape{It} library verwendet "
+                                text = stringResource(R.string.app_info_description) + stringResource(
+                                    R.string.app_info_long_text
+                                )
                             )
                         }
                     }

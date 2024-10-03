@@ -25,12 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bkbstundenplan.HTMLStrings
+import com.example.bkbstundenplan.R
 import com.example.bkbstundenplan.ViewModelStundenplanData
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
@@ -61,9 +63,9 @@ object StundenplanPage {
                     dialogState = newState
                 })
             Row {
-                Text(text = "Datum:${viewModel.saveHandler.valueDates}  ")
+                Text(text = stringResource(R.string.datum, viewModel.saveHandler.valueDates))
                 Spacer(modifier = Modifier.padding(10.dp))
-                Text(text = "Klasse:${viewModel.saveHandler.valueClasses}  ")
+                Text(text = stringResource(R.string.klasse, viewModel.saveHandler.valueClasses))
 
             }
             Surface {
@@ -202,11 +204,11 @@ object StundenplanPage {
     ) {
         Row {
             Button(onClick = { onStateSelectedChange(DialogStateEnum.DATE) }) {
-                Text(text = "Datum auswählen")
+                Text(text = stringResource(R.string.datum_auswaehlen))
             }
             Spacer(modifier = Modifier.padding(10.dp))
             Button(onClick = { onStateSelectedChange(DialogStateEnum.CLASS) }) {
-                Text(text = "Klasse auswählen")
+                Text(text = stringResource(R.string.klasse_auswaehlen))
             }
         }
     }

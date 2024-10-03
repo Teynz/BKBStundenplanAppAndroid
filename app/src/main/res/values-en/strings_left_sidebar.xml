@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stundenplan">Timetable</string>
+    <string name="einstellungen">Settings</string>
+    <string name="menu">Menu</string>
+    <string name="version">Version: %1$s</string>
+</resources>

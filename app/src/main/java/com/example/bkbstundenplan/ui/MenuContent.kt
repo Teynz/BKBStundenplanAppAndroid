@@ -20,7 +20,8 @@ object MenuContent {
         onStateSettingsChange: () -> Unit,//teil vor -> sind die parameter, der darauffolgende teil sind die Rückgabewerte
         onStateStundenplanChange: () -> Unit, stateSelected: StateSelectedEnum
     ) {
-        NavigationDrawerItem(label = { Text(text = "Stundenplan") },
+        NavigationDrawerItem(
+            label = { Text(text = stringResource(R.string.stundenplan)) },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.stundenplan),
@@ -32,7 +33,8 @@ object MenuContent {
             selected = stateSelected == StateSelectedEnum.STUNDENPLAN,
             onClick = { onStateStundenplanChange() })
 
-        NavigationDrawerItem(label = { Text(text = stringResource(id = R.string.settings)) },
+        NavigationDrawerItem(
+            label = { Text(text = stringResource(R.string.einstellungen)) },
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.settings_icon),

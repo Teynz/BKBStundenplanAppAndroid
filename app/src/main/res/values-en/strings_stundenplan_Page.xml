@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="datum">"Date:%1$s  "</string>
+    <string name="klasse">"Class:%1$s  "</string>
+    <string name="klasse_auswaehlen">Select class</string>
+    <string name="datum_auswaehlen">Select date</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_information">App Information</string>
+    <string name="darkmode">Darkmode</string>
+    <string name="adaptive_farben">Adaptive colors</string>
+    <string name="adaptive_farben_description">Adjusts the app colors to your background</string>
+    <string name="experimenteller_stundenplan">Experimental timetable</string>
+    <string name="experimenteller_stundenplan_description">Activates darkmode compatibility with the timetable and zooms it up</string>
+    <string name="alte_stundenpl_ne">Old Timetables</string>
+    <string name="alte_stundenplaene_description">Shows the timetables of the last 8 weeks. Timetables may be incorrect and belong to another class</string>
+    <string name="app_info_description">Timetable app for the vocational College of Bottrop\ndeveloped by Paul Brandt from the 1i22a\n\n</string>
+    <string name="app_info_long_text">The app was developed with the programming language Kotlin using the Jetpack Compose framework. The Skrape{It} library is used so that the app can load the timetables from the servers</string>
+</resources>

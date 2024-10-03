@@ -131,7 +131,10 @@ fun LeftSideBar(
                 textAlign = TextAlign.Right,
                 lineHeight = 10.sp,
                 fontSize = 10.sp,
-                text = "Version: ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
+                text = stringResource(
+                    R.string.version,
+                    stringResource(R.string.app_Version),
+                ),
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(4.dp)
@@ -151,7 +154,7 @@ fun LeftSideBar(
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.bkb_logo),
-                            contentDescription = "Menu",
+                            contentDescription = stringResource(R.string.menu),
                             tint = Color.Unspecified
                         )
                     }
