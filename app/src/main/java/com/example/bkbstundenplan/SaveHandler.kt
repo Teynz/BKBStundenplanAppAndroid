@@ -23,32 +23,36 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
-
-
-
-class SaveHandler(private val context: Context,private val scope: CoroutineScope,val viewModel: ViewModelStundenplanData) {
-    var saveHandlerInitJob: CompletableJob = Job()
-    companion object SaveNames
-    {
+class SaveHandler(
+    private val context: Context,
+    private val scope: CoroutineScope,
+    val viewModel: ViewModelStundenplanData
+) {
+    companion object SaveNames {
         const val SETTINGS = "settings"
-            const val DARKMODE = "darkmode"
-            const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
+        const val DARKMODE = "darkmode"
+        const val ADAPTIVECOLOR = "adaptiveColor"
+        const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
         const val ALTESTUNDENPLENE = "AlteStundenplaene"
 
-        const val VALUES ="values"
-            const val VALUEDATES = "ValueDates"
-            const val VALUECLASSES = "ValueClasses"
+        const val VALUES = "values"
+        const val VALUEDATES = "ValueDates"
+        const val VALUECLASSES = "ValueClasses"
     }
 
 
     private val Context.dataStoreSettings: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
     private val Context.dataStoreValues: DataStore<Preferences> by preferencesDataStore(name = VALUES)
 
-    private suspend fun <T> getPreference(dataStore: DataStore<Preferences>, key: Preferences.Key<T>, defaultValue: T): T {
+    private suspend fun <T> getPreference(
+        dataStore: DataStore<Preferences>, key: Preferences.Key<T>, defaultValue: T
+    ): T {
         return dataStore.data.map { preferences -> preferences[key] ?: defaultValue }.first()
     }
 
-    private fun <T> savePreference(dataStore: DataStore<Preferences>, key: Preferences.Key<T>, value: T) {
+    private fun <T> savePreference(
+        dataStore: DataStore<Preferences>, key: Preferences.Key<T>, value: T
+    ) {
         scope.launch {
             dataStore.edit { preferences -> preferences[key] = value }
         }
@@ -61,20 +65,39 @@ class SaveHandler(private val context: Context,private val scope: CoroutineScope
             getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
         }
     }
+
     fun saveDarkMode(value: Boolean) {
         darkmode = value
         savePreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), value)
     }
 
+
+    var adaptiveColor: Boolean by mutableStateOf(getAdaptiveColorSave())
+    fun getAdaptiveColorSave(): Boolean {
+        return runBlocking {
+            getPreference(context.dataStoreSettings, booleanPreferencesKey(ADAPTIVECOLOR), true)
+        }
+    }
+
+    fun saveAdaptiveColor(value: Boolean) {
+        adaptiveColor = value
+        savePreference(context.dataStoreSettings, booleanPreferencesKey(ADAPTIVECOLOR), value)
+    }
+
     var experimentellerStundenplan by mutableStateOf(getExperimentellerStundenplanSave())
     private fun getExperimentellerStundenplanSave(): Boolean {
         return runBlocking {
-            getPreference(context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), false)
+            getPreference(
+                context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), false
+            )
         }
     }
+
     fun saveExperimentellerStundenplan(value: Boolean) {
         experimentellerStundenplan = value
-        savePreference(context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value)
+        savePreference(
+            context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value
+        )
     }
 
     var alteStundenplaene by mutableStateOf(getAlteStundenplaeneSave())
@@ -90,13 +113,13 @@ class SaveHandler(private val context: Context,private val scope: CoroutineScope
     }
 
 
-
     var valueDates by mutableIntStateOf(0)
     private fun getValueDatesSave(): Int {
         return runBlocking {
             getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATES), 0)
         }
     }
+
     fun saveValueDates(value: Int) {
         valueDates = value
         scope.launch {
@@ -110,27 +133,44 @@ class SaveHandler(private val context: Context,private val scope: CoroutineScope
             getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0)
         }
     }
+
     fun saveValueClasses(value: Int) {
         valueClasses = value
         scope.launch {
             savePreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), value)
-            }
         }
+    }
 
+    var saveHandlerInitJob: CompletableJob = Job()
 
     init {
-         scope.launch {
-             // Launch each get each future variable with paralell processing
-             val darkModeDeferred = async { getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true) }
-             val experimentellerStundenplanDeferred = async { getPreference(context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), false) }
-             val valueClassesDeferred = async { getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0) }
+        scope.launch {
+            val darkModeDeferred = async {
+                getPreference(
+                    context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true
+                )
+            }
+            val adaptiveColorDeferred = async {
+                getPreference(
+                    context.dataStoreSettings, booleanPreferencesKey(ADAPTIVECOLOR), true
+                )
+            }
+            val experimentellerStundenplanDeferred = async {
+                getPreference(
+                    context.dataStoreSettings,
+                    booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN),
+                    false
+                )
+            }
+            val valueClassesDeferred =
+                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0) }
 
-             // Await results in parallel and assign to properties
-             darkmode = darkModeDeferred.await()
-             experimentellerStundenplan = experimentellerStundenplanDeferred.await()
-             valueClasses = valueClassesDeferred.await()
+            darkmode = darkModeDeferred.await()
+            adaptiveColor = adaptiveColorDeferred.await()
+            experimentellerStundenplan = experimentellerStundenplanDeferred.await()
+            valueClasses = valueClassesDeferred.await()
 
-             viewModel.updateURLStundenplan()
+            viewModel.updateURLStundenplan()
             saveHandlerInitJob.complete()
         }
     }

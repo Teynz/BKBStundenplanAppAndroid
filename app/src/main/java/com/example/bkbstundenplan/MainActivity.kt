@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -57,96 +56,88 @@ class MainActivity : ComponentActivity() {
 
         //Inhalt der APP
         setContent {
-            val appViewModel= viewModel<ViewModelStundenplanData>(
-                factory = object : ViewModelProvider.Factory {
+            //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
+            val appViewModel =
+                viewModel<ViewModelStundenplanData>(factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        @Suppress("UNCHECKED_CAST")
-                        return ViewModelStundenplanData(context = applicationContext) as T
+                        @Suppress("UNCHECKED_CAST") return ViewModelStundenplanData(context = applicationContext) as T
                     }
-                }
-            ) //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
+                })
 
-            BKBStundenplanTheme(darkTheme = appViewModel.saveHandler.darkmode) {
+            BKBStundenplanTheme(viewModel = appViewModel) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
             }
         }
     }
 }
 
+
 @Composable
 fun AppContent(
-    modifier: Modifier = Modifier,
-    appViewModel: ViewModelStundenplanData = viewModel()
+    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
 ) {
     LeftSideBar(modifier, appViewModel)
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeftSideBar(
-    modifier: Modifier = Modifier,
-    appViewModel: ViewModelStundenplanData = viewModel()
+    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
 ) {
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        modifier = modifier,
-        drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
-                Row(
-                    horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Menu",
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    IconButton(onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
-                            }
-                        }
-                    },
-                        content = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.back),
-                                contentDescription = "Zurück Pfeil"
-                            )
-                        })
-                }
-
-                HorizontalDivider()
-
-                MenuContent.LoadMenuContent(
-                    onStateSettingsChange = {
-                        stateSelected =
-                            if (stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
-                            else StateSelectedEnum.SETTINGS
-
-                    },
-                    onStateStundenplanChange = {
-                        stateSelected =
-                            if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
-                            else StateSelectedEnum.STUNDENPLAN
-                    },
-                    stateSelected = stateSelected
-                )
-                Spacer(modifier.weight(1f))
+    ModalNavigationDrawer(drawerState = drawerState, modifier = modifier, drawerContent = {
+        ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
-                    textAlign = TextAlign.Right,
-                    lineHeight = 10.sp,
-                    fontSize = 10.sp,
-                    text = "Version: ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
-                    modifier = Modifier.align(Alignment.End).padding(2.dp)
+                    text = "Menu", modifier = Modifier.padding(16.dp)
                 )
-
+                IconButton(onClick = {
+                    scope.launch {
+                        drawerState.apply {
+                            if (isClosed) open() else close()
+                        }
+                    }
+                }, content = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "Zurück Pfeil"
+                    )
+                })
             }
-        }) {
+
+            HorizontalDivider()
+
+            MenuContent.LoadMenuContent(onStateSettingsChange = {
+                stateSelected =
+                    if (stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
+                    else StateSelectedEnum.SETTINGS
+
+            }, onStateStundenplanChange = {
+                stateSelected =
+                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
+                    else StateSelectedEnum.STUNDENPLAN
+            }, stateSelected = stateSelected
+            )
+            Spacer(modifier.weight(1f))
+            Text(
+                textAlign = TextAlign.Right,
+                lineHeight = 10.sp,
+                fontSize = 10.sp,
+                text = "Version: ${stringResource(R.string.app_Version)} \n ${stringResource(R.string.developedBy)}",
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(4.dp)
+            )
+        }
+    }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
@@ -164,38 +155,26 @@ fun LeftSideBar(
                             tint = Color.Unspecified
                         )
                     }
-
                 })
         }
 
 
         ) { contentPadding ->
             // Screen content
-
             if (stateSelected == StateSelectedEnum.SETTINGS) {
-
                 SettingsPage.MainPage(
                     Modifier
                         .padding(contentPadding)
-                        .fillMaxSize(),
-                    viewModel = appViewModel
+                        .fillMaxSize(), viewModel = appViewModel
                 )
             } else if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
                 StundenplanPage.MainPage(
                     Modifier
                         .padding(contentPadding)
-                        .fillMaxSize(),
-                    viewModel = appViewModel
+                        .fillMaxSize(), viewModel = appViewModel
                 )
             }
         }
     }
 
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun AppPreview() {
-    AppContent()
 }

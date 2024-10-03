@@ -2,20 +2,12 @@ package com.example.bkbstundenplan
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bkbstundenplan.ui.StundenplanPage.DialogStateEnum
 import it.skrape.selects.DocElement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,9 +19,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.Locale
-
-
-//help can be found here: https://developer.android.com/topic/libraries/architecture/viewmodel#kotlin
 
 class ViewModelStundenplanData(context: Context) : ViewModel() {
 
@@ -45,20 +34,13 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("AuthLeak")
     fun updateURLStundenplan() {
         fun classAsString(): String? {
-            if (saveHandler.valueClasses < 10)
-                return "0${saveHandler.valueClasses}"
-            else if (saveHandler.valueClasses > 9)
-                return "${saveHandler.valueClasses}"
+            if (saveHandler.valueClasses < 10) return "0${saveHandler.valueClasses}"
+            else if (saveHandler.valueClasses > 9) return "${saveHandler.valueClasses}"
             return null
         }
         if (saveHandler.valueDates != 0 && saveHandler.valueClasses != 0) {
-
-
             urlStundenplan.value =
                 "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${saveHandler.valueDates}/c/c000${classAsString()}.htm"
-            //"https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${valueDates}/c/c000${classAsString()}.htm"
-
-
         }
     }
 
@@ -78,20 +60,19 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     @Suppress("MemberVisibilityCanBePrivate")
     var tableJob = Job()
-    private fun updateTablesScraped() {
+    fun updateTablesScraped() {
         CoroutineScope(Dispatchers.IO).launch {
             tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
             if (tablesScraped.value == null) {
-                saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0);throw Exception("StundenplanTable is null")
+                saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0)
             }
             tableJob.complete()
         }
     }
 
 
-    private var datesMap: Map<Int, String>? = null
+    var datesMap: Map<Int, String>? = null
         get() {
-
             if (field != null) {
                 return field
             } else {
@@ -103,17 +84,14 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         }
 
 
-    private var classMap: Map<Int, String>? = null
+    var classMap: Map<Int, String>? = null
         get() {
-
             if (field != null) {
                 return field
             } else {
                 runBlocking(Dispatchers.IO) {
                     field = Scraping().getClassesMap(scrapingSelectBoxes)
                 }
-
-
                 return field
             }
         }
@@ -134,141 +112,20 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     }
 
 
-    //Design fehler, Funktion kann in StundenplanPage verlagert werden
-    @Composable
-    fun SelectionDialog(
-        dialogState: DialogStateEnum,
-        ondialogStateChange: (DialogStateEnum) -> Unit
-    ) {
-        if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.CLASS) {
-            Dialog(onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) },
-                content = {
-                    @Suppress("KotlinConstantConditions")
-                    if (dialogState == DialogStateEnum.DATE) {
-                        LazyColumn {
-                            if (datesMap != null) {
-                                if (saveHandler.alteStundenplaene) {
-                                    val weeksBack = 8
-
-                                    val dateValue = (datesMap!!.keys.first() - weeksBack)
-                                    @Suppress("ReplaceRangeToWithRangeUntil")
-                                    for (iter in 0..(weeksBack - 1)) {
-
-
-                                        item {
-                                            Button(
-                                                colors = if ((dateValue + iter) == saveHandler.valueDates) ButtonDefaults.buttonColors(
-                                                    MaterialTheme.colorScheme.tertiary
-                                                )
-                                                else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
-                                                onClick = {
-                                                    saveHandler.valueDates = (dateValue + iter)
-                                                    updateURLStundenplan()
-                                                    updateTablesScraped()
-                                                    ondialogStateChange(DialogStateEnum.NONE)
-                                                })
-                                            {
-
-
-                                                Text(
-                                                    text = "Vor ${8 - iter} ${
-                                                        when (8 - iter) {
-                                                            1 -> "Woche"
-                                                            else -> "Wochen"
-                                                        }
-                                                    }"
-                                                )
-                                            }
-                                        }
-
-
-                                    }
-
-
-                                }
-
-
-
-
-
-
-                                datesMap!!.forEach()
-                                {
-                                    item {
-                                        Button(
-                                            colors = if (it.key == saveHandler.valueDates) ButtonDefaults.buttonColors(
-                                                MaterialTheme.colorScheme.tertiary
-                                            )
-                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
-                                            onClick = {
-                                                saveHandler.valueDates = it.key
-                                                updateURLStundenplan()
-                                                updateTablesScraped()
-                                                ondialogStateChange(DialogStateEnum.NONE)
-                                            })
-                                        {
-                                            Text(text = datesMap!!.getValue(it.key))
-                                        }
-                                    }
-                                }
-                            } else {
-                                item { Text(text = "keine Daten vorhanden") }
-                            }
-                        }
-                    } else if (dialogState == DialogStateEnum.CLASS) {
-                        LazyColumn {
-
-                            if (classMap != null) {
-                                classMap!!.forEach()
-                                {
-                                    item {
-                                        Button(
-                                            colors = if (it.key == saveHandler.valueClasses) ButtonDefaults.buttonColors(
-                                                MaterialTheme.colorScheme.tertiary
-                                            )
-                                            else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
-                                            onClick = {
-                                                saveHandler.saveValueClasses(it.key)
-                                                updateURLStundenplan()
-                                                updateTablesScraped()
-                                                ondialogStateChange(DialogStateEnum.NONE)
-                                            })
-                                        {
-                                            Text(text = classMap!!.getValue(it.key))
-                                        }
-                                    }
-                                }
-                            } else {
-                                item { Text(text = "keine Daten vorhanden") }
-                            }
-                        }
-                    }
-                }
-            )
-        }
-
-    }
-
-
     @SuppressLint("NewApi")
     fun firstMondayofWeek(): String {
         val now = LocalDate.now()
         val fieldISO = WeekFields.of(Locale.GERMANY).dayOfWeek()
         return (now.with(
-            fieldISO,
-            1
+            fieldISO, 1
         )).format(DateTimeFormatter.ofPattern("d.M.yyyy"))
-
-
     }
 
 
     private fun selectCurrentDate() {
-        datesMap!!.forEach()
-        {
+        datesMap!!.forEach() {
             if (it.value == firstMondayofWeek()) {
-                if (saveHandler.valueDates == 0)
-                    saveHandler.valueDates = it.key
+                if (saveHandler.valueDates == 0) saveHandler.valueDates = it.key
             }
             updateURLStundenplan()
             if (saveHandler.experimentellerStundenplan) {
@@ -276,5 +133,4 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             }
         }
     }
-
 }

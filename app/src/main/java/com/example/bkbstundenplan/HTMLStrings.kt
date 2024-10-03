@@ -3,24 +3,29 @@ package com.example.bkbstundenplan
 object HTMLStrings {
 
 
-    private fun addDarkMode():String
-    {
+    private fun addDarkMode(
+        darkBackground: String = "#000000",
+        textcolor: String = "#ffffff",
+        borderColor: String = "#ffffff"
+    ): String {
         return """
             b{
 color: #ffffff;
 } 
         body {
-background-color: #000000;
-color: #ffffff;
+background-color: ${darkBackground};
+color: ${textcolor};
 }  
 td{
-    background-color: #000000;
+    background-color: ${darkBackground};
 }
         """
     }
 
-    fun styleExperimentellerStundenplan(darkMode:Boolean = false, fontmultiplier:Float = 1.5F, border:Float = 2F):String{
-        return """<style>${if(darkMode) addDarkMode() else ""}  
+    fun styleExperimentellerStundenplan(
+        darkMode: Boolean = false, fontmultiplier: Float = 1.5F, border: Float = 2F
+    ): String {
+        return """<style>${if (darkMode) addDarkMode() else ""}  
 table {
 
       margin-left: auto;//To Center Content
@@ -35,7 +40,8 @@ font-size: ${fontmultiplier}em;//also increases table size
 }
 
 </style>
-"""}
+"""
+    }
 
 
 }

@@ -16,7 +16,6 @@ class Scraping {
 
     @SuppressLint("AuthLeak")
     suspend fun getSelectBoxes(): List<DocElement> {
-        //https://www.scrapingbee.com/blog/web-scraping-kotlin/ good guide
         val mainStundenplanURL =
             "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/frames/navbar.htm"
         var selectBoxes: List<DocElement> = listOf()
@@ -28,8 +27,6 @@ class Scraping {
 
             extractIt<ScrapingResult> { results ->
                 htmlDocument {
-
-
                     selectBoxes = ".selectbox" {
                         findAll { this }
                     }
@@ -56,7 +53,6 @@ class Scraping {
         val selectionBoxes = selectionBoxes ?: this.getSelectBoxes()
         val classList: MutableMap<Int, String> = mutableMapOf()
 
-
         selectionBoxes[2].findAll("option").forEach {
             it.attributes["value"]?.let { it1 -> classList[it1.toInt()] = it.text }
         }
@@ -67,7 +63,6 @@ class Scraping {
 
     suspend fun getStundenplanTable(stundenplanURL: String): DocElement? {
         var stundenplan: DocElement? = null
-        //https://docs.skrape.it/docs/dsl/extracting-data-from-websites
 
         skrape(BrowserFetcher) {
             request {
@@ -78,9 +73,7 @@ class Scraping {
                     stundenplan = table {
                         findFirst { this }
                     }
-
                 }
-
             }
         }
         return stundenplan
@@ -92,11 +85,9 @@ class Scraping {
         var lehrerTable: DocElement? = null,
         var faecherTable: DocElement? = null
     )
-
 }
 
 
 data class ScrapingResult(
-    val classes: MutableList<String> = mutableListOf(),
-    var count: Int = 0
+    val classes: MutableList<String> = mutableListOf(), var count: Int = 0
 )

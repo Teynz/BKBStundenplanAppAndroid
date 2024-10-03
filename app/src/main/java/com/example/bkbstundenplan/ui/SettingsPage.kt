@@ -1,32 +1,44 @@
 package com.example.bkbstundenplan.ui
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.window.Dialog
+import com.example.bkbstundenplan.R
 import com.example.bkbstundenplan.ViewModelStundenplanData
+
 
 object SettingsPage {
 
@@ -34,46 +46,60 @@ object SettingsPage {
     @SuppressLint("StateFlowValueCalledInComposition")
     @Composable
     fun MainPage(
-        modifier: Modifier = Modifier,
-        viewModel: ViewModelStundenplanData
+        modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
     ) {
+        var appInfoState by rememberSaveable { mutableStateOf(false) }
 
+        if (appInfoState) {
+            AppInfoDialog(appInfoState = appInfoState, onStateChange = { appInfoState = it })
+        }
 
+        AppInfoDialog(appInfoState = appInfoState, onStateChange = { appInfoState = it })
         Column(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
         ) {
 
-            SwitchAbfrage(
-                mainText = "Darkmode",
+            SwitchAbfrage(mainText = "Darkmode",
                 subText = null,
                 checked = viewModel.saveHandler.darkmode,
-                onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) }
-            )
+                onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) })
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(
-                mainText = "Experimenteller Stundenplan",
+            SwitchAbfrage(mainText = "Adaptive Farben",
+                subText = "Passt App farben dem Hintergrund an.",
+                checked = viewModel.saveHandler.adaptiveColor,
+                onCheckedChange = { viewModel.saveHandler.saveAdaptiveColor(it) })
+            Spacer(modifier = Modifier.padding(10.dp))
+
+            SwitchAbfrage(mainText = "Experimenteller Stundenplan",
                 subText = "Aktiviert Darkmode Kompatitiblität mit dem Stundenplan und vergrößert diesen.",
                 checked = viewModel.saveHandler.experimentellerStundenplan,
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
-                }
-            )
+                })
 
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(
-                mainText = "Alte Stundenpläne",
+            SwitchAbfrage(mainText = "Alte Stundenpläne",
                 subText = "Lässt alte Stundenpläne anzeigen diese werden farblich abgehoben und funktionieren gegebenenfalls nicht (Maximal 8 Wochen)",
                 checked = viewModel.saveHandler.alteStundenplaene,
                 onCheckedChange = {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
-                }
+                })
+
+            Spacer(modifier = Modifier.weight(1F))
+
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(20.dp)
+                    .clickable { appInfoState = true },
+                text = stringResource(id = R.string.app_information),
+                style = TextStyle(fontSize = 10.sp)
             )
-
-
         }
 
     }
@@ -95,15 +121,12 @@ object SettingsPage {
             Column(modifier = Modifier.align(Alignment.CenterVertically)) {
 
                 Text(
-                    text = mainText,
-                    textAlign = TextAlign.Left,
-                    style = TextStyle(fontSize = 15.sp)
+                    text = mainText, textAlign = TextAlign.Left, style = TextStyle(fontSize = 15.sp)
                 )
                 if (subText != null) {
                     Text(
                         modifier = Modifier.widthIn(
-                            min = 0.dp,
-                            max = (LocalConfiguration.current.screenWidthDp * 2 / 3).dp
+                            min = 0.dp, max = (LocalConfiguration.current.screenWidthDp * 2 / 3).dp
                         ),
                         text = subText,
                         textAlign = TextAlign.Left,
@@ -115,74 +138,89 @@ object SettingsPage {
             }
 
             Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
+                checked = checked, onCheckedChange = onCheckedChange
             )
         }
     }
 
 
     @Composable
-    fun Login(
-        modifier: Modifier = Modifier,
-        viewModel: ViewModelStundenplanData
+    fun AppInfoDialog(
+        modifier: Modifier = Modifier, appInfoState: Boolean, onStateChange: (Boolean) -> Unit
     ) {
-        Surface(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
+        if (appInfoState) {
+            Dialog(onDismissRequest = { onStateChange(false) }, content = {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(390.dp)
+                        .padding(11.dp),
 
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TextField(
-                    value = viewModel.loginName,
-                    onValueChange = { viewModel.loginName= it },
-                    label = { Text("Benutzername") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    )
-                )
+                    ) {
 
-                TextField(
-                    value = viewModel.loginPasswort,
-                    onValueChange = { viewModel.loginPasswort = it },
-                    label = { Text("passwort") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    )
-                )
+                    Column() {
+                        Spacer(modifier = Modifier.padding(6.dp))
+                        Text(
+                            modifier = modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center,
+                            text = "App Info"
+                        )
 
-
-            }
-
-
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.background
+                            )
+                        ) {
+                            Text(
+                                modifier = modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                text = "Stundenplan App für das Berufskolleg der Stadt Bottrop\nentwickelt von Paul Brandt aus der 1i22a\n\n" + "Die App wurde in der Programmiersprache Kotlin mit dem Framework Jetpack Compose entwickelt. Damit die App die Stundenpläne von den Servern laden kann, wird die Skrape{It} library verwendet "
+                            )
+                        }
+                    }
+                }
+            })
         }
     }
-
-
 }
 
-@Preview(showBackground = true)
 @Composable
-fun AppPreview() {
-    Surface(modifier = Modifier.fillMaxSize()) {
+fun Login(
+    modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            TextField(
+                value = viewModel.loginName,
+                onValueChange = { viewModel.loginName = it },
+                label = { Text("Benutzername") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+                )
+            )
 
-
-        val appViewModel: ViewModelStundenplanData = viewModel()
-        SettingsPage.MainPage(viewModel = appViewModel)
+            TextField(
+                value = viewModel.loginPasswort,
+                onValueChange = { viewModel.loginPasswort = it },
+                label = { Text("passwort") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+                )
+            )
+        }
     }
-
 }
 
-
-/*todo
-*  Experimenteller Stundenplan Schalter
-*  Custom Timetable
-* 
-*  MorgenAlarm
-* */
