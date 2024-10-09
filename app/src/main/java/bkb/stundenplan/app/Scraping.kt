@@ -1,6 +1,6 @@
 @file:Suppress("NAME_SHADOWING")
 
-package com.example.bkbstundenplan
+package bkb.stundenplan.app
 
 
 import android.annotation.SuppressLint
@@ -64,6 +64,7 @@ class Scraping {
     suspend fun getStundenplanTable(stundenplanURL: String): DocElement? {
         var stundenplan: DocElement? = null
 
+        try {
         skrape(BrowserFetcher) {
             request {
                 url = stundenplanURL
@@ -76,6 +77,10 @@ class Scraping {
                 }
             }
         }
+        } catch (_: Exception) {
+        }
+
+
         return stundenplan
     }
 

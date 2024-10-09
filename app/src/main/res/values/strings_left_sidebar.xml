@@ -3,5 +3,5 @@
     <string name="stundenplan">Stundenplan</string>
     <string name="einstellungen">Einstellungen</string>
     <string name="menu">Menu</string>
-    <string name="version">Version: %1$s</string>
+    <string name="version" translatable="false">Version: %1$s</string>
 </resources>

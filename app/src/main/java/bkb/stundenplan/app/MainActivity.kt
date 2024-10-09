@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan
+package bkb.stundenplan.app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -40,11 +40,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bkbstundenplan.ui.MenuContent
-import com.example.bkbstundenplan.ui.SettingsPage
-import com.example.bkbstundenplan.ui.StateSelectedEnum
-import com.example.bkbstundenplan.ui.StundenplanPage
-import com.example.bkbstundenplan.ui.theme.BKBStundenplanTheme
+import bkb.stundenplan.app.ui.MenuContent
+import bkb.stundenplan.app.ui.SettingsPage
+import bkb.stundenplan.app.ui.StateSelectedEnum
+import bkb.stundenplan.app.ui.StundenplanPage
+import bkb.stundenplan.app.ui.theme.BKBStundenplanTheme
+
+
 import kotlinx.coroutines.launch
 
 

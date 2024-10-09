@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan.ui.theme
+package bkb.stundenplan.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

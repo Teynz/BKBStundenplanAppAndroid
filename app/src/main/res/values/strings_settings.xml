@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_information">App Informationen</string>
+    <string name="app_information">Impressum</string>
     <string name="darkmode">Darkmode</string>
     <string name="adaptive_farben">Adaptive Farben</string>
     <string name="adaptive_farben_description">Passt App farben dem Hintergrund an.</string>
@@ -8,6 +8,10 @@
     <string name="experimenteller_stundenplan_description">Aktiviert Darkmode Kompatitiblität mit dem Stundenplan und vergrößert diesen.</string>
     <string name="alte_stundenpl_ne">Alte Stundenpläne</string>
     <string name="alte_stundenplaene_description">Zeigt die Stundenpläne der letzten 8 Wochen. Es kann passieren, dass diese dann nicht von der ausgewählten klasse sind.</string>
-    <string name="app_info_description">Stundenplan App für das Berufskolleg der Stadt Bottrop\nentwickelt von Paul Brandt aus der 1i22a\n\n</string>
-    <string name="app_info_long_text">"Die App wurde in der Programmiersprache Kotlin mit dem Framework Jetpack Compose entwickelt. Damit die App die Stundenpläne von den Servern laden kann, wird die Skrape{It} library verwendet "</string>
+    <string name="e_mail" translatable="false">"E-Mail: bkb.stundenplan@gmail.com\n\n"</string>
+    <string name="impressum_Credits">"Die App wurde in der Programmiersprache Kotlin mit dem Framework Jetpack Compose entwickelt. Damit die App die Stundenpläne von dem Server laden kann, wird die Skrape{It} library verwendet"</string>
+    <string name="impressum_kontakt">Verantwortlich für den Inhalt:  Paul Brandt\nStudent\nBerufskolleg der Stadt Bottrop\nAn der Berufsschule 20\n46236 Bottrop\nTelefon: 02041 70627–0\nTelefax: 02041 70627–77\nschule@bkb.nrw</string>
+    <string name="impressum_zusatz" translatable="false">Bei Beschwerden Hinweisen oder Anregungen richten sie sich an den momentanen Instandhalter der App\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
+    <string name="impressum_urheberrecht">Urheberrechtshinweis\n\nDer akutelle Quellcode wird auf Anfrage bereitgestellt, es werden zudem regelmäßig neue Versionen an die Schule ausgehändigt. Der App Instandshalter übernimmt keinerlei Haftung für die richtigkeit der Stundenpläne.</string>
+    <string name="odin_der_feini">\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDas ist Odin, Odin ist ein Feini</string>
 </resources>

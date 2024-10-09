@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan.ui
+package bkb.stundenplan.app.ui
 
 
 import androidx.compose.foundation.layout.size
@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.bkbstundenplan.R
+import bkb.stundenplan.app.R
 
 
 object MenuContent {

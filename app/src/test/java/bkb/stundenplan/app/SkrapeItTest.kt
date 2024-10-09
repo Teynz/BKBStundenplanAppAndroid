@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan
+package bkb.example.bkbstundenplan
 
 
 import it.skrape.selects.DocElement

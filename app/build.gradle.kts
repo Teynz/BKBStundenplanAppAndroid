@@ -10,15 +10,15 @@ android {
         resources.excludes.add("META-INF/DEPENDENCIES")
         resources.excludes.add("mozilla/public-suffix-list.txt")
     }
-    namespace = "com.example.bkbstundenplan"
+    namespace = "bkb.stundenplan.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.bkbstundenplan"
+        applicationId = "bkb.stundenplan.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "Alpha 3.0"
+        versionCode = 4
+        versionName = "@string/app_Version"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

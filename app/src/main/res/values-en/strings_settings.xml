@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_information">App Information</string>
+    <string name="app_information">Legal Notice</string>
     <string name="darkmode">Darkmode</string>
     <string name="adaptive_farben">Adaptive colors</string>
     <string name="adaptive_farben_description">Adjusts the app colors to your background</string>
@@ -8,6 +8,9 @@
     <string name="experimenteller_stundenplan_description">Activates darkmode compatibility with the timetable and zooms it up</string>
     <string name="alte_stundenpl_ne">Old Timetables</string>
     <string name="alte_stundenplaene_description">Shows the timetables of the last 8 weeks. Timetables may be incorrect and belong to another class</string>
-    <string name="app_info_description">Timetable app for the vocational College of Bottrop\ndeveloped by Paul Brandt from the 1i22a\n\n</string>
-    <string name="app_info_long_text">The app was developed with the programming language Kotlin using the Jetpack Compose framework. The Skrape{It} library is used so that the app can load the timetables from the servers</string>
+    <string name="impressum_Credits">The app was developed with the programming language Kotlin using the Jetpack Compose framework. The Skrape{It} library is used so that the app can load the timetables from the school server</string>
+    <string name="impressum_kontakt">Responsible for the content:  Paul Brandt\nStudent\nBerufskolleg der Stadt Bottrop\nAn der Berufsschule 20\n46236 Bottrop\nTelefon: 02041 70627–0\nTelefax: 02041 70627–77\nschule@bkb.nrw</string>
+    <string name="impressum_zusatz">If you have any complaints, comments or suggestions, please contact the current app maintainer\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
+    <string name="impressum_urheberrecht">Copyright notice\n\nThe current source code is provided on request, and new versions are regularly handed over to the school. The app maintainer assumes no liability for the accuracy of the timetables.</string>
+    <string name="odin_der_feini">\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThat\'s Odin, Odin is a Feini</string>
 </resources>

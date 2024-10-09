@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan
+package bkb.stundenplan.app
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -63,9 +63,6 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     fun updateTablesScraped() {
         CoroutineScope(Dispatchers.IO).launch {
             tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
-            if (tablesScraped.value == null) {
-                saveHandler.saveValueClasses(0); saveHandler.saveValueDates(0)
-            }
             tableJob.complete()
         }
     }

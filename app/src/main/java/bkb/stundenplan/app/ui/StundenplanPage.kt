@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan.ui
+package bkb.stundenplan.app.ui
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -31,9 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bkbstundenplan.HTMLStrings
-import com.example.bkbstundenplan.R
-import com.example.bkbstundenplan.ViewModelStundenplanData
+import bkb.stundenplan.app.HTMLStrings
+import bkb.stundenplan.app.R
+import bkb.stundenplan.app.ViewModelStundenplanData
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

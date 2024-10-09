@@ -1,6 +1,6 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.example.bkbstundenplan
+package bkb.stundenplan.app
 
 import android.content.Context
 import androidx.compose.runtime.getValue

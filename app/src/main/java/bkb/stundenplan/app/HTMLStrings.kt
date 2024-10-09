@@ -1,4 +1,4 @@
-package com.example.bkbstundenplan
+package bkb.stundenplan.app
 
 object HTMLStrings {
 
