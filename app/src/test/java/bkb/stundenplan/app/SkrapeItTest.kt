@@ -1,4 +1,4 @@
-package bkb.example.bkbstundenplan
+package bkb.stundenplan.app
 
 
 import it.skrape.selects.DocElement
