@@ -14,4 +14,7 @@
     <string name="impressum_zusatz" translatable="false">Bei Beschwerden Hinweisen oder Anregungen richten sie sich an den momentanen Instandhalter der App\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
     <string name="impressum_urheberrecht">Urheberrechtshinweis\n\nDer akutelle Quellcode wird auf Anfrage bereitgestellt, es werden zudem regelmäßig neue Versionen an die Schule ausgehändigt. Der App Instandshalter übernimmt keinerlei Haftung für die richtigkeit der Stundenpläne.</string>
     <string name="odin_der_feini">\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDas ist Odin, Odin ist ein Feini</string>
+    <string name="stundenplan_padding">Stundenplan Seitenabstand</string>
+    <string name="stundenplan_padding_label">Ganze Zahl</string>
+    <string name="stundenplan_padding_description">Verändert die Größe des Stundenplans\n 0 = Maximale Größe</string>
 </resources>

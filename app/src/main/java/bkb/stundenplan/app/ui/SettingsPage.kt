@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +67,7 @@ object SettingsPage {
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = (LocalConfiguration.current.screenWidthDp / 20).dp)
+                .verticalScroll(rememberScrollState())
         ) {
 
             SwitchAbfrage(
@@ -88,6 +91,27 @@ object SettingsPage {
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
                 })
+            Spacer(modifier = Modifier.padding(10.dp))
+
+            TextFieldAbfrage(
+                mainText = stringResource(R.string.stundenplan_padding),
+                subText = stringResource(R.string.stundenplan_padding_description),
+                textLabel = stringResource(R.string.stundenplan_padding_label),
+                value = when (viewModel.saveHandler.valueStundenplanPadding) {
+                    0 -> ""
+                    else -> viewModel.saveHandler.valueStundenplanPadding.toString()
+                },
+                onValueChange = {
+                    try {
+                        viewModel.saveHandler.saveValueStundenplanPadding(it.toInt())
+                    } catch (_: Exception) {
+                        viewModel.saveHandler.saveValueStundenplanPadding(0)
+                    }
+
+                }
+
+            )
+
 
             Spacer(modifier = Modifier.padding(10.dp))
 
@@ -113,6 +137,54 @@ object SettingsPage {
         }
 
     }
+
+
+    @Composable
+    fun TextFieldAbfrage(
+
+        modifier: Modifier = Modifier,
+        mainText: String,
+        subText: String? = null,
+        textLabel: String,
+        value: String,
+        onValueChange: ((String) -> Unit)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            Column(modifier = Modifier.align(Alignment.CenterVertically)) {
+
+                Text(
+                    text = mainText, textAlign = TextAlign.Left, style = TextStyle(fontSize = 15.sp)
+                )
+                if (subText != null) {
+                    Text(
+                        modifier = Modifier.widthIn(
+                            min = 0.dp, max = (LocalConfiguration.current.screenWidthDp * 2 / 3).dp
+                        ),
+                        text = subText,
+                        textAlign = TextAlign.Left,
+                        style = TextStyle(fontSize = 10.sp),
+                        minLines = 2,
+                        softWrap = true
+                    )
+                }
+            }
+
+            TextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = { Text("Label") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                )
+            )
+        }
+    }
+
+
 
     @Composable
     fun SwitchAbfrage(
@@ -168,7 +240,7 @@ object SettingsPage {
                         .padding(5.dp),
                 ) {
 
-                    Column() {
+                    Column {
                         Spacer(modifier = Modifier.padding(6.dp))
                         Text(
                             modifier = modifier.align(Alignment.CenterHorizontally),

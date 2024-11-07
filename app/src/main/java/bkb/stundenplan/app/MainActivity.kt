@@ -1,5 +1,6 @@
 package bkb.stundenplan.app
 
+
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -45,8 +46,6 @@ import bkb.stundenplan.app.ui.SettingsPage
 import bkb.stundenplan.app.ui.StateSelectedEnum
 import bkb.stundenplan.app.ui.StundenplanPage
 import bkb.stundenplan.app.ui.theme.BKBStundenplanTheme
-
-
 import kotlinx.coroutines.launch
 
 
@@ -92,8 +91,10 @@ fun LeftSideBar(
 
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(drawerState = drawerState, modifier = modifier, drawerContent = {
-        ModalDrawerSheet(modifier = Modifier.width(240.dp)) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
             Row(
                 horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
@@ -147,7 +148,11 @@ fun LeftSideBar(
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
                 navigationIcon = {
-                    IconButton(onClick = {
+
+
+                    IconButton(
+                        modifier = Modifier,
+                        onClick = {
                         scope.launch {
                             drawerState.apply {
                                 if (isClosed) open() else close()
@@ -155,11 +160,15 @@ fun LeftSideBar(
                         }
                     }) {
                         Icon(
-                            painter = painterResource(id = R.drawable.bkb_logo),
+                            painter = painterResource(id = R.drawable.baseline_menu_24),
                             contentDescription = stringResource(R.string.menu),
                             tint = Color.Unspecified
                         )
+
+
                     }
+
+
                 })
         }
 

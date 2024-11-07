@@ -13,4 +13,7 @@
     <string name="impressum_zusatz">If you have any complaints, comments or suggestions, please contact the current app maintainer\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
     <string name="impressum_urheberrecht">Copyright notice\n\nThe current source code is provided on request, and new versions are regularly handed over to the school. The app maintainer assumes no liability for the accuracy of the timetables.</string>
     <string name="odin_der_feini">\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThat\'s Odin, Odin is a Feini</string>
+    <string name="stundenplan_padding">Stundenplan Seitenabstand</string>
+    <string name="stundenplan_padding_label">Ganze Zahl</string>
+    <string name="stundenplan_padding_description">Verändert die Größe des Stundenplans 0 = Maximale Größe</string>
 </resources>

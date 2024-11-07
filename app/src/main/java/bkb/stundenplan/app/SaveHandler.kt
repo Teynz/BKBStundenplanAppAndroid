@@ -2,6 +2,7 @@
 
 package bkb.stundenplan.app
 
+import android.app.UiModeManager
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,6 +35,7 @@ class SaveHandler(
         const val ADAPTIVECOLOR = "adaptiveColor"
         const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
         const val ALTESTUNDENPLENE = "AlteStundenplaene"
+        const val STUNDENPLANPADDING = "StundenplanPadding"
 
         const val VALUES = "values"
         const val VALUEDATES = "ValueDates"
@@ -62,7 +64,17 @@ class SaveHandler(
     var darkmode: Boolean by mutableStateOf(getDarkModeSave())
     fun getDarkModeSave(): Boolean {
         return runBlocking {
-            getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
+
+
+            val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+            val mode = uiModeManager.nightMode
+            if (mode == UiModeManager.MODE_NIGHT_NO) {
+                getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), false)
+            } else {
+                getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
+            }
+            /*todo add as system*/
+
         }
     }
 
@@ -88,7 +100,7 @@ class SaveHandler(
     private fun getExperimentellerStundenplanSave(): Boolean {
         return runBlocking {
             getPreference(
-                context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), false
+                context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), true
             )
         }
     }
@@ -103,7 +115,7 @@ class SaveHandler(
     var alteStundenplaene by mutableStateOf(getAlteStundenplaeneSave())
     private fun getAlteStundenplaeneSave(): Boolean {
         return runBlocking {
-            getPreference(context.dataStoreSettings, booleanPreferencesKey(ALTESTUNDENPLENE), false)
+            getPreference(context.dataStoreSettings, booleanPreferencesKey(ALTESTUNDENPLENE), true)
         }
     }
 
@@ -141,6 +153,20 @@ class SaveHandler(
         }
     }
 
+    var valueStundenplanPadding by mutableIntStateOf(2)
+    private fun getValueStundenplanPaddingSave(): Int {
+        return runBlocking {
+            getPreference(context.dataStoreValues, intPreferencesKey(STUNDENPLANPADDING), 2)
+        }
+    }
+
+    fun saveValueStundenplanPadding(value: Int) {
+        valueStundenplanPadding = value
+        scope.launch {
+            savePreference(context.dataStoreValues, intPreferencesKey(STUNDENPLANPADDING), value)
+        }
+    }
+
     var saveHandlerInitJob: CompletableJob = Job()
 
     init {
@@ -159,13 +185,22 @@ class SaveHandler(
                 getPreference(
                     context.dataStoreSettings,
                     booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN),
-                    false
+                    true
                 )
             }
             val valueClassesDeferred =
                 async { getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0) }
+            val valueStundenplanPaddingDeferred =
+                async {
+                    getPreference(
+                        context.dataStoreValues,
+                        intPreferencesKey(STUNDENPLANPADDING),
+                        2
+                    )
+                }
 
             darkmode = darkModeDeferred.await()
+            valueStundenplanPadding = valueStundenplanPaddingDeferred.await()
             adaptiveColor = adaptiveColorDeferred.await()
             experimentellerStundenplan = experimentellerStundenplanDeferred.await()
             valueClasses = valueClassesDeferred.await()

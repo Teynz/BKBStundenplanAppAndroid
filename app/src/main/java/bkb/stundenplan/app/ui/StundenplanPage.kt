@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -26,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -250,8 +248,8 @@ fun TableWebView(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
     AndroidView(modifier = modifier
-        .fillMaxWidth()
-        .padding(horizontal = 2.dp), factory = {
+        .fillMaxSize()
+        .padding(horizontal = viewModel.saveHandler.valueStundenplanPadding.dp), factory = {
         WebView(it).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
@@ -263,17 +261,13 @@ fun TableWebView(
             null, // Base URL (can be null)
             htmlString, "text/html", "UTF-8", null // History URL (can be null)
         )
-
+        it.setInitialScale(1);
         it.getSettings().loadWithOverviewMode = true
         it.getSettings().useWideViewPort = true
+        it.getSettings().setBuiltInZoomControls(true)
+        /*todo
+        *  add javascript*/
     })
 
 }
 
-
-@Preview(showBackground = true, apiLevel = 31, device = "id:pixel_8")
-@Composable
-fun StundenplanAppPreview() {
-    val appViewModel: ViewModelStundenplanData = viewModel()
-    StundenplanPage.MainPage(viewModel = appViewModel)
-}
