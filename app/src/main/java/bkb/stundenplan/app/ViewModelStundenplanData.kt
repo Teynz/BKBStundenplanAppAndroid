@@ -6,6 +6,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.skrape.selects.DocElement
@@ -21,7 +22,8 @@ import java.time.temporal.WeekFields
 import java.util.Locale
 
 class ViewModelStundenplanData(context: Context) : ViewModel() {
-
+    @SuppressLint("StaticFieldLeak")
+    var context = context
     var loginName by mutableStateOf("Schueler")
     var loginPasswort by mutableStateOf("Schueler")
     var saveHandler = SaveHandler(context, viewModelScope, this)
@@ -30,6 +32,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("AuthLeak")
     var urlStundenplan: MutableState<String> =
         mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+
+    var hPadding by mutableStateOf(0.dp)
 
     @SuppressLint("AuthLeak")
     fun updateURLStundenplan() {

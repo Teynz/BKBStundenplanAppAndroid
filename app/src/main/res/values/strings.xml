@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">BKBStundenplan</string>
     <string name="bkb_name" translatable="false">BKB</string>
-    <string name="app_Version" translatable="false">1.0.2</string>
+    <string name="app_Version" translatable="false">1.0.3</string>
     <string name="spenden_link" translatable="false">https://www.paypal.com/qrcodes/managed/86bdca0f-cc29-4c4b-839d-df85481a3ee4?utm_source=consapp_download</string>
 </resources>

@@ -176,7 +176,7 @@ object SettingsPage {
             TextField(
                 value = value,
                 onValueChange = onValueChange,
-                label = { Text("Label") },
+                label = { Text(textLabel) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 )

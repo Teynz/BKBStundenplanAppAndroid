@@ -5,6 +5,7 @@ import android.os.Build
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,14 +18,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -35,6 +40,7 @@ import bkb.stundenplan.app.ViewModelStundenplanData
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
 
 object StundenplanPage {
     enum class DialogStateEnum {
@@ -54,23 +60,25 @@ object StundenplanPage {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Selection(
-                modifier = modifier,
-                viewModel = viewModel,
-                onStateSelectedChange = { newState ->
-                    dialogState = newState
-                })
-            Row {
-                Text(text = stringResource(R.string.datum, viewModel.saveHandler.valueDates))
-                Spacer(modifier = Modifier.padding(10.dp))
-                Text(text = stringResource(R.string.klasse, viewModel.saveHandler.valueClasses))
 
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.datum, viewModel.saveHandler.valueDates),
+                    modifier = Modifier.padding(3.dp)
+                )
+                Selection(modifier = modifier,
+                    viewModel = viewModel,
+                    onStateSelectedChange = { newState ->
+                        dialogState = newState
+                    })
+                Text(text = stringResource(R.string.klasse, viewModel.saveHandler.valueClasses))
             }
             Surface {
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
                     if (viewModel.saveHandler.valueDates != 0 && viewModel.saveHandler.valueClasses != 0) {
                         StundenplanWebview(
+                            modifier = modifier,
                             viewModel = viewModel,
                         )
                     }
@@ -145,7 +153,7 @@ object StundenplanPage {
                                 }
                             }
 
-                            viewModel.datesMap!!.forEach() {
+                            viewModel.datesMap!!.forEach {
                                 item {
                                     Button(colors = if (it.key == viewModel.saveHandler.valueDates) ButtonDefaults.buttonColors(
                                         MaterialTheme.colorScheme.tertiary
@@ -168,7 +176,7 @@ object StundenplanPage {
                 } else if (dialogState == DialogStateEnum.CLASS) {
                     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                         if (viewModel.classMap != null) {
-                            viewModel.classMap!!.forEach() {
+                            viewModel.classMap!!.forEach {
                                 item {
                                     Button(colors = if (it.key == viewModel.saveHandler.valueClasses) ButtonDefaults.buttonColors(
                                         MaterialTheme.colorScheme.tertiary
@@ -215,7 +223,7 @@ object StundenplanPage {
     @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
-        modifier: Modifier = Modifier,
+        modifier: Modifier,
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan) {
@@ -241,33 +249,120 @@ object StundenplanPage {
             })
         }
     }
+
+
 }
+
+
+@Composable
+fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
+
+
+@Composable
+fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
+
 
 @Composable
 fun TableWebView(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
-    AndroidView(modifier = modifier
-        .fillMaxSize()
-        .padding(horizontal = viewModel.saveHandler.valueStundenplanPadding.dp), factory = {
-        WebView(it).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-            )
+
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        val heightCompose = maxHeight
+        val widthCompose = maxWidth
+
+
+        var modifier = modifier
+        val zoomed: MutableState<Boolean> = remember { mutableStateOf(false) }
+        val webViewHeight: MutableState<Int?> = remember { mutableStateOf(null) }
+        val webViewWidth: MutableState<Int?> = remember { mutableStateOf(null) }
+
+
+
+        if (webViewWidth.value != null && webViewHeight.value != null) {
+
+
+            val webViewWidthDp = webViewWidth.value!!.pxToDp()
+            val webViewHeightDp = webViewHeight.value!!.pxToDp()
+
+            val ratio = (heightCompose / webViewHeightDp)
+            try {
+
+
+                viewModel.hPadding = ((widthCompose - (widthCompose * ratio)))
+                // modifier = modifier.padding(horizontal = hPadding)
+
+            } catch (_: Exception) {
+            }
         }
-    }, update = {
-        runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
-        it.loadDataWithBaseURL(
-            null, // Base URL (can be null)
-            htmlString, "text/html", "UTF-8", null // History URL (can be null)
-        )
-        it.setInitialScale(1);
-        it.getSettings().loadWithOverviewMode = true
-        it.getSettings().useWideViewPort = true
-        it.getSettings().setBuiltInZoomControls(true)
-        /*todo
-        *  add javascript*/
-    })
+
+
+
+
+        AndroidView(modifier = modifier, factory = {
+            WebView(it).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+
+                )
+
+
+            }
+        }, update = {
+
+
+            it.settings.apply {
+                loadWithOverviewMode = true
+                useWideViewPort = true
+            }
+            it.java
+            it.evaluateJavascript(
+                """
+    document.body.style.paddingLeft = '300px';
+    document.body.style.paddingRight = '300px';
+    document.body.style.boxSizing = 'border-box';
+    document.body.style.width = '100%';
+""".trimIndent(), null
+            )
+            runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+            val paddedHtmlString =
+                "<div style='padding: 0 300px; box-sizing: border-box;'>$htmlString</div>"
+
+            it.loadDataWithBaseURL(
+                null, // Base URL (can be null)
+                paddedHtmlString, "text/html", "UTF-8", null // History URL (can be null)
+            )
+
+
+            //it.getSettings().useWideViewPort = false
+            //it.setInitialScale(90)
+
+
+            /*
+            if(!zoomed.value) {
+                it.setInitialScale(1)
+                it.getSettings().useWideViewPort = true
+            } else{it.setInitialScale(50)}*/
+
+            it.getSettings().builtInZoomControls = true
+            it.getSettings().displayZoomControls = false
+
+
+            if (!zoomed.value) {
+                it.viewTreeObserver.addOnGlobalLayoutListener {
+
+                    if (it.contentHeight > 0) {
+                        webViewWidth.value = it.width
+                        webViewHeight.value = it.contentHeight
+                        zoomed.value = true
+                    }
+                }
+            }
+
+
+        })
+
+    }
 
 }
 

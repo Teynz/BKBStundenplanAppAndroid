@@ -192,3 +192,10 @@ fun LeftSideBar(
     }
 
 }
+
+/*
+* todo
+*  replace if (!= null)
+* with .let{}
+*
+* */

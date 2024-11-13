@@ -9,29 +9,42 @@ object HTMLStrings {
         borderColor: String = "#ffffff"
     ): String {
         return """
-            b{
-color: #ffffff;
+b{
+    color: #ffffff;
 } 
-        body {
-background-color: ${darkBackground};
-color: ${textcolor};
+body {
+    background-color: ${darkBackground};
+    color: ${textcolor};
 }  
 td{
     background-color: ${darkBackground};
 }
-        """
+"""
     }
 
     fun styleExperimentellerStundenplan(
-        darkMode: Boolean = false, fontmultiplier: Float = 1.5F, border: Float = 2F
+        darkMode: Boolean = false,
+        fontmultiplier: Float = 1.5F,
+        border: Float = 2F
     ): String {
         return """<style>${if (darkMode) addDarkMode() else ""}  
-table {
+           
+  
+ body {
+    padding-left: 300px !important;
+    padding-right: 300px !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+ 
 
+table {
+ 
       margin-left: auto;//To Center Content
       margin-right: auto;
 
     width: 100%;//To Fill Width
+    
     border: ${border}em; //Border Size
 }
 
