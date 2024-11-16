@@ -22,51 +22,70 @@ td{
 """
     }
 
-    fun String.addDivHTML(): String {
-
-        var result = this@addDivHTML.replaceFirst(
-            "<table", "<div class=\"content-container\">\n" +
-                    "<div class=\"table-container\" id=\"divActivites\" name=\"divActivites\" style=\"border-style: solid;border-width: 1px;border-color: #000000\"><table"
-        )
-            .replaceAfterLast(
-                "</table>", "\n" +
-                        "</div>\n" +
-                        "</div>"
-            )
-        /*var result = "<div class=\"content-container\">\n" +
-                "<div class=\"table-container\" id=\"divActivites\" name=\"divActivites\" style=\"border-style: solid;border-width: 1px;border-color: #000000\">" + this@addDivHTML + "</div>\n" +
-                "</div>"*/
-
-        return result
-    }
 
 
     fun styleExperimentellerStundenplan(
         darkMode: Boolean = false,
         fontmultiplier: Float = 1.5F,
-        border: Float = 2F,
-        hPaddingL: Float, hPaddingR: Float
+        border: Float = 1F,
+        BorderColor: String = if (darkMode) "#ffffff" else "#000000"
     ): String {
-        return """<style>${if (darkMode) addDarkMode() else ""}            
-.content-container {
-    padding-left: ${hPaddingL * 100}%;
-    padding-right: ${hPaddingR * 100}%;
-    
-    box-sizing: border-box;
+        return """<style>${if (darkMode) addDarkMode() else ""}  
+ td{
+ 
+height: 1;
+width:1;
 }
 table {
-	border: ${border}em; //Border Size
-    width: 100%%;
-	margin: 0 auto;
-   
-}
-.table-container {
+border: ${border}em; //Border Size
+border-color: ${BorderColor};
+ border-style: solid;
     width: 100%;
-    overflow-x: auto;
+    height: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    text-align: center;
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 0;
+  }
+  
+  /* Adjust the width of the first column */
+  table th:first-child,
+  table td:first-child {
+    width: 1%;
+  }
+  
+  /* Allow text wrapping in the first column */
+  table th:first-child,
+  table td:first-child {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  
+  /* Ensure all content fits without scrolling */
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  :root {
+  --base-font-size: calc(0.25vw + 0.7vh);
 }
+font[size="1"] { font-size: calc(var(--base-font-size) * 1.2); }
+font[size="2"] { font-size: calc(var(--base-font-size) * 1.6); }
+font[size="3"] { font-size: calc(var(--base-font-size) * 2.4); }
+font[size="4"] { font-size: calc(var(--base-font-size) * 2.4); }
+font[size="5"] { font-size: calc(var(--base-font-size) * 2.4); }
+font[size="6"] { font-size: calc(var(--base-font-size) * 2.4); }
+font[size="7"] { font-size: calc(var(--base-font-size) * 2.4); }
 
-font{
-	font-size: ${fontmultiplier}em;//also increases table size
+font[size] {
+  text-align: center;
 }
 </style>
 """

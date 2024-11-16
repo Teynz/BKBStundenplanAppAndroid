@@ -7,11 +7,14 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -36,12 +39,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.HTMLStrings
-import bkb.stundenplan.app.HTMLStrings.addDivHTML
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,7 +82,6 @@ object StundenplanPage {
                 {
                     if (viewModel.saveHandler.valueDates != 0 && viewModel.saveHandler.valueClasses != 0) {
                         StundenplanWebview(
-                            modifier = modifier,
                             viewModel = viewModel,
                         )
                     }
@@ -223,24 +222,31 @@ object StundenplanPage {
         }
     }
 
+    @Composable
+    fun NavigationBarHeight(): PaddingValues {
+
+
+        val insets = WindowInsets.navigationBars
+        val padding = insets.asPaddingValues()
+        return padding
+    }
 
     @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
-        modifier: Modifier,
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan) {
             if (viewModel.tablesScraped.value != null) {
                 Column {
                     TableWebView(
-                        viewModel = viewModel,
-                        htmlString = viewModel.tablesScraped.value.toString()
+                        viewModel = viewModel, htmlString = viewModel.tablesScraped.value.toString()
                     )
+
                 }
             }
         } else if (!viewModel.saveHandler.experimentellerStundenplan) {
-            AndroidView(modifier = modifier.fillMaxSize(), factory = {
+            AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
@@ -250,6 +256,8 @@ object StundenplanPage {
                 it.loadUrl(viewModel.urlStundenplan.value)
                 it.getSettings().loadWithOverviewMode = true
                 it.getSettings().useWideViewPort = true
+                it.getSettings().builtInZoomControls = true
+                it.getSettings().displayZoomControls = false
             })
         }
     }
@@ -266,117 +274,48 @@ fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
 fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 
-@SuppressLint("SetJavaScriptEnabled")
+
 @Composable
 fun TableWebView(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
-    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.CenterStart) {
-        val heightCompose = maxHeight
-        val widthCompose = maxWidth
 
-        var webViewModifier = modifier
-        val zoomed = remember { mutableStateOf(false) }
-        val webViewHeight = remember { mutableStateOf<Int?>(null) }
-        val webViewWidth = remember { mutableStateOf<Int?>(null) }
+    var webViewModifier = modifier
 
-        val webView = remember { mutableStateOf<WebView?>(null) }
-        val contentLoaded = remember { mutableStateOf(false) }
+    val webView = remember { mutableStateOf<WebView?>(null) }
 
-        /*if (webViewWidth.value != null && webViewHeight.value != null) {
-            val webViewWidthDp = webViewWidth.value!!.pxToDp()
-            val webViewHeightDp = webViewHeight.value!!.pxToDp()
+    AndroidView(modifier = webViewModifier.fillMaxSize(), factory = { context ->
+        WebView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            settings.apply {
+                loadWithOverviewMode = true
+                useWideViewPort = false
+                builtInZoomControls = true
+                displayZoomControls = false
 
-            val ratio = (heightCompose / webViewHeightDp)
-            try {
-                viewModel.hPadding = ((widthCompose - (widthCompose * ratio)))
-                // webViewModifier = webViewModifier.padding(horizontal = hPadding)
-            } catch (_: Exception) {
+
             }
-        }*/
-
-        AndroidView(modifier = webViewModifier.fillMaxSize(), factory = { context ->
-            WebView(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                settings.apply {
-                    loadWithOverviewMode = true
-                    useWideViewPort = true
-                    builtInZoomControls = true
-                    displayZoomControls = false
-                    javaScriptEnabled = true
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    //place stuff which should be done when WebView ist finished here
                 }
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        contentLoaded.value = true
-                    }
-                }
-                webView.value = this
             }
-        }, update = { view ->
-            if (!contentLoaded.value) {
-                runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
-                view.loadDataWithBaseURL(
-                    null,
-                    HTMLStrings.styleExperimentellerStundenplan(
-                        viewModel.saveHandler.darkmode,
-                        hPaddingL = 0.2F,
-                        hPaddingR = 0.2F
-                    ) + htmlString.addDivHTML(),
-                    "text/html",
-                    "UTF-8",
-                    null
-                )
-                //view.setInitialScale(90)
-            }
-
-            if (contentLoaded.value && !zoomed.value) {
-                view.evaluateJavascript(
-                    "(function() { return JSON.stringify({width: document.body.scrollWidth, height: document.body.scrollHeight}); })();"
-                ) { result ->
-
-                    try {
-                        val cleanResult = result.replace("\\\"", "\"").trim('"')
-                        val dimensions = Json.decodeFromString<Map<String, Int>>(cleanResult)
-
-                        webViewWidth.value = dimensions["width"]
-                        webViewHeight.value = dimensions["height"]
-                        zoomed.value = true
-
-                        // Adjust the WebView size based on the content
-                        val scale = minOf(
-                            widthCompose.value / webViewWidth.value!!.toFloat(),
-                            heightCompose.value / webViewHeight.value!!.toFloat()
-                        )
-                        /*
-                        view.setInitialScale((scale * 100).toInt())
-
-                        val horizontalPadding =
-                            ((widthCompose.value - (webViewWidth.value!! * scale)) / 2).toInt()
-
-                        view.evaluateJavascript(
-                            """
-                (function() {
-                    document.body.style.padding = '0px ${horizontalPadding}px';
-                    document.body.style.boxSizing = 'border-box';
-                })();
-                """
-                        ) { }
-                        view.setInitialScale((scale * 100).toInt())
-
-*/
-                    } catch (e: Exception) {
-                        println("Error parsing JSON: ${e.message}")
-                        println("Received result: $result")
-                    }
+            webView.value = this
+        }
+    }, update = { view ->
+        view.setInitialScale(5)
+        runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+        view.loadDataWithBaseURL(
+            null, HTMLStrings.styleExperimentellerStundenplan(
+                viewModel.saveHandler.darkmode,
+            ) + htmlString, "text/html", "UTF-8", null
+        )
 
 
-                }
+    })
 
-            }
-        })
-    }
 }
 

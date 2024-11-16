@@ -91,8 +91,9 @@ object SettingsPage {
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
                 })
-            Spacer(modifier = Modifier.padding(10.dp))
 
+
+            /*Spacer(modifier = Modifier.padding(10.dp))
             TextFieldAbfrage(
                 mainText = stringResource(R.string.stundenplan_padding),
                 subText = stringResource(R.string.stundenplan_padding_description),
@@ -110,7 +111,7 @@ object SettingsPage {
 
                 }
 
-            )
+            )*/
 
 
             Spacer(modifier = Modifier.padding(10.dp))
@@ -135,7 +136,6 @@ object SettingsPage {
                 style = TextStyle(fontSize = 10.sp)
             )
         }
-
     }
 
 
@@ -183,7 +183,6 @@ object SettingsPage {
             )
         }
     }
-
 
 
     @Composable
