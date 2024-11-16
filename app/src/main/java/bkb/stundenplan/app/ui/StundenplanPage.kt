@@ -1,9 +1,11 @@
 package bkb.stundenplan.app.ui
 
+//import it.skrape.fetcher.request.Json
 import android.annotation.SuppressLint
 import android.os.Build
 import android.view.ViewGroup
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -18,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,9 +36,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.HTMLStrings
+import bkb.stundenplan.app.HTMLStrings.addDivHTML
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -231,7 +235,7 @@ object StundenplanPage {
                 Column {
                     TableWebView(
                         viewModel = viewModel,
-                        htmlString = HTMLStrings.styleExperimentellerStundenplan(viewModel.saveHandler.darkmode) + (viewModel.tablesScraped.value.toString())
+                        htmlString = viewModel.tablesScraped.value.toString()
                     )
                 }
             }
@@ -262,107 +266,117 @@ fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
 fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun TableWebView(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
-
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.CenterStart) {
         val heightCompose = maxHeight
         val widthCompose = maxWidth
 
+        var webViewModifier = modifier
+        val zoomed = remember { mutableStateOf(false) }
+        val webViewHeight = remember { mutableStateOf<Int?>(null) }
+        val webViewWidth = remember { mutableStateOf<Int?>(null) }
 
-        var modifier = modifier
-        val zoomed: MutableState<Boolean> = remember { mutableStateOf(false) }
-        val webViewHeight: MutableState<Int?> = remember { mutableStateOf(null) }
-        val webViewWidth: MutableState<Int?> = remember { mutableStateOf(null) }
+        val webView = remember { mutableStateOf<WebView?>(null) }
+        val contentLoaded = remember { mutableStateOf(false) }
 
-
-
-        if (webViewWidth.value != null && webViewHeight.value != null) {
-
-
+        /*if (webViewWidth.value != null && webViewHeight.value != null) {
             val webViewWidthDp = webViewWidth.value!!.pxToDp()
             val webViewHeightDp = webViewHeight.value!!.pxToDp()
 
             val ratio = (heightCompose / webViewHeightDp)
             try {
-
-
                 viewModel.hPadding = ((widthCompose - (widthCompose * ratio)))
-                // modifier = modifier.padding(horizontal = hPadding)
-
+                // webViewModifier = webViewModifier.padding(horizontal = hPadding)
             } catch (_: Exception) {
             }
-        }
+        }*/
 
-
-
-
-        AndroidView(modifier = modifier, factory = {
-            WebView(it).apply {
+        AndroidView(modifier = webViewModifier.fillMaxSize(), factory = { context ->
+            WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
-
                 )
-
-
-            }
-        }, update = {
-
-
-            it.settings.apply {
-                loadWithOverviewMode = true
-                useWideViewPort = true
-            }
-            it.java
-            it.evaluateJavascript(
-                """
-    document.body.style.paddingLeft = '300px';
-    document.body.style.paddingRight = '300px';
-    document.body.style.boxSizing = 'border-box';
-    document.body.style.width = '100%';
-""".trimIndent(), null
-            )
-            runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
-            val paddedHtmlString =
-                "<div style='padding: 0 300px; box-sizing: border-box;'>$htmlString</div>"
-
-            it.loadDataWithBaseURL(
-                null, // Base URL (can be null)
-                paddedHtmlString, "text/html", "UTF-8", null // History URL (can be null)
-            )
-
-
-            //it.getSettings().useWideViewPort = false
-            //it.setInitialScale(90)
-
-
-            /*
-            if(!zoomed.value) {
-                it.setInitialScale(1)
-                it.getSettings().useWideViewPort = true
-            } else{it.setInitialScale(50)}*/
-
-            it.getSettings().builtInZoomControls = true
-            it.getSettings().displayZoomControls = false
-
-
-            if (!zoomed.value) {
-                it.viewTreeObserver.addOnGlobalLayoutListener {
-
-                    if (it.contentHeight > 0) {
-                        webViewWidth.value = it.width
-                        webViewHeight.value = it.contentHeight
-                        zoomed.value = true
+                settings.apply {
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    builtInZoomControls = true
+                    displayZoomControls = false
+                    javaScriptEnabled = true
+                }
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        contentLoaded.value = true
                     }
                 }
+                webView.value = this
+            }
+        }, update = { view ->
+            if (!contentLoaded.value) {
+                runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+                view.loadDataWithBaseURL(
+                    null,
+                    HTMLStrings.styleExperimentellerStundenplan(
+                        viewModel.saveHandler.darkmode,
+                        hPaddingL = 0.2F,
+                        hPaddingR = 0.2F
+                    ) + htmlString.addDivHTML(),
+                    "text/html",
+                    "UTF-8",
+                    null
+                )
+                //view.setInitialScale(90)
             }
 
+            if (contentLoaded.value && !zoomed.value) {
+                view.evaluateJavascript(
+                    "(function() { return JSON.stringify({width: document.body.scrollWidth, height: document.body.scrollHeight}); })();"
+                ) { result ->
 
+                    try {
+                        val cleanResult = result.replace("\\\"", "\"").trim('"')
+                        val dimensions = Json.decodeFromString<Map<String, Int>>(cleanResult)
+
+                        webViewWidth.value = dimensions["width"]
+                        webViewHeight.value = dimensions["height"]
+                        zoomed.value = true
+
+                        // Adjust the WebView size based on the content
+                        val scale = minOf(
+                            widthCompose.value / webViewWidth.value!!.toFloat(),
+                            heightCompose.value / webViewHeight.value!!.toFloat()
+                        )
+                        /*
+                        view.setInitialScale((scale * 100).toInt())
+
+                        val horizontalPadding =
+                            ((widthCompose.value - (webViewWidth.value!! * scale)) / 2).toInt()
+
+                        view.evaluateJavascript(
+                            """
+                (function() {
+                    document.body.style.padding = '0px ${horizontalPadding}px';
+                    document.body.style.boxSizing = 'border-box';
+                })();
+                """
+                        ) { }
+                        view.setInitialScale((scale * 100).toInt())
+
+*/
+                    } catch (e: Exception) {
+                        println("Error parsing JSON: ${e.message}")
+                        println("Received result: $result")
+                    }
+
+
+                }
+
+            }
         })
-
     }
-
 }
 
