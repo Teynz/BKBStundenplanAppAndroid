@@ -20,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -123,6 +122,8 @@ object SettingsPage {
                 onCheckedChange = {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
                 })
+            Spacer(modifier = Modifier.padding(10.dp))
+            TeacherSection(viewModel = viewModel)
 
             Spacer(modifier = Modifier.weight(1F))
 
@@ -224,6 +225,24 @@ object SettingsPage {
         }
     }
 
+    @Composable
+    fun TeacherSection(modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData) {
+        Column() {
+            SwitchAbfrage(
+                mainText = stringResource(R.string.lehrer_modus),
+                subText = stringResource(R.string.schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden),
+                checked = viewModel.saveHandler.teacherMode,
+                onCheckedChange = { viewModel.saveHandler.saveTeacherMode(it) })
+
+
+            if (viewModel.saveHandler.teacherMode) {
+                Spacer(modifier = Modifier.padding(5.dp))
+                Login(modifier = Modifier.fillMaxWidth(), viewModel = viewModel)
+            }
+
+        }
+    }
+
 
     @Composable
     fun ImpressumDialog(
@@ -319,32 +338,37 @@ object SettingsPage {
 fun Login(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            TextField(
-                value = viewModel.loginName,
-                onValueChange = { viewModel.loginName = it },
-                label = { Text("Benutzername") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-                )
-            )
 
-            TextField(
-                value = viewModel.loginPasswort,
-                onValueChange = { viewModel.loginPasswort = it },
-                label = { Text("passwort") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-                )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        TextField(
+            modifier = Modifier
+                .weight(1F)
+                .padding(end = 5.dp),
+            value = viewModel.saveHandler.valueLoginName,
+            onValueChange = { viewModel.saveHandler.saveLoginName(it) },
+            label = { Text(stringResource(R.string.anmeldename)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             )
-        }
+        )
+
+        TextField(
+            modifier = Modifier
+                .weight(1F)
+                .padding(start = 5.dp),
+            value = viewModel.saveHandler.valuePassword,
+            onValueChange = { viewModel.saveHandler.savePassword(it) },
+            label = { Text(stringResource(R.string.passwort)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+            )
+        )
+
     }
 }
 

@@ -2,6 +2,8 @@ package bkb.stundenplan.app
 
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -33,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +54,19 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
+
+
     @SuppressLint("StateFlowValueCalledInComposition")
+
+    override fun attachBaseContext(newBase: Context?) {
+        val newOverride = Configuration(newBase?.resources?.configuration)
+        newOverride.fontScale = 1.0f
+        applyOverrideConfiguration(newOverride)
+
+        super.attachBaseContext(newBase)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -146,6 +162,7 @@ fun LeftSideBar(
     }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
+                modifier = Modifier.height(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 50.dp else 110.dp),
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
                 navigationIcon = {
 

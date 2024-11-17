@@ -16,4 +16,8 @@
     <string name="stundenplan_padding">Timetable horizontal padding</string>
     <string name="stundenplan_padding_label">Whole Number</string>
     <string name="stundenplan_padding_description">Changes the horizontal padding of the timetable 0 is max</string>
+    <string name="lehrer_modus">Lehrer Modus</string>
+    <string name="schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden">Schaltet die Lehrer Stundenpläne frei, Anmeldename und Passwort müssen dafür einmalig eingetragen werden</string>
+    <string name="anmeldename">Anmeldename</string>
+    <string name="passwort">Passwort</string>
 </resources>

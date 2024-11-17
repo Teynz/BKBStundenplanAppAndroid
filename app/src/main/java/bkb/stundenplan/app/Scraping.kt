@@ -14,6 +14,36 @@ import it.skrape.selects.html5.table
 
 class Scraping {
 
+
+    @SuppressLint("AuthLeak")
+    suspend fun newGetSelectBoxes(
+        teacherMode: Boolean = false,
+        loginName: String = "schueler",
+        password: String = "stundenplan"
+    ): List<DocElement> {
+        var navBarStundenplanURL =
+            "https://$loginName:$password@stundenplan.bkb.nrw/${if (teacherMode) "lehrer" else "schueler"}/frames/navbar.htm"
+        var selectBoxes: List<DocElement> = listOf()
+        skrape(BrowserFetcher) {
+            request {
+                url = navBarStundenplanURL
+                timeout = 10000
+            }
+
+            extractIt<ScrapingResult> { results ->
+                htmlDocument {
+                    selectBoxes = ".selectbox" {
+                        findAll { this }
+                    }
+                }
+            }
+        }
+        return selectBoxes
+    }
+
+
+
+
     @SuppressLint("AuthLeak")
     suspend fun getSelectBoxes(): List<DocElement> {
         val mainStundenplanURL =

@@ -3,10 +3,7 @@ package bkb.stundenplan.app
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.skrape.selects.DocElement
@@ -24,29 +21,14 @@ import java.util.Locale
 class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
     var context = context
-    var loginName by mutableStateOf("Schueler")
-    var loginPasswort by mutableStateOf("Schueler")
+    var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
+    var Scraping = Scraping()
 
 
-    @SuppressLint("AuthLeak")
-    var urlStundenplan: MutableState<String> =
-        mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
 
-    var hPadding by mutableStateOf(0.dp)
 
-    @SuppressLint("AuthLeak")
-    fun updateURLStundenplan() {
-        fun classAsString(): String? {
-            if (saveHandler.valueClasses < 10) return "0${saveHandler.valueClasses}"
-            else if (saveHandler.valueClasses > 9) return "${saveHandler.valueClasses}"
-            return null
-        }
-        if (saveHandler.valueDates != 0 && saveHandler.valueClasses != 0) {
-            urlStundenplan.value =
-                "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${saveHandler.valueDates}/c/c000${classAsString()}.htm"
-        }
-    }
+
 
 
     private var scrapingSelectBoxes: List<DocElement>? = null
@@ -60,13 +42,14 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             }
         }
 
+
     var tablesScraped: MutableState<DocElement?> = mutableStateOf(null)
 
     @Suppress("MemberVisibilityCanBePrivate")
     var tableJob = Job()
     fun updateTablesScraped() {
         CoroutineScope(Dispatchers.IO).launch {
-            tablesScraped.value = Scraping().getStundenplanTable(urlStundenplan.value)
+            tablesScraped.value = Scraping().getStundenplanTable(urlMaker.urlStundenplan.value)
             tableJob.complete()
         }
     }
@@ -84,8 +67,23 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             }
         }
 
+    /*
+    var typesMap: Map<Int, String>? = null
+        get() {
+            if (field != null) {
+                return field
+            } else {
+                runBlocking(Dispatchers.IO) {
+                    field = Scraping().getTypesMap(scrapingSelectBoxes)
+                }
+                return field
+            }
+        }
 
-    var classMap: Map<Int, String>? = null
+*/
+
+
+    var elementMap: Map<Int, String>? = null
         get() {
             if (field != null) {
                 return field
@@ -103,7 +101,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     init {
         CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
             scrapingSelectBoxes = Scraping().getSelectBoxes()
-            val first = async { classMap = Scraping().getClassesMap(scrapingSelectBoxes) }
+            val first = async { elementMap = Scraping().getClassesMap(scrapingSelectBoxes) }
             val second =
                 async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
             first.await()
@@ -122,13 +120,12 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         )).format(DateTimeFormatter.ofPattern("d.M.yyyy"))
     }
 
-
     private fun selectCurrentDate() {
         datesMap!!.forEach() {
             if (it.value == firstMondayofWeek()) {
-                if (saveHandler.valueDates == 0) saveHandler.valueDates = it.key
+                if (saveHandler.valueDate == 0) saveHandler.valueDate = it.key
             }
-            updateURLStundenplan()
+            urlMaker.updateURL()
             if (saveHandler.experimentellerStundenplan) {
                 updateTablesScraped()
             }

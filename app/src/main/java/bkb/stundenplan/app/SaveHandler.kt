@@ -13,6 +13,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
@@ -37,9 +38,15 @@ class SaveHandler(
         const val ALTESTUNDENPLENE = "AlteStundenplaene"
         const val STUNDENPLANPADDING = "StundenplanPadding"
 
+        const val TEACHERMODE = "TeacherMode"
+        const val LOGINNAME = "LoginName"
+        const val PASSWORD = "Password"
+
+
         const val VALUES = "values"
-        const val VALUEDATES = "ValueDates"
-        const val VALUECLASSES = "ValueClasses"
+        const val VALUEDATE = "ValueDate"
+        const val VALUETYPE = "ValueType"
+        const val VALUEELEMENT = "ValueElement"
     }
 
 
@@ -125,47 +132,90 @@ class SaveHandler(
     }
 
 
-    var valueDates by mutableIntStateOf(0)
-    private fun getValueDatesSave(): Int {
+    var teacherMode by mutableStateOf(getTeacherModeSave())
+    private fun getTeacherModeSave(): Boolean {
         return runBlocking {
-            getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATES), 0)
+            getPreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), false)
         }
     }
 
-    fun saveValueDates(value: Int) {
-        valueDates = value
-        scope.launch {
-            savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATES), value)
-        }
+    fun saveTeacherMode(value: Boolean) {
+        teacherMode = value
+        savePreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), value)
     }
 
-    var valueClasses by mutableIntStateOf(0)
-    private fun getValueClassesSave(): Int {
+
+    var valueLoginName by mutableStateOf(getValueLoginNameSave())
+    private fun getValueLoginNameSave(): String {
         return runBlocking {
-            getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0)
+            getPreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), "")
         }
     }
 
-    fun saveValueClasses(value: Int) {
-        valueClasses = value
+    fun saveLoginName(value: String) {
+        valueLoginName = value
         scope.launch {
-            savePreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), value)
+            savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
         }
     }
 
-    var valueStundenplanPadding by mutableIntStateOf(2)
-    private fun getValueStundenplanPaddingSave(): Int {
+    var valuePassword by mutableStateOf(getValuePasswordSave())
+    private fun getValuePasswordSave(): String {
         return runBlocking {
-            getPreference(context.dataStoreValues, intPreferencesKey(STUNDENPLANPADDING), 2)
+            getPreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), "")
         }
     }
 
-    fun saveValueStundenplanPadding(value: Int) {
-        valueStundenplanPadding = value
+    fun savePassword(value: String) {
+        valuePassword = value
         scope.launch {
-            savePreference(context.dataStoreValues, intPreferencesKey(STUNDENPLANPADDING), value)
+            savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
         }
     }
+
+
+    var valueDate by mutableIntStateOf(getValueDateSave())
+    private fun getValueDateSave(): Int {
+        return runBlocking {
+            getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), 0)
+        }
+    }
+
+    fun saveValueDate(value: Int) {
+        valueDate = value
+        scope.launch {
+            savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), value)
+        }
+    }
+
+    var valueType by mutableStateOf(getValueTypeSave())
+    private fun getValueTypeSave(): String {
+        return runBlocking {
+            getPreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c")
+        }
+    }
+
+    fun saveValueType(value: String) {
+        valueType = value
+        scope.launch {
+            savePreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), value)
+        }
+    }
+
+    var valueElement by mutableIntStateOf(getValueElementSave())
+    private fun getValueElementSave(): Int {
+        return runBlocking {
+            getPreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), 0)
+        }
+    }
+
+    fun saveValueElement(value: Int) {
+        valueElement = value
+        scope.launch {
+            savePreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), value)
+        }
+    }
+
 
     var saveHandlerInitJob: CompletableJob = Job()
 
@@ -188,24 +238,36 @@ class SaveHandler(
                     true
                 )
             }
-            val valueClassesDeferred =
-                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUECLASSES), 0) }
-            val valueStundenplanPaddingDeferred =
+
+            val valueDateDeferred =
+                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), 0) }
+
+            val valueTypeDeferred =
                 async {
                     getPreference(
                         context.dataStoreValues,
-                        intPreferencesKey(STUNDENPLANPADDING),
-                        2
+                        stringPreferencesKey(VALUETYPE),
+                        "c"
                     )
                 }
 
+            val valueElementDeferred =
+                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), 0) }
+
+
+
+
             darkmode = darkModeDeferred.await()
-            valueStundenplanPadding = valueStundenplanPaddingDeferred.await()
+
             adaptiveColor = adaptiveColorDeferred.await()
             experimentellerStundenplan = experimentellerStundenplanDeferred.await()
-            valueClasses = valueClassesDeferred.await()
 
-            viewModel.updateURLStundenplan()
+
+            valueDate = valueDateDeferred.await()
+            valueType = valueTypeDeferred.await()
+            valueElement = valueElementDeferred.await()
+
+            viewModel.urlMaker.updateURL()
             saveHandlerInitJob.complete()
         }
     }

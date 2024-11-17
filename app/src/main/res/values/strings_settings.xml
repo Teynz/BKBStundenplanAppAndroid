@@ -17,4 +17,8 @@
     <string name="stundenplan_padding">Stundenplan Seitenabstand</string>
     <string name="stundenplan_padding_label">Ganze Zahl</string>
     <string name="stundenplan_padding_description">Verändert die Größe des Stundenplans\n 0 = Maximale Größe</string>
+    <string name="lehrer_modus">Lehrer Modus</string>
+    <string name="schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden">Schaltet die Lehrer Stundenpläne frei, Anmeldename und Passwort müssen dafür einmalig eingetragen werden</string>
+    <string name="anmeldename">Anmeldename</string>
+    <string name="passwort">Passwort</string>
 </resources>

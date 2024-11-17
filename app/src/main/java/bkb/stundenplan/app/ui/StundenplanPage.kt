@@ -6,6 +6,7 @@ import android.os.Build
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,11 +33,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,22 +71,20 @@ object StundenplanPage {
             verticalArrangement = Arrangement.Top
         ) {
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.datum, viewModel.saveHandler.valueDates),
-                    modifier = Modifier.padding(3.dp)
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
+            ) {
                 Selection(modifier = modifier,
                     viewModel = viewModel,
                     onStateSelectedChange = { newState ->
                         dialogState = newState
                     })
-                Text(text = stringResource(R.string.klasse, viewModel.saveHandler.valueClasses))
             }
             Surface {
                 if (!LocalInspectionMode.current) //returns false if preview
                 {
-                    if (viewModel.saveHandler.valueDates != 0 && viewModel.saveHandler.valueClasses != 0) {
+                    if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
                         StundenplanWebview(
                             viewModel = viewModel,
                         )
@@ -136,14 +140,15 @@ object StundenplanPage {
                                 val dateValue = (viewModel.datesMap!!.keys.first() - weeksBack)
                                 @Suppress("ReplaceRangeToWithRangeUntil") for (iter in 0..(weeksBack - 1)) {
                                     item {
-                                        Button(colors = if ((dateValue + iter) == viewModel.saveHandler.valueDates) ButtonDefaults.buttonColors(
+                                        Button(
+                                            colors = if ((dateValue + iter) == viewModel.saveHandler.valueDate) ButtonDefaults.buttonColors(
                                             MaterialTheme.colorScheme.tertiary
                                         )
                                         else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
                                             onClick = {
-                                                viewModel.saveHandler.valueDates =
+                                                viewModel.saveHandler.valueDate =
                                                     (dateValue + iter)
-                                                viewModel.updateURLStundenplan()
+                                                viewModel.urlMaker.updateURL()
                                                 viewModel.updateTablesScraped()
                                                 ondialogStateChange(DialogStateEnum.NONE)
                                             }) {
@@ -158,13 +163,14 @@ object StundenplanPage {
 
                             viewModel.datesMap!!.forEach {
                                 item {
-                                    Button(colors = if (it.key == viewModel.saveHandler.valueDates) ButtonDefaults.buttonColors(
+                                    Button(
+                                        colors = if (it.key == viewModel.saveHandler.valueDate) ButtonDefaults.buttonColors(
                                         MaterialTheme.colorScheme.tertiary
                                     )
                                     else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
                                         onClick = {
-                                            viewModel.saveHandler.valueDates = it.key
-                                            viewModel.updateURLStundenplan()
+                                            viewModel.saveHandler.valueDate = it.key
+                                            viewModel.urlMaker.updateURL()
                                             viewModel.updateTablesScraped()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         }) {
@@ -178,20 +184,21 @@ object StundenplanPage {
                     }
                 } else if (dialogState == DialogStateEnum.CLASS) {
                     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (viewModel.classMap != null) {
-                            viewModel.classMap!!.forEach {
+                        if (viewModel.elementMap != null) {
+                            viewModel.elementMap!!.forEach {
                                 item {
-                                    Button(colors = if (it.key == viewModel.saveHandler.valueClasses) ButtonDefaults.buttonColors(
+                                    Button(
+                                        colors = if (it.key == viewModel.saveHandler.valueElement) ButtonDefaults.buttonColors(
                                         MaterialTheme.colorScheme.tertiary
                                     )
                                     else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
                                         onClick = {
-                                            viewModel.saveHandler.saveValueClasses(it.key)
-                                            viewModel.updateURLStundenplan()
+                                            viewModel.saveHandler.saveValueElement(it.key)
+                                            viewModel.urlMaker.updateURL()
                                             viewModel.updateTablesScraped()
                                             ondialogStateChange(DialogStateEnum.NONE)
                                         }) {
-                                        Text(text = viewModel.classMap!!.getValue(it.key))
+                                        Text(text = viewModel.elementMap!!.getValue(it.key))
                                     }
                                 }
                             }
@@ -212,12 +219,56 @@ object StundenplanPage {
         onStateSelectedChange: (DialogStateEnum) -> Unit
     ) {
         Row {
-            Button(onClick = { onStateSelectedChange(DialogStateEnum.DATE) }) {
-                Text(text = stringResource(R.string.datum_auswaehlen))
+            Button(
+                onClick = { onStateSelectedChange(DialogStateEnum.DATE) },
+                contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
+                modifier = Modifier.height(40.dp)
+            )
+            {
+                Column(modifier = Modifier.padding(0.dp)) {
+                    Text(
+                        text = stringResource(R.string.datum_auswaehlen),
+                        modifier = Modifier.padding(0.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.datum, viewModel.saveHandler.valueDate),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(0.dp),
+                        lineHeight = 8.sp,
+                        fontSize = 8.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
             }
-            Spacer(modifier = Modifier.padding(10.dp))
-            Button(onClick = { onStateSelectedChange(DialogStateEnum.CLASS) }) {
-                Text(text = stringResource(R.string.klasse_auswaehlen))
+            Spacer(
+                modifier = Modifier
+                    .width(10.dp)
+                    .border(2.dp, Color.Red)
+            )
+
+            Button(
+                onClick = { onStateSelectedChange(DialogStateEnum.CLASS) },
+                modifier = Modifier.height(40.dp),
+                contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
+            )
+            {
+                Column {
+                    Text(
+                        text = stringResource(R.string.klasse_auswaehlen),
+                        modifier = Modifier.padding(0.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.klasse, viewModel.saveHandler.valueElement),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(0.dp),
+                        lineHeight = 8.sp,
+                        fontSize = 8.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
@@ -253,7 +304,7 @@ object StundenplanPage {
                     )
                 }
             }, update = {
-                it.loadUrl(viewModel.urlStundenplan.value)
+                it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
                 it.getSettings().loadWithOverviewMode = true
                 it.getSettings().useWideViewPort = true
                 it.getSettings().builtInZoomControls = true
@@ -272,7 +323,6 @@ fun Dp.dpToPx() = with(LocalDensity.current) { this@dpToPx.toPx() }
 
 @Composable
 fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
-
 
 
 @Composable
