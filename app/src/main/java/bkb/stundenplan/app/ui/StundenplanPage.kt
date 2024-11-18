@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.HTMLStrings
 import bkb.stundenplan.app.R
@@ -112,12 +115,12 @@ object StundenplanPage {
         ondialogStateChange: (DialogStateEnum) -> Unit
     ) {
         if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
-            Dialog(onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) })
-            {
+            Dialog(
+                properties = DialogProperties(usePlatformDefaultWidth = false),
+                onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .padding(top = 6.dp, bottom = 6.dp)
                         .background(Color.White)
                 ) {
                     Row(
@@ -140,6 +143,14 @@ object StundenplanPage {
                                 textAlign = TextAlign.Center,
                                 text = "Datum auswählen",
                                 color = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                            SectionSelectionDialog(
+                                modifier = modifier,
+                                map = viewModel.datesPairMap?.second,
+                                rowsOfSections = 2,
+                                onButtonClick = { viewModel.saveHandler.valueDate = it },
+                                viewModel = viewModel
+
                             )
 
                         }
@@ -281,20 +292,40 @@ object StundenplanPage {
     }
 
     @Composable
-    fun <T> SectionSelectionDialog(
+    inline fun <reified T : Any> SectionSelectionDialog(
         modifier: Modifier = Modifier,
-        map: Map<reified T, String>,
-    rowsOfSections: Int,
-    onButtonClick: (T) -> Unit
-    )
-    {
+        map: Map<T, String>?,
+        rowsOfSections: Int,
+        crossinline onButtonClick: (T) -> Unit,
+        viewModel: ViewModelStundenplanData
+    ) {
 
+
+        map?.let { map ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(rowsOfSections),
+                modifier = modifier
+            ) {
+                items(map.size) { mapCount ->
+                    Button(
+                        onClick = { onButtonClick(map.keys.elementAt(mapCount)) },
+                        modifier = Modifier.padding(4.dp)
+                    ) {
+                        Text(text = map.values.elementAt(mapCount))
+                    }
+                }
+            }
+        } ?: run { Text(text = "keine Daten vorhanden") }
 
     }
 
 
-
-
+    //                                    Button(onClick = {}
+//
+//                                    ) {
+//                                        Text(text = "mapC: $mapCount")
+//
+//                                    }
 
     @Composable
     fun Selection(
