@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id ("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.compose.compiler)
+
 }
 
 android {
@@ -52,7 +53,6 @@ android {
 }
 
 dependencies {
-   // implementation("org.jetbrains.kotlin:kotlin-parcelize-runtime:1.7.20") // Added for runtime support
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -62,10 +62,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.material)
-    implementation(libs.androidx.runner)
+    //implementation(libs.androidx.runner) removed 18.11.24
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // androidTestImplementation(libs.androidx.espresso.core) removed 18.11.24 typically used for ui testing
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -74,24 +74,20 @@ dependencies {
     implementation(libs.skrapeit)
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-
-
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     // ViewModel utilities for Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     // LiveData
-    implementation(libs.androidx.lifecycle.livedata.ktx)
+    //implementation(libs.androidx.lifecycle.livedata.ktx) removed 18.11.24
     // Lifecycle utilities for Compose
     implementation(libs.lifecycle.runtime.compose)
 
     // Saved state module for ViewModel
-    implementation(libs.androidx.lifecycle.viewmodel.savedstate)
+    //implementation(libs.androidx.lifecycle.viewmodel.savedstate) removed 18.11.24
 
     // Annotation processor
-    kapt(libs.androidx.lifecycle.compiler)
+    //kapt(libs.androidx.lifecycle.compiler) removed 18.11.24
     // alternately - if using Java8, use the following instead of lifecycle-compiler
     //implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 

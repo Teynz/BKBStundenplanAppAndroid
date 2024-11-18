@@ -80,6 +80,8 @@ class MainActivity : ComponentActivity() {
                         @Suppress("UNCHECKED_CAST") return ViewModelStundenplanData(context = applicationContext) as T
                     }
                 })
+            appViewModel.heightTopAppBar.value =
+                if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 50.dp else 110.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
@@ -162,7 +164,7 @@ fun LeftSideBar(
     }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
-                modifier = Modifier.height(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 50.dp else 110.dp),
+                modifier = Modifier.height(appViewModel.heightTopAppBar.value),
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
                 navigationIcon = {
 

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import it.skrape.selects.DocElement
@@ -20,15 +21,10 @@ import java.util.Locale
 
 class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
-    var context = context
     var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
-    var Scraping = Scraping()
-
-
-
-
-
+    var scraping = Scraping()
+    var heightTopAppBar = mutableStateOf(80.dp)
 
 
     private var scrapingSelectBoxes: List<DocElement>? = null
@@ -37,7 +33,46 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             if (field != null) {
                 return field
             } else {
-                runBlocking { field = Scraping().getSelectBoxes() }
+                runBlocking { field = scraping.getSelectBoxes() }
+                return field
+            }
+        }
+
+
+    var datesPairMap: Pair<String?, Map<Int, String>?>? = null
+        get() {
+            if (field != null) {
+                return field
+            } else {
+                runBlocking(Dispatchers.IO) {
+                    field = scraping.getDatesPairMap(scrapingSelectBoxes)
+                }
+                return field
+            }
+        }
+
+
+    var typesMap: Pair<String?, Map<String, String>?>? = null
+        get() {
+            if (field != null) {
+                return field
+            } else {
+                runBlocking(Dispatchers.IO) {
+                    field = Scraping().getTypesPairMap(scrapingSelectBoxes)
+                }
+                return field
+            }
+        }
+
+
+    var elementMap: Pair<String?, Map<Int, String>?>? = null
+        get() {
+            if (field != null) {
+                return field
+            } else {
+                runBlocking(Dispatchers.IO) {
+                    field = scraping.getElementsPairMap(scrapingSelectBoxes)
+                }
                 return field
             }
         }
@@ -49,59 +84,23 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var tableJob = Job()
     fun updateTablesScraped() {
         CoroutineScope(Dispatchers.IO).launch {
-            tablesScraped.value = Scraping().getStundenplanTable(urlMaker.urlStundenplan.value)
+            tablesScraped.value = scraping.getStundenplanTable(urlMaker.urlStundenplan.value)
             tableJob.complete()
         }
     }
 
 
-    var datesMap: Map<Int, String>? = null
-        get() {
-            if (field != null) {
-                return field
-            } else {
-                runBlocking(Dispatchers.IO) {
-                    field = Scraping().getDatesMap(scrapingSelectBoxes)
-                }
-                return field
-            }
-        }
-
-    /*
-    var typesMap: Map<Int, String>? = null
-        get() {
-            if (field != null) {
-                return field
-            } else {
-                runBlocking(Dispatchers.IO) {
-                    field = Scraping().getTypesMap(scrapingSelectBoxes)
-                }
-                return field
-            }
-        }
-
-*/
 
 
-    var elementMap: Map<Int, String>? = null
-        get() {
-            if (field != null) {
-                return field
-            } else {
-                runBlocking(Dispatchers.IO) {
-                    field = Scraping().getClassesMap(scrapingSelectBoxes)
-                }
-                return field
-            }
-        }
+
 
     @Suppress("MemberVisibilityCanBePrivate")
     val viewModelInitJob = Job()
 
     init {
         CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
-            scrapingSelectBoxes = Scraping().getSelectBoxes()
-            val first = async { elementMap = Scraping().getClassesMap(scrapingSelectBoxes) }
+            scrapingSelectBoxes = scraping.getSelectBoxes()
+            val first = async { elementMap = scraping.getElementsPairMap(scrapingSelectBoxes) }
             val second =
                 async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
             first.await()
@@ -121,9 +120,10 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     }
 
     private fun selectCurrentDate() {
-        datesMap!!.forEach() {
+
+        datesPairMap?.second?.forEach {
             if (it.value == firstMondayofWeek()) {
-                if (saveHandler.valueDate == 0) saveHandler.valueDate = it.key
+                saveHandler.valueDate = it.key
             }
             urlMaker.updateURL()
             if (saveHandler.experimentellerStundenplan) {

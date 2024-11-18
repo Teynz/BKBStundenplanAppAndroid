@@ -51,8 +51,8 @@ class SkrapeItTest {
         runBlocking {
             val scrapingObject = Scraping()
             println("\nContent:  \n")
-            
-            scrapingObject.getDatesMap(null).forEach()
+
+            scrapingObject.getDatesPairMap(null).forEach()
             { entry ->
                 println("${entry.key} | ${entry.value}")
             }
@@ -65,7 +65,7 @@ class SkrapeItTest {
             val scrapingObject = Scraping()
             println("\nContent:\n")
 
-            scrapingObject.getDatesMap(null).forEach()
+            scrapingObject.getDatesPairMap(null).forEach()
             { index ->
                 println("${index.key} | ${index.value}")
 
@@ -81,7 +81,7 @@ class SkrapeItTest {
             val scrapingObject = Scraping()
             println("\nContent:\n")
 
-            scrapingObject.getClassesMap(null).forEach()
+            scrapingObject.getElementsPairMap(null).forEach()
             { index ->
                 println("${index.key} | ${index.value}")
 
