@@ -353,7 +353,8 @@ fun Login(
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-            )
+            ),
+
         )
 
         TextField(
@@ -365,7 +366,7 @@ fun Login(
             label = { Text(stringResource(R.string.passwort)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
             )
         )
 

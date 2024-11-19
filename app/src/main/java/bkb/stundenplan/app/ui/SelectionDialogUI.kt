@@ -2,6 +2,7 @@ package bkb.stundenplan.app.ui
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +42,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -56,6 +58,7 @@ fun SelectionDialog(
     val orientationVertical by remember {
         mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
     }
+    val horizontalPaddingRowsSpacer = if (orientationVertical) 10.dp else 3.dp
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
         viewModel.elementMap?.second?.filter { entry ->
@@ -66,15 +69,12 @@ fun SelectionDialog(
 
 
     if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
-        Dialog(
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-            onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }
-        ) {
+        Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
+            onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
             Column(
                 Modifier
                     .padding(horizontal = if (orientationVertical) 10.dp else 80.dp)
-                    .fillMaxSize()
-                    .background(Color.White),
+                    .fillMaxSize(),
             ) {
                 // This column will take all available space except for the bottom row
                 Column(modifier = Modifier.weight(1f)) {
@@ -88,14 +88,18 @@ fun SelectionDialog(
                             verticalArrangement = Arrangement.Bottom,
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
+                            val weeksBackMap =
+                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.datesPairMap?.second) else null
                             SectionSelectionDialog(
                                 modifier = Modifier,
                                 map = viewModel.datesPairMap?.second,
+                                secondMap = weeksBackMap,
                                 rowsOfSections = 1,
-                                onButtonClick = { viewModel.saveHandler.saveValueDate(it) }
+                                onButtonClick = { viewModel.saveHandler.saveValueDate(it) },
+                                swapOrderBeforeDisplay = true
                             )
                         }
-                        Spacer(modifier = Modifier.padding(end = 10.dp))
+                        Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
                         if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.isNotEmpty() && viewModel.saveHandler.valuePassword.isNotEmpty()) {
                             Column(
                                 verticalArrangement = Arrangement.Bottom,
@@ -108,29 +112,46 @@ fun SelectionDialog(
                                     onButtonClick = { viewModel.saveHandler.saveValueType(it) }
                                 )
                             }
-                            Spacer(modifier = Modifier.padding(end = 10.dp))
+                            Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
                         }
                         Column(
                             verticalArrangement = Arrangement.Bottom,
                             modifier = Modifier
                                 .weight(1F)
-                                .background(Color.Blue)
                         ) {
-                            SectionSelectionDialog(
-                                modifier = Modifier,
+                            SectionSelectionDialog(modifier = Modifier.weight(1F),
                                 map = filteredElementMap,
                                 rowsOfSections = columnMultiplier,
-                                onButtonClick = { viewModel.saveHandler.saveValueElement(it) }
-                            )
+                                onButtonClick = { viewModel.saveHandler.saveValueElement(it) })
+
+                            if (!orientationVertical) {
+                                Row(horizontalArrangement = Arrangement.Center) {
+                                    FindAndSave(
+                                        searchFilter,
+                                        ondialogStateChange,
+                                        modifierSearchTextField = Modifier
+                                            .height(60.dp)
+                                            .weight(0.65F),
+                                        modifierSaveButton = Modifier
+                                            .height(60.dp)
+                                            .weight(0.35F)
+
+                                    )
+                                }
+                            }
                         }
+
+
                     }
                 }
+
 
                 // Bottom row with TextField and Button
                 if (orientationVertical) {
                     Row(modifier = Modifier.padding(top = 5.dp)) {
                         FindAndSave(
-                            searchFilter, ondialogStateChange,
+                            searchFilter,
+                            ondialogStateChange,
                             modifierSearchTextField = Modifier
                                 .height(60.dp)
                                 .weight(0.65F),
@@ -144,6 +165,51 @@ fun SelectionDialog(
         }
     }
 }
+
+
+fun weeksAgo(
+    datesMap: Map<Int, String>?,
+    weeksAgo: Int = 8
+): Map<Int, String> {
+    val firstValue = datesMap?.keys?.first()
+
+    val newMap = mutableMapOf<Int, String>()
+
+    for (weekCounter in weeksAgo downTo 1) {
+        val entryValue = firstValue?.minus(weekCounter)
+        val dateString = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+                LocalDate.parse(datesMap?.values?.first(), formatter)
+                    .minusWeeks(weekCounter.toLong())
+                    .format(formatter)
+            }
+            else {
+                null
+            }
+        }
+        catch (_: Exception) {
+            null
+        }
+
+        val formattedDate = dateString ?: "Vor $weekCounter ${
+            when (weekCounter) {
+                1 -> "Woche"
+                else -> "Wochen"
+            }
+        }"
+
+        newMap.let { newMapIt ->
+            entryValue?.let { entryValueIt ->
+                newMapIt.put(entryValueIt, formattedDate)
+            }
+        }
+
+    }
+
+    return newMap
+}
+
 
 @Composable
 private fun FindAndSave(
@@ -159,7 +225,7 @@ private fun FindAndSave(
         label = { Text("Element Suchen") },
         singleLine = true,
         keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+            keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
         ),
         shape = RoundedCornerShape(80.dp)
     )
@@ -172,8 +238,7 @@ private fun FindAndSave(
         Text(
             modifier = Modifier
                 .background(
-                    MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(80.dp)
+                    MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(80.dp)
                 )
                 .clip(RoundedCornerShape(80.dp)),
             textAlign = TextAlign.Center,
@@ -183,6 +248,9 @@ private fun FindAndSave(
     }
 }
 
+fun <K, V> Map<K, V>.reverse(): Map<K, V> {
+    return this.entries.reversed().associate { it.toPair() }
+}
 
 @Composable
 inline fun <reified T : Any> SectionSelectionDialog(
@@ -191,36 +259,41 @@ inline fun <reified T : Any> SectionSelectionDialog(
     secondMap: Map<T, String>? = null,
     rowsOfSections: Int,
     crossinline onButtonClick: (T) -> Unit,
-    fontSize: TextUnit = 16.sp
+    fontSize: TextUnit = 16.sp,
+    reverseLayout: Boolean = true,
+    swapOrderBeforeDisplay: Boolean = false
 ) {
 
-    val newMap = secondMap?.let { secondMapIt ->
+    var newMap = secondMap?.let { secondMapIt ->
         map?.let { map ->
             secondMapIt + map
         }
     } ?: map
 
+    if (swapOrderBeforeDisplay) newMap = newMap?.reverse()
 
     newMap?.let { mapIt ->
         LazyVerticalGrid(
             verticalArrangement = Arrangement.Bottom,
             columns = GridCells.Fixed(rowsOfSections),
-            modifier = modifier
+            modifier = modifier,
+            reverseLayout = reverseLayout
         ) {
             items(mapIt.size) { mapCount ->
                 Button(
                     onClick = { onButtonClick(mapIt.keys.elementAt(mapCount)) },
                     modifier = Modifier.padding(4.dp),
                     contentPadding = PaddingValues(8.dp),
-                    colors = if ((secondMap?.containsValue(mapIt.values.elementAt(mapCount))) == true
-                    ) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary) else ButtonDefaults.buttonColors(
+                    colors = if ((secondMap?.containsValue(mapIt.values.elementAt(mapCount))) == true) ButtonDefaults.buttonColors(
+                        MaterialTheme.colorScheme.tertiary
+                    )
+                    else ButtonDefaults.buttonColors(
                         MaterialTheme.colorScheme.primary
                     )
 
                 ) {
                     Text(
-                        text = mapIt.values.elementAt(mapCount),
-                        fontSize = fontSize
+                        text = mapIt.values.elementAt(mapCount), fontSize = fontSize
                     )
                 }
             }

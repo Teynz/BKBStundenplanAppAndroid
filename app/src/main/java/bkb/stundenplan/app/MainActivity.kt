@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     }
                 })
             appViewModel.heightTopAppBar.value =
-                if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 50.dp else 110.dp
+                if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 60.dp else 100.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)

@@ -7,7 +7,6 @@ import android.content.res.Configuration
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -57,62 +56,92 @@ object StundenplanPage {
         }
 
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
-        Box(
-            contentAlignment = Alignment.TopStart
-        ) {
 
-            if (orientationVertical) Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
+
+        if (orientationVertical) {
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
-                    horizontalArrangement = Arrangement.Absolute.SpaceEvenly
-                ) {
-                    Selection(modifier = modifier,
-                        viewModel = viewModel,
-                        onStateSelectedChange = { newState ->
-                            dialogState = newState
-                        })
-                }
-            }
-            if (!orientationVertical) Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
-            ) {
-                Selection(modifier = modifier,
+                Selection(modifier = Modifier
+                    .padding(5.dp)
+                    .height(45.dp),
                     viewModel = viewModel,
                     onStateSelectedChange = { newState ->
                         dialogState = newState
                     })
-            }
 
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
 
-            /*if (!LocalInspectionMode.current) //returns false if preview
-                {
                     if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
                         StundenplanWebview(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
                             viewModel = viewModel,
                         )
                     }
-                } else {
-                    Text(
-                        modifier = modifier, text = "WebView not available in preview"
-                    )
-                }*/
+                }
 
 
-
-            SelectionDialog(
-                modifier = modifier,
-                dialogState = dialogState,
-                ondialogStateChange = { newState ->
-                    dialogState = newState
-                })
+            }
 
         }
+        else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()
+            ) {
+
+                Selection(
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .height(50.dp),
+                    viewModel = viewModel,
+                    onStateSelectedChange = { newState ->
+                        dialogState = newState
+                    })
+                Box(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
+                        StundenplanWebview(
+                            modifier = modifier.padding(8.dp),
+                            viewModel = viewModel,
+                        )
+                    }
+                }
+
+            }
+        }
+
+
+        /*if (!LocalInspectionMode.current) //returns false if preview
+            {
+                if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
+                    StundenplanWebview(
+                        viewModel = viewModel,
+                    )
+                }
+            } else {
+                Text(
+                    modifier = modifier, text = "WebView not available in preview"
+                )
+            }*/
+
+
+
+        SelectionDialog(modifier = modifier,
+            dialogState = dialogState,
+            ondialogStateChange = { newState ->
+                dialogState = newState
+            })
+
     }
 
 
@@ -125,16 +154,21 @@ object StundenplanPage {
         Button(
             onClick = { onStateSelectedChange(DialogStateEnum.DATE) },
             contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
-            modifier = Modifier.height(40.dp)
+            modifier = modifier
         ) {
-            Column(modifier = Modifier.padding(0.dp)) {
+            Column(
+                modifier = Modifier.padding(bottom = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
                     text = stringResource(R.string.ausw_hlen), modifier = Modifier.padding(0.dp)
                 )
                 Text(
-                    text = "${stringResource(R.string.datum)}: ${viewModel.saveHandler.valueDate} " +
-                            "${stringResource(R.string.art)}: ${viewModel.saveHandler.valueType} " +
-                            "${stringResource(R.string.element)}: ${viewModel.saveHandler.valueElement}",
+                    text = "${stringResource(R.string.datum)}: ${viewModel.saveHandler.valueDate} " + "${
+                        stringResource(
+                            R.string.art
+                        )
+                    }: ${viewModel.saveHandler.valueType} " + "${stringResource(R.string.element)}: ${viewModel.saveHandler.valueElement}",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(0.dp),
@@ -150,18 +184,27 @@ object StundenplanPage {
     @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
+        modifier: Modifier,
         viewModel: ViewModelStundenplanData,
     ) {
-        if (viewModel.saveHandler.experimentellerStundenplan) {
-            if (viewModel.tablesScraped.value != null) {
-                Column {
+        if (viewModel.saveHandler.experimentellerStundenplan && viewModel.saveHandler.valueType == "c") {
+            viewModel.tablesScraped.value?.let { valueTablesScraped ->
                     TableWebView(
-                        viewModel = viewModel, htmlString = viewModel.tablesScraped.value.toString()
+                        viewModel = viewModel,
+                        htmlString = valueTablesScraped.toString(),
+                        modifier = Modifier
                     )
 
-                }
+
+            } ?: run {
+                Text(
+                    modifier = modifier, text = "Fehler: Experimenteller Stundenplan"
+                )
+
             }
-        } else if (!viewModel.saveHandler.experimentellerStundenplan) {
+
+        }
+        else if (!viewModel.saveHandler.experimentellerStundenplan) {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
@@ -178,7 +221,6 @@ object StundenplanPage {
         }
     }
 
-
 }
 
 
@@ -192,12 +234,12 @@ fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 
 @Composable
 fun TableWebView(
-    modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
+    modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
 
     val webView = remember { mutableStateOf<WebView?>(null) }
 
-    AndroidView(modifier = modifier.fillMaxSize(), factory = { context ->
+    AndroidView(modifier = modifier, factory = { context ->
         WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
