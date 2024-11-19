@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -66,7 +68,9 @@ object StundenplanPage {
         modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
     ) {
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
-        Box {
+        Box(
+            contentAlignment = Alignment.TopStart
+        ) {
 
 
             Row(
@@ -114,14 +118,23 @@ object StundenplanPage {
         dialogState: DialogStateEnum,
         ondialogStateChange: (DialogStateEnum) -> Unit
     ) {
+        val configuration = LocalConfiguration.current
+        var orientationVertical by remember {
+            mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+        }
         if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
             Dialog(
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
+
+
                 Box(
+
                     Modifier
                         .fillMaxSize()
-                        .background(Color.White)
+                        .padding(horizontal = if (orientationVertical) 10.dp else 80.dp)
+                        .background(Color.White),
+                    contentAlignment = Alignment.TopStart
                 ) {
                     Row(
 
@@ -147,7 +160,7 @@ object StundenplanPage {
                             SectionSelectionDialog(
                                 modifier = modifier,
                                 map = viewModel.datesPairMap?.second,
-                                rowsOfSections = 2,
+                                rowsOfSections = columnMultiplier,
                                 onButtonClick = { viewModel.saveHandler.valueDate = it },
                                 viewModel = viewModel
 
@@ -188,105 +201,6 @@ object StundenplanPage {
 
                     }
                 }
-
-                /*
-                 if (dialogState == DialogStateEnum.DATE) {
-                     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                         viewModel.datesPairMap?.let {
-                             if (viewModel.saveHandler.alteStundenplaene) {
-
-                                 fun weeksAgo(weeks: Int): String {
-                                     var date: String? = null
-                                     try {
-                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                             val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
-                                             date = LocalDate.parse(
-                                                 viewModel.datesMap!!.values.first(), formatter
-                                             ).minusWeeks(weeks.toLong()).format(formatter)
-                                         }
-                                     } catch (_: Exception) {
-                                     }
-
-                                     return date ?: "Vor $weeks ${
-                                         when (weeks) {
-                                             1 -> "Woche"
-                                             else -> "Wochen"
-                                         }
-                                     }"
-                                 }
-
-                                 val weeksBack = 8
-
-                                 val dateValue = (viewModel.datesMap!!.keys.first() - weeksBack)
-                                 @Suppress("ReplaceRangeToWithRangeUntil") for (iter in 0..(weeksBack - 1)) {
-                                     item {
-                                         Button(colors = if ((dateValue + iter) == viewModel.saveHandler.valueDate) ButtonDefaults.buttonColors(
-                                             MaterialTheme.colorScheme.tertiary
-                                         )
-                                         else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary),
-                                             onClick = {
-                                                 viewModel.saveHandler.valueDate = (dateValue + iter)
-                                                 viewModel.urlMaker.updateURL()
-                                                 viewModel.updateTablesScraped()
-                                                 ondialogStateChange(DialogStateEnum.NONE)
-                                             }) {
-
-                                             Text(
-                                                 text = weeksAgo((weeksBack - iter))
-                                             )
-                                         }
-                                     }
-                                 }
-                             }
-
-                             viewModel.datesMap!!.forEach {
-                                 item {
-                                     Button(colors = if (it.key == viewModel.saveHandler.valueDate) ButtonDefaults.buttonColors(
-                                         MaterialTheme.colorScheme.tertiary
-                                     )
-                                     else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
-                                         onClick = {
-                                             viewModel.saveHandler.valueDate = it.key
-                                             viewModel.urlMaker.updateURL()
-                                             viewModel.updateTablesScraped()
-                                             ondialogStateChange(DialogStateEnum.NONE)
-                                         }) {
-                                         Text(text = viewModel.datesMap!!.getValue(it.key))
-                                     }
-                                 }
-                             }
-                         }?: run{
-                             item { Text(text = "keine Daten vorhanden") }
-                         }
-
-
-                     }
-                 }
-                 else if (dialogState == DialogStateEnum.ELEMENT) {
-                     LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
-                         if (viewModel.elementMap != null) {
-                             viewModel.elementMap!!.forEach {
-                                 item {
-                                     Button(colors = if (it.key == viewModel.saveHandler.valueElement) ButtonDefaults.buttonColors(
-                                         MaterialTheme.colorScheme.tertiary
-                                     )
-                                     else ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
-                                         onClick = {
-                                             viewModel.saveHandler.saveValueElement(it.key)
-                                             viewModel.urlMaker.updateURL()
-                                             viewModel.updateTablesScraped()
-                                             ondialogStateChange(DialogStateEnum.NONE)
-                                         }) {
-                                         Text(text = viewModel.elementMap!!.getValue(it.key))
-                                     }
-                                 }
-                             }
-                         } else {
-                             item { Text(text = "keine Daten vorhanden") }
-                         }
-                     }
-                 }*/
             }
         }
     }
@@ -295,13 +209,21 @@ object StundenplanPage {
     inline fun <reified T : Any> SectionSelectionDialog(
         modifier: Modifier = Modifier,
         map: Map<T, String>?,
+        secondMap: Map<T, String>? = null,
         rowsOfSections: Int,
         crossinline onButtonClick: (T) -> Unit,
-        viewModel: ViewModelStundenplanData
+        viewModel: ViewModelStundenplanData,
+        fontSize: TextUnit = 16.sp
     ) {
 
-
+        var newMap = secondMap?.let { secondMap ->
         map?.let { map ->
+            secondMap + map
+        }
+        } ?: map
+
+
+        newMap?.let { map ->
             LazyVerticalGrid(
                 columns = GridCells.Fixed(rowsOfSections),
                 modifier = modifier
@@ -309,9 +231,19 @@ object StundenplanPage {
                 items(map.size) { mapCount ->
                     Button(
                         onClick = { onButtonClick(map.keys.elementAt(mapCount)) },
-                        modifier = Modifier.padding(4.dp)
+                        modifier = Modifier.padding(4.dp),
+                        contentPadding = PaddingValues(8.dp),
+                        colors = if ((secondMap?.containsValue(map.values.elementAt(mapCount)))
+                                ?: false
+                        ) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary) else ButtonDefaults.buttonColors(
+                            MaterialTheme.colorScheme.primary
+                        )
+
                     ) {
-                        Text(text = map.values.elementAt(mapCount))
+                        Text(
+                            text = map.values.elementAt(mapCount),
+                            fontSize = fontSize
+                        )
                     }
                 }
             }
