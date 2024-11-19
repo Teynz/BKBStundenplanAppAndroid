@@ -227,7 +227,7 @@ object SettingsPage {
 
     @Composable
     fun TeacherSection(modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData) {
-        Column() {
+        Column {
             SwitchAbfrage(
                 mainText = stringResource(R.string.lehrer_modus),
                 subText = stringResource(R.string.schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden),

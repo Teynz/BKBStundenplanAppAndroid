@@ -7,29 +7,17 @@ import android.content.res.Configuration
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,22 +26,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.HTMLStrings
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
@@ -71,13 +51,34 @@ object StundenplanPage {
     fun MainPage(
         modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
     ) {
+        val configuration = LocalConfiguration.current
+        val orientationVertical by remember {
+            mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+        }
+
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
         Box(
             contentAlignment = Alignment.TopStart
         ) {
 
-
-            Row(
+            if (orientationVertical) Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
+            ) {
+                Row(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp),
+                    horizontalArrangement = Arrangement.Absolute.SpaceEvenly
+                ) {
+                    Selection(modifier = modifier,
+                        viewModel = viewModel,
+                        onStateSelectedChange = { newState ->
+                            dialogState = newState
+                        })
+                }
+            }
+            if (!orientationVertical) Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(top = 6.dp, bottom = 6.dp)
             ) {
@@ -116,289 +117,31 @@ object StundenplanPage {
 
 
     @Composable
-    fun SelectionDialog(
-        modifier: Modifier = Modifier,
-        viewModel: ViewModelStundenplanData = viewModel(),
-        dialogState: DialogStateEnum,
-        ondialogStateChange: (DialogStateEnum) -> Unit
-    ) {
-        val searchFilter = rememberSaveable { mutableStateOf("") }
-        val configuration = LocalConfiguration.current
-        val orientationVertical by remember {
-            mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-        }
-        if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
-            Dialog(
-                properties = DialogProperties(usePlatformDefaultWidth = false),
-                onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
-
-
-                Column(
-
-                    Modifier
-                        .padding(horizontal = if (orientationVertical) 10.dp else 80.dp)
-                        .fillMaxSize()
-                        .background(Color.White),
-
-                ) {
-                    Row()
-                    {
-                        val columnMultiplier =
-                            if (orientationVertical) 1 else 3
-
-                        Column(
-                            verticalArrangement = Arrangement.Top,
-                            modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
-                        ) {
-                            SectionSelectionDialog(
-                                modifier = Modifier,
-                                map = viewModel.datesPairMap?.second,
-                                rowsOfSections = 1,
-                                onButtonClick = { viewModel.saveHandler.saveValueDate(it) },
-                                viewModel = viewModel
-                            )
-                        }
-                        Spacer(modifier = Modifier.padding(end = 10.dp))
-                        if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.isNotEmpty() && viewModel.saveHandler.valuePassword.isNotEmpty()) {
-                            Column(
-                                verticalArrangement = Arrangement.Top,
-                                modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
-                            ) {
-                                SectionSelectionDialog(
-                                    modifier = Modifier,
-                                    map = viewModel.typesMap?.second,
-                                    rowsOfSections = 1,
-                                    onButtonClick = { viewModel.saveHandler.saveValueType(it) },
-                                    viewModel = viewModel
-                                )
-                            }
-                            Spacer(modifier = Modifier.padding(end = 10.dp))
-                        }
-                        Column(
-                            verticalArrangement = Arrangement.Top,
-                            modifier = Modifier
-                                .weight(1F)
-                                .background(Color.Blue)
-                        ) {
-                            SectionSelectionDialog(
-                                modifier = Modifier,
-                                map = viewModel.elementMap?.second,
-                                rowsOfSections = columnMultiplier,
-                                onButtonClick = { viewModel.saveHandler.saveValueDate(it) },
-                                viewModel = viewModel
-                            )
-                        }
-
-                    }
-
-                    if (orientationVertical) {
-                        Spacer(modifier = Modifier
-                            .padding(5.dp)
-                            .weight(1F))
-                        Row {
-                            TextField(
-                                modifier = Modifier
-                                    .height(60.dp)
-                                    .weight(0.7F),
-                                value = searchFilter.value,
-                                onValueChange = { searchFilter.value = it },
-                                label = { Text("Element Suchen") },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions.Default.copy(
-                                    keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-                                ),
-                                shape = RoundedCornerShape(80.dp)
-                            )
-
-
-                            Button(
-                                modifier = Modifier
-                                    .height(60.dp)
-                                    .weight(0.3F),
-                                onClick = { ondialogStateChange(DialogStateEnum.NONE) },
-                                contentPadding = PaddingValues(8.dp),
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .background(
-                                            MaterialTheme.colorScheme.primary,
-                                            shape = RoundedCornerShape(80.dp)
-                                        )
-                                        .clip(RoundedCornerShape(80.dp)),
-                                    textAlign = TextAlign.Center,
-                                    text = "Speichern",
-                                    color = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.primary)
-                                )
-                            }
-
-
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    inline fun <reified T : Any> SectionSelectionDialog(
-        modifier: Modifier,
-        map: Map<T, String>?,
-        secondMap: Map<T, String>? = null,
-        rowsOfSections: Int,
-        crossinline onButtonClick: (T) -> Unit,
-        viewModel: ViewModelStundenplanData,
-        fontSize: TextUnit = 16.sp
-    ) {
-
-        var newMap = secondMap?.let { secondMap ->
-        map?.let { map ->
-            secondMap + map
-        }
-        } ?: map
-
-
-        newMap?.let { map ->
-            LazyVerticalGrid(
-                verticalArrangement = Arrangement.Top,
-                columns = GridCells.Fixed(rowsOfSections),
-                modifier = modifier
-            ) {
-                items(map.size) { mapCount ->
-                    Button(
-                        onClick = { onButtonClick(map.keys.elementAt(mapCount)) },
-                        modifier = Modifier.padding(4.dp),
-                        contentPadding = PaddingValues(8.dp),
-                        colors = if ((secondMap?.containsValue(map.values.elementAt(mapCount)))
-                                ?: false
-                        ) ButtonDefaults.buttonColors(MaterialTheme.colorScheme.tertiary) else ButtonDefaults.buttonColors(
-                            MaterialTheme.colorScheme.primary
-                        )
-
-                    ) {
-                        Text(
-                            text = map.values.elementAt(mapCount),
-                            fontSize = fontSize
-                        )
-                    }
-                }
-            }
-        } ?: run { Text(text = "keine Daten vorhanden") }
-
-    }
-
-
-    //                                    Button(onClick = {}
-//
-//                                    ) {
-//                                        Text(text = "mapC: $mapCount")
-//
-//                                    }
-
-    @Composable
     fun Selection(
         modifier: Modifier = Modifier,
         viewModel: ViewModelStundenplanData,
         onStateSelectedChange: (DialogStateEnum) -> Unit
     ) {
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.Absolute.SpaceEvenly
+        Button(
+            onClick = { onStateSelectedChange(DialogStateEnum.DATE) },
+            contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
+            modifier = Modifier.height(40.dp)
         ) {
-            Button(
-                onClick = { onStateSelectedChange(DialogStateEnum.DATE) },
-                contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp),
-                modifier = Modifier
-                    .height(40.dp)
-                    .fillMaxWidth()
-                    .weight(1F)
-            ) {
-                Column(modifier = Modifier.padding(0.dp)) {
-                    Text(
-                        text = stringResource(R.string.datum_auswaehlen),
-                        modifier = Modifier.padding(0.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.datum, viewModel.saveHandler.valueDate),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(0.dp),
-                        lineHeight = 8.sp,
-                        fontSize = 8.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-            }
-            Spacer(
-                modifier = Modifier
-                    .width(10.dp)
-                    .border(2.dp, Color.Red)
-            )
-
-            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.isNotEmpty() && viewModel.saveHandler.valuePassword.isNotEmpty()) {
-                Button(
-                    onClick = { onStateSelectedChange(DialogStateEnum.TYPE) },
-                    contentPadding = PaddingValues(
-                        start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp
-                    ),
-                    modifier = Modifier
-                        .height(40.dp)
-                        .fillMaxWidth()
-                        .weight(1F)
-                ) {
-                    Column(modifier = Modifier.padding(0.dp)) {
-                        Text(
-                            text = "Element wählen", modifier = Modifier.padding(0.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.datum, viewModel.saveHandler.valueDate),
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(0.dp),
-                            lineHeight = 8.sp,
-                            fontSize = 8.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-                }
-                Spacer(
-                    modifier = Modifier
-                        .width(10.dp)
-                        .border(2.dp, Color.Red)
+            Column(modifier = Modifier.padding(0.dp)) {
+                Text(
+                    text = stringResource(R.string.ausw_hlen), modifier = Modifier.padding(0.dp)
                 )
-
-
-            }
-
-
-
-
-            Button(
-                onClick = { onStateSelectedChange(DialogStateEnum.ELEMENT) },
-                modifier = Modifier
-                    .height(40.dp)
-                    .fillMaxWidth()
-                    .weight(1F),
-                contentPadding = PaddingValues(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.klasse_auswaehlen),
-                        modifier = Modifier.padding(0.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.klasse, viewModel.saveHandler.valueElement),
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(0.dp),
-                        lineHeight = 8.sp,
-                        fontSize = 8.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(
+                    text = "${stringResource(R.string.datum)}: ${viewModel.saveHandler.valueDate} " +
+                            "${stringResource(R.string.art)}: ${viewModel.saveHandler.valueType} " +
+                            "${stringResource(R.string.element)}: ${viewModel.saveHandler.valueElement}",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(0.dp),
+                    lineHeight = 6.sp,
+                    fontSize = 6.sp,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -452,11 +195,9 @@ fun TableWebView(
     modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
 
-    val webViewModifier = modifier
-
     val webView = remember { mutableStateOf<WebView?>(null) }
 
-    AndroidView(modifier = webViewModifier.fillMaxSize(), factory = { context ->
+    AndroidView(modifier = modifier.fillMaxSize(), factory = { context ->
         WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
