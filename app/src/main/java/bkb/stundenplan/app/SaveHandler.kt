@@ -77,10 +77,10 @@ class SaveHandler(
             val mode = uiModeManager.nightMode
             if (mode == UiModeManager.MODE_NIGHT_NO) {
                 getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), false)
-            } else {
-                getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
             }
-            /*todo add as system*/
+            else {
+                getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
+            }/*todo add as system*/
 
         }
     }
@@ -133,6 +133,8 @@ class SaveHandler(
 
 
     var teacherMode by mutableStateOf(getTeacherModeSave())
+        private set
+
     private fun getTeacherModeSave(): Boolean {
         return runBlocking {
             getPreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), false)
@@ -142,10 +144,15 @@ class SaveHandler(
     fun saveTeacherMode(value: Boolean) {
         teacherMode = value
         savePreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), value)
+        scope.launch {
+            viewModel.updateTypesMapsObject()
+        }
     }
 
 
     var valueLoginName by mutableStateOf(getValueLoginNameSave())
+        private set
+
     private fun getValueLoginNameSave(): String {
         return runBlocking {
             getPreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), "")
@@ -157,9 +164,14 @@ class SaveHandler(
         scope.launch {
             savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
         }
+        scope.launch {
+            viewModel.updateTypesMapsObject()
+        }
     }
 
     var valuePassword by mutableStateOf(getValuePasswordSave())
+        private set
+
     private fun getValuePasswordSave(): String {
         return runBlocking {
             getPreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), "")
@@ -170,6 +182,9 @@ class SaveHandler(
         valuePassword = value
         scope.launch {
             savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
+        }
+        scope.launch {
+            viewModel.updateTypesMapsObject()
         }
     }
 
@@ -242,14 +257,11 @@ class SaveHandler(
             val valueDateDeferred =
                 async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), 0) }
 
-            val valueTypeDeferred =
-                async {
-                    getPreference(
-                        context.dataStoreValues,
-                        stringPreferencesKey(VALUETYPE),
-                        "c"
-                    )
-                }
+            val valueTypeDeferred = async {
+                getPreference(
+                    context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c"
+                )
+            }
 
             val valueElementDeferred =
                 async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), 0) }

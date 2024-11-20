@@ -29,10 +29,20 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var portraitMode = mutableStateOf(true)
     var heightTopAppBar = mutableStateOf(80.dp)
 
+
     var isPortrait by mutableStateOf(true)
 
 
-    private var scrapingSelectBoxes: List<DocElement>? = null
+    var TypesMapsObject:Scraping.TypeArrays? = null
+
+    suspend fun updateTypesMapsObject() {
+        val URL = URLMaker(this).getBaseUrl() + "frames/navbar.htm"
+        TypesMapsObject = scraping.extractVariables(scraping.navbarHTML(URL).toString())
+
+
+    }
+
+     var scrapingSelectBoxes: List<DocElement>? = null
         get() {
 
             if (field != null) {
@@ -108,6 +118,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             val first = async { elementMap = scraping.getElementsPairMap(scrapingSelectBoxes) }
             val second =
                 async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
+            //val typesMapObjectDeffered= async {scraping.extractVariables(scraping.navbarHTML(URLMaker(this).getBaseUrl()).toString())}
             first.await()
             second.await()
             viewModelInitJob.complete()

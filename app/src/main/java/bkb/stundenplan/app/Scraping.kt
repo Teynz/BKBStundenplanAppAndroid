@@ -4,10 +4,18 @@ package bkb.stundenplan.app
 
 
 import android.annotation.SuppressLint
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.CLASSES_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.CORRIDORS_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.FLC1
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.FLTE
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.ROOMS_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.TEACHERS_FULL
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
+import it.skrape.fetcher.extract
 import it.skrape.fetcher.extractIt
 import it.skrape.fetcher.skrape
+import it.skrape.selects.Doc
 import it.skrape.selects.DocElement
 import it.skrape.selects.html5.table
 
@@ -40,7 +48,8 @@ class Scraping {
                 }
             }
 
-        } catch (e: Exception) {
+        }
+        catch (e: Exception) {
             selectBoxes = null
             println("Could not fetch select Boxes from the Web")
         }
@@ -112,9 +121,69 @@ class Scraping {
         }
         return Pair(nameOfSelectBox, elementMap?.toMap())
     }
-    //suspend fun getArrays()
+
+    suspend fun navbarHTML(navBarStundenplanURL: String): Doc?
+    {
+
+        return try {
+        skrape(BrowserFetcher) {
+            request {
+
+                url = navBarStundenplanURL
+                timeout = 10000
+            }
+            extract {
+                htmlDocument {
+                    this
+                }
+            }
+        }
+    } catch (e: Exception) {
+        println("could not load navbar")
+        null
+    }
+    }
 
 
+    fun extractVariables(htmlContent: String): TypeArrays {
+        val result = TypeArrays()
+
+        val arrayRegex = """var\s+(\w+)\s*=\s*\[(.*?)\];""".toRegex()
+        val floatRegex = """var\s+(flc1|flte)\s*=\s*([\d.]+);""".toRegex()
+
+        arrayRegex.findAll(htmlContent).forEach { matchResult ->
+            val (varName, varContent) = matchResult.destructured
+            val items = varContent.split(",").map { it.trim().removeSurrounding("\"") }
+            val itemMap = items.mapIndexed { index, item -> (index + 1) to item }.toMap().toMutableMap()
+
+            when (varName) {
+                CLASSES_FULL -> result.classes = itemMap
+                TEACHERS_FULL  -> result.teachers = itemMap
+                ROOMS_FULL -> result.rooms = itemMap
+                CORRIDORS_FULL -> result.corridors = itemMap
+            }
+        }
+
+        floatRegex.findAll(htmlContent).forEach { matchResult ->
+            val (varName, value) = matchResult.destructured
+            when (varName) {
+                FLC1 -> result.flc1 = value.toFloat()
+                FLTE -> result.flte = value.toFloat()
+            }
+        }
+
+        return result
+    }
+
+
+    data class TypeArrays(
+        var classes: MutableMap<Int, String> = mutableMapOf(),
+        var teachers: MutableMap<Int, String> = mutableMapOf(),
+        var rooms: MutableMap<Int, String> = mutableMapOf(),
+        var corridors: MutableMap<Int, String> = mutableMapOf(),
+        var flc1: Float = 1F,
+        var flte: Float = 1F
+    )
 
 
     suspend fun getStundenplanTable(stundenplanURL: String): DocElement? {
@@ -135,7 +204,8 @@ class Scraping {
                     }
                 }
             }
-        } catch (_: Exception) {
+        }
+        catch (_: Exception) {
         }
 
 
@@ -149,6 +219,7 @@ class Scraping {
     )
 
 }
+
 data class ScrapingResult(
     val classes: MutableList<String> = mutableListOf(), var count: Int = 0
 )

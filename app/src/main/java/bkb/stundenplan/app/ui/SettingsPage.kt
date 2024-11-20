@@ -92,27 +92,6 @@ object SettingsPage {
                 })
 
 
-            /*Spacer(modifier = Modifier.padding(10.dp))
-            TextFieldAbfrage(
-                mainText = stringResource(R.string.stundenplan_padding),
-                subText = stringResource(R.string.stundenplan_padding_description),
-                textLabel = stringResource(R.string.stundenplan_padding_label),
-                value = when (viewModel.saveHandler.valueStundenplanPadding) {
-                    0 -> ""
-                    else -> viewModel.saveHandler.valueStundenplanPadding.toString()
-                },
-                onValueChange = {
-                    try {
-                        viewModel.saveHandler.saveValueStundenplanPadding(it.toInt())
-                    } catch (_: Exception) {
-                        viewModel.saveHandler.saveValueStundenplanPadding(0)
-                    }
-
-                }
-
-            )*/
-
-
             Spacer(modifier = Modifier.padding(10.dp))
 
             SwitchAbfrage(
@@ -123,10 +102,10 @@ object SettingsPage {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
                 })
 
-            /*todo
+
             Spacer(modifier = Modifier.padding(10.dp))
             TeacherSection(viewModel = viewModel)
-*/
+
             Spacer(modifier = Modifier.weight(1F))
 
 

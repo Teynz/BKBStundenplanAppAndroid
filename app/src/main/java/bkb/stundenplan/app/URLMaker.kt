@@ -26,8 +26,8 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
         }@stundenplan.bkb.nrw/${
             if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
                         .isNotEmpty() && viewModel.saveHandler.valuePassword.trim().isNotEmpty()
-            ) "lehrer"
-            else "schueler"
+            ) "lehrer/"
+            else "schueler/"
         }"
 
     }//returns base url for example "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/"
@@ -53,34 +53,30 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
         }
 
         try {
-            viewModel.saveHandler.valueDate.let { valueDate ->
-                viewModel.saveHandler.valueElement.let { valueElement ->
-                    if (viewModel.saveHandler.valueLoginName.trim()
-                                .isNotEmpty() && viewModel.saveHandler.valuePassword.trim()
-                                .isNotEmpty() && viewModel.saveHandler.teacherMode
-                    ) {
-                        viewModel.saveHandler.valueType.let { valueType ->
-                            urlStundenplan.value =
-                                "https://${viewModel.saveHandler.valueLoginName}:${viewModel.saveHandler.valuePassword}@stundenplan.bkb.nrw/lehrer/${
-                                    calenderWeekAsString(
-                                        valueDate
-                                    )
-                                }/${valueType}/${valueType}${numberOfElementAsString(valueElement)}.htm}"
-                        }
+            with(viewModel.saveHandler) {
 
-                    } else if (!viewModel.saveHandler.teacherMode) {
-                        urlStundenplan.value =
-                            "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/${
-                                calenderWeekAsString(
-                                    valueDate
-                                )
-                            }/c/c${numberOfElementAsString(valueElement)}.htm"
-                    }
+                if (valueLoginName.trim().isNotEmpty() && valuePassword.trim()
+                            .isNotEmpty() && teacherMode
+                ) {
+
+                    urlStundenplan.value = "${getBaseUrl()}${
+                        calenderWeekAsString(
+                            valueDate
+                        )
+                    }/${valueType}/${valueType}${numberOfElementAsString(valueElement)}.htm"
+
+                }
+                else if (!teacherMode) {
+                    urlStundenplan.value = "${getBaseUrl()}${
+                        calenderWeekAsString(
+                            valueDate
+                        )
+                    }/c/c${numberOfElementAsString(valueElement)}.htm"
                 }
             }
 
-
-        } catch (_: Exception) {
+        }
+        catch (_: Exception) {
             println("URLMaker: Failed to update URL")
         }
     }
