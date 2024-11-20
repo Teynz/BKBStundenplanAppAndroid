@@ -1,9 +1,9 @@
 package bkb.stundenplan.app.ui
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,15 +21,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -55,10 +55,8 @@ fun SelectionDialog(
 ) {
     val searchFilter = rememberSaveable { mutableStateOf("") }
     val configuration = LocalConfiguration.current
-    val orientationVertical by remember {
-        mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-    }
-    val horizontalPaddingRowsSpacer = if (orientationVertical) 10.dp else 3.dp
+
+    val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
         viewModel.elementMap?.second?.filter { entry ->
@@ -72,8 +70,10 @@ fun SelectionDialog(
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
             onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
             Column(
-                Modifier
-                    .padding(horizontal = if (orientationVertical) 10.dp else 80.dp)
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier
+                    .padding(horizontal = if (viewModel.isPortrait) 30.dp else 80.dp)
+                    .padding(bottom = 20.dp)
                     .fillMaxSize(),
             ) {
                 // This column will take all available space except for the bottom row
@@ -82,7 +82,7 @@ fun SelectionDialog(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = androidx.compose.ui.Alignment.Bottom
                     ) {
-                        val columnMultiplier = if (orientationVertical) 1 else 3
+                        val columnMultiplier = if (viewModel.isPortrait) 1 else 3
 
                         Column(
                             verticalArrangement = Arrangement.Bottom,
@@ -95,8 +95,13 @@ fun SelectionDialog(
                                 map = viewModel.datesPairMap?.second,
                                 secondMap = weeksBackMap,
                                 rowsOfSections = 1,
-                                onButtonClick = { viewModel.saveHandler.saveValueDate(it) },
-                                swapOrderBeforeDisplay = true
+                                onButtonClick = {
+                                    viewModel.saveHandler.saveValueDate(it)
+                                    viewModel.urlMaker.updateURL()
+                                    viewModel.updateTablesScraped()
+                                },
+                                swapOrderBeforeDisplay = true,
+                                currentValue = viewModel.saveHandler.valueDate
                             )
                         }
                         Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
@@ -109,7 +114,12 @@ fun SelectionDialog(
                                     modifier = Modifier,
                                     map = viewModel.typesMap?.second,
                                     rowsOfSections = 1,
-                                    onButtonClick = { viewModel.saveHandler.saveValueType(it) }
+                                    onButtonClick = {
+                                        viewModel.saveHandler.saveValueType(it)
+                                        viewModel.urlMaker.updateURL()
+                                        viewModel.updateTablesScraped()
+                                    },
+                                    currentValue = viewModel.saveHandler.valueType
                                 )
                             }
                             Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
@@ -122,9 +132,15 @@ fun SelectionDialog(
                             SectionSelectionDialog(modifier = Modifier.weight(1F),
                                 map = filteredElementMap,
                                 rowsOfSections = columnMultiplier,
-                                onButtonClick = { viewModel.saveHandler.saveValueElement(it) })
+                                onButtonClick = {
+                                    viewModel.saveHandler.saveValueElement(it)
+                                    viewModel.urlMaker.updateURL()
+                                    viewModel.updateTablesScraped()
+                                },
+                                currentValue = viewModel.saveHandler.valueElement
+                            )
 
-                            if (!orientationVertical) {
+                            if (!viewModel.isPortrait) {
                                 Row(horizontalArrangement = Arrangement.Center) {
                                     FindAndSave(
                                         searchFilter,
@@ -147,7 +163,7 @@ fun SelectionDialog(
 
 
                 // Bottom row with TextField and Button
-                if (orientationVertical) {
+                if (viewModel.isPortrait) {
                     Row(modifier = Modifier.padding(top = 5.dp)) {
                         FindAndSave(
                             searchFilter,
@@ -218,8 +234,13 @@ private fun FindAndSave(
     @SuppressLint("ModifierParameter") modifierSearchTextField: Modifier,
     modifierSaveButton: Modifier
 ) {
+
     TextField(
-        modifier = modifierSearchTextField,
+        modifier = modifierSearchTextField.border(
+            width = 0.3.dp,
+            color = Color.Gray,
+            shape = RoundedCornerShape(80.dp)
+        ),
         value = searchFilter.value,
         onValueChange = { searchFilter.value = it },
         label = { Text("Element Suchen") },
@@ -227,7 +248,11 @@ private fun FindAndSave(
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
         ),
-        shape = RoundedCornerShape(80.dp)
+        shape = RoundedCornerShape(80.dp),
+        colors = TextFieldDefaults.colors(
+            unfocusedIndicatorColor = Color.Transparent, // No underline when unfocused
+            focusedIndicatorColor = Color.Transparent    // No underline when focused
+        )
     )
 
     Button(
@@ -261,7 +286,8 @@ inline fun <reified T : Any> SectionSelectionDialog(
     crossinline onButtonClick: (T) -> Unit,
     fontSize: TextUnit = 16.sp,
     reverseLayout: Boolean = true,
-    swapOrderBeforeDisplay: Boolean = false
+    swapOrderBeforeDisplay: Boolean = false,
+    currentValue: T? = null
 ) {
 
     var newMap = secondMap?.let { secondMapIt ->
@@ -284,7 +310,12 @@ inline fun <reified T : Any> SectionSelectionDialog(
                     onClick = { onButtonClick(mapIt.keys.elementAt(mapCount)) },
                     modifier = Modifier.padding(4.dp),
                     contentPadding = PaddingValues(8.dp),
-                    colors = if ((secondMap?.containsValue(mapIt.values.elementAt(mapCount))) == true) ButtonDefaults.buttonColors(
+                    colors = if (currentValue == mapIt.keys.elementAt(mapCount)) {
+                        ButtonDefaults.buttonColors(
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    else if ((secondMap?.containsValue(mapIt.values.elementAt(mapCount))) == true) ButtonDefaults.buttonColors(
                         MaterialTheme.colorScheme.tertiary
                     )
                     else ButtonDefaults.buttonColors(

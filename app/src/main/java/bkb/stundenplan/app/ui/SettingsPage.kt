@@ -122,9 +122,11 @@ object SettingsPage {
                 onCheckedChange = {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
                 })
+
+            /*todo
             Spacer(modifier = Modifier.padding(10.dp))
             TeacherSection(viewModel = viewModel)
-
+*/
             Spacer(modifier = Modifier.weight(1F))
 
 

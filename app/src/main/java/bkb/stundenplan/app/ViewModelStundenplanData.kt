@@ -3,7 +3,9 @@ package bkb.stundenplan.app
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,7 +26,10 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
     var scraping = Scraping()
+    var portraitMode = mutableStateOf(true)
     var heightTopAppBar = mutableStateOf(80.dp)
+
+    var isPortrait by mutableStateOf(true)
 
 
     private var scrapingSelectBoxes: List<DocElement>? = null

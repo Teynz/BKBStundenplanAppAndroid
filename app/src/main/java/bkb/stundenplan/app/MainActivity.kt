@@ -80,8 +80,12 @@ class MainActivity : ComponentActivity() {
                         @Suppress("UNCHECKED_CAST") return ViewModelStundenplanData(context = applicationContext) as T
                     }
                 })
+
+
+            appViewModel.isPortrait =
+                LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
             appViewModel.heightTopAppBar.value =
-                if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 60.dp else 100.dp
+                if (!appViewModel.isPortrait) 60.dp else 100.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
                 AppContent(modifier = Modifier.fillMaxSize(), appViewModel)

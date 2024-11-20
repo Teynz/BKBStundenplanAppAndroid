@@ -11,6 +11,26 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
     var urlStundenplan: MutableState<String> =
         mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
 
+    fun getBaseUrl(
+    ): String {
+        return "https://${
+            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
+                        .isNotEmpty()
+            ) viewModel.saveHandler.valueLoginName
+            else "schueler"
+        }:${
+            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valuePassword.trim()
+                        .isNotEmpty()
+            ) viewModel.saveHandler.valuePassword
+            else "stundenplan"
+        }@stundenplan.bkb.nrw/${
+            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
+                        .isNotEmpty() && viewModel.saveHandler.valuePassword.trim().isNotEmpty()
+            ) "lehrer"
+            else "schueler"
+        }"
+
+    }//returns base url for example "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/"
 
     @SuppressLint("AuthLeak")
     fun updateURL() {
@@ -35,7 +55,10 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
         try {
             viewModel.saveHandler.valueDate.let { valueDate ->
                 viewModel.saveHandler.valueElement.let { valueElement ->
-                    if (viewModel.saveHandler.valueLoginName.isNotEmpty() && viewModel.saveHandler.valuePassword.isNotEmpty() && viewModel.saveHandler.teacherMode) {
+                    if (viewModel.saveHandler.valueLoginName.trim()
+                                .isNotEmpty() && viewModel.saveHandler.valuePassword.trim()
+                                .isNotEmpty() && viewModel.saveHandler.teacherMode
+                    ) {
                         viewModel.saveHandler.valueType.let { valueType ->
                             urlStundenplan.value =
                                 "https://${viewModel.saveHandler.valueLoginName}:${viewModel.saveHandler.valuePassword}@stundenplan.bkb.nrw/lehrer/${

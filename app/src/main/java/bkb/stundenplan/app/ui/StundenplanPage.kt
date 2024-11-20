@@ -50,10 +50,9 @@ object StundenplanPage {
     fun MainPage(
         modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData
     ) {
+
         val configuration = LocalConfiguration.current
-        val orientationVertical by remember {
-            mutableStateOf(configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-        }
+        val orientationVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
         var dialogState by rememberSaveable { mutableStateOf(DialogStateEnum.NONE) }
 
@@ -67,9 +66,12 @@ object StundenplanPage {
                 Selection(modifier = Modifier
                     .padding(5.dp)
                     .height(45.dp),
-                    viewModel = viewModel,
-                    onStateSelectedChange = { newState ->
-                        dialogState = newState
+
+                    valueDate = viewModel.saveHandler.valueDate,
+                    valueType = viewModel.saveHandler.valueType,
+                    valueElement = viewModel.saveHandler.valueElement,
+                    onStateSelectedChange = { enumState ->
+                        dialogState = enumState
                     })
 
                 Box(
@@ -82,7 +84,7 @@ object StundenplanPage {
                         StundenplanWebview(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(8.dp),
+                                .padding(0.dp),
                             viewModel = viewModel,
                         )
                     }
@@ -94,14 +96,17 @@ object StundenplanPage {
         }
         else {
             Row(
-                verticalAlignment = Alignment.CenterVertically, modifier = modifier.fillMaxWidth()
+                verticalAlignment = Alignment.Top, modifier = modifier.fillMaxWidth()
             ) {
 
                 Selection(
                     modifier = Modifier
+                        .padding(top = 40.dp)
                         .padding(5.dp)
                         .height(50.dp),
-                    viewModel = viewModel,
+                    valueDate = viewModel.saveHandler.valueDate,
+                    valueType = viewModel.saveHandler.valueType,
+                    valueElement = viewModel.saveHandler.valueElement,
                     onStateSelectedChange = { newState ->
                         dialogState = newState
                     })
@@ -111,7 +116,12 @@ object StundenplanPage {
 
                     if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
                         StundenplanWebview(
-                            modifier = modifier.padding(8.dp),
+                            modifier = Modifier.padding(
+                                start = 4.dp,
+                                end = 8.dp,
+                                top = 2.dp,
+                                bottom = 2.dp
+                            ),
                             viewModel = viewModel,
                         )
                     }
@@ -119,20 +129,6 @@ object StundenplanPage {
 
             }
         }
-
-
-        /*if (!LocalInspectionMode.current) //returns false if preview
-            {
-                if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
-                    StundenplanWebview(
-                        viewModel = viewModel,
-                    )
-                }
-            } else {
-                Text(
-                    modifier = modifier, text = "WebView not available in preview"
-                )
-            }*/
 
 
 
@@ -148,7 +144,9 @@ object StundenplanPage {
     @Composable
     fun Selection(
         modifier: Modifier = Modifier,
-        viewModel: ViewModelStundenplanData,
+        valueDate: Int,
+        valueType: String,
+        valueElement: Int,
         onStateSelectedChange: (DialogStateEnum) -> Unit
     ) {
         Button(
@@ -164,11 +162,11 @@ object StundenplanPage {
                     text = stringResource(R.string.ausw_hlen), modifier = Modifier.padding(0.dp)
                 )
                 Text(
-                    text = "${stringResource(R.string.datum)}: ${viewModel.saveHandler.valueDate} " + "${
+                    text = "${stringResource(R.string.datum)}: $valueDate " + "${
                         stringResource(
                             R.string.art
                         )
-                    }: ${viewModel.saveHandler.valueType} " + "${stringResource(R.string.element)}: ${viewModel.saveHandler.valueElement}",
+                    }: $valueType " + "${stringResource(R.string.element)}: $valueElement",
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(0.dp),
@@ -189,11 +187,11 @@ object StundenplanPage {
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan && viewModel.saveHandler.valueType == "c") {
             viewModel.tablesScraped.value?.let { valueTablesScraped ->
-                    TableWebView(
-                        viewModel = viewModel,
-                        htmlString = valueTablesScraped.toString(),
-                        modifier = Modifier
-                    )
+                TableWebView(
+                    viewModel = viewModel,
+                    htmlString = valueTablesScraped.toString(),
+                    modifier = modifier
+                )
 
 
             } ?: run {

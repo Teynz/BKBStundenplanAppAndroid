@@ -112,6 +112,9 @@ class Scraping {
         }
         return Pair(nameOfSelectBox, elementMap?.toMap())
     }
+    //suspend fun getArrays()
+
+
 
 
     suspend fun getStundenplanTable(stundenplanURL: String): DocElement? {
