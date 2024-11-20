@@ -122,9 +122,11 @@ object SettingsPage {
                 onCheckedChange = {
                     viewModel.saveHandler.saveAlteStundenplaene(it)
                 })
+
+            /*todo
             Spacer(modifier = Modifier.padding(10.dp))
             TeacherSection(viewModel = viewModel)
-
+*/
             Spacer(modifier = Modifier.weight(1F))
 
 
@@ -227,7 +229,7 @@ object SettingsPage {
 
     @Composable
     fun TeacherSection(modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData) {
-        Column() {
+        Column {
             SwitchAbfrage(
                 mainText = stringResource(R.string.lehrer_modus),
                 subText = stringResource(R.string.schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden),
@@ -353,7 +355,8 @@ fun Login(
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
-            )
+            ),
+
         )
 
         TextField(
@@ -365,7 +368,7 @@ fun Login(
             label = { Text(stringResource(R.string.passwort)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
+                keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
             )
         )
 

@@ -42,6 +42,7 @@ fun BKBStundenplanTheme(
             if (viewModel.saveHandler.darkmode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
                 context
             )
+
         }
 
         viewModel.saveHandler.darkmode -> DarkColorScheme

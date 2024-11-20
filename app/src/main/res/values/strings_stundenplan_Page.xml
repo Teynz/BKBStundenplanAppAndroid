@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="datum">"Datum:%1$s  "</string>
-    <string name="klasse">"Klasse:%1$s  "</string>
+    <string name="datum">"Datum"</string>
+    <string name="klasse">"Klasse"</string>
     <string name="klasse_auswaehlen">Klasse auswählen</string>
     <string name="datum_auswaehlen">Datum auswählen</string>
+    <string name="element">Element</string>
+    <string name="art">Art</string>
+    <string name="ausw_hlen">Auswählen</string>
 </resources>
