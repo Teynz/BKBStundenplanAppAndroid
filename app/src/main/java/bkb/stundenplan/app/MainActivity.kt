@@ -115,6 +115,7 @@ fun LeftSideBar(
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = false,
         drawerContent = {
             ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
             Row(

@@ -42,6 +42,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -59,7 +62,7 @@ fun SelectionDialog(
 
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
-    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.valueType, viewModel.TypesMapsObject)?: viewModel.elementMap?.second
+    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.effectiveValueType, viewModel.TypesMapsObject.value)?: viewModel.elementMap?.second
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
         currentElementMap?.filter { entry ->
@@ -115,16 +118,19 @@ fun SelectionDialog(
                             ) {
                                 SectionSelectionDialog(
                                     modifier = Modifier,
-                                    map = viewModel.typesMap?.second,
+                                    map = viewModel.typesMap.value?.second,
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
                                         viewModel.urlMaker.updateURL()
                                         viewModel.updateTablesScraped()
-                                        runBlocking {viewModel.updateTypesMapsObject()}
+
+                                        CoroutineScope(Dispatchers.IO ).launch  {
+                                            viewModel.updateTypesMapsObject()
+                                        }
 
                                     },
-                                    currentValue = viewModel.saveHandler.valueType
+                                    currentValue = viewModel.saveHandler.effectiveValueType
                                 )
                             }
                             Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))

@@ -1,44 +1,58 @@
 package bkb.stundenplan.app
 
 object HTMLStrings {
+    data class Styling(
+        var darkBackground: String = "#000000",
+        var typeValue: String,
+        var darkMode: Boolean = false,
+        var textcolor: String = "#ffffff",
+        var fontmultiplier: Float = 1.5F,
+        var border: Float = 1F,
+        var borderColor: String = if (darkMode) "#ffffff" else "#000000"
+
+    )
 
 
     private fun addDarkMode(
-        darkBackground: String = "#000000",
-        textcolor: String = "#ffffff",
-        borderColor: String = "#ffffff"
+        styling: Styling
     ): String {
         return """
 b{
     color: #ffffff;
 } 
 body {
-    background-color: ${darkBackground};
-    color: ${textcolor};
+    background-color: ${styling.darkBackground};
+    color: ${styling.textcolor};
 }  
 td{
-    background-color: ${darkBackground};
+    background-color: ${styling.darkBackground};
 }
 """
     }
 
 
-
     fun styleExperimentellerStundenplan(
-        darkMode: Boolean = false,
-        fontmultiplier: Float = 1.5F,
-        border: Float = 1F,
-        BorderColor: String = if (darkMode) "#ffffff" else "#000000"
+        styling: Styling
     ): String {
-        return """<style>${if (darkMode) addDarkMode() else ""}  
- td{
- 
+        return """<style>
+            ${if (styling.darkMode&&(styling.typeValue == ParameterWhichMayChangeOverTime.CLASSES_SHORT)) addDarkMode(styling) else ""}  
+            ${
+            if (styling.typeValue == ParameterWhichMayChangeOverTime.CLASSES_SHORT) LayoutSchueler(
+                styling
+            )
+            else ""
+        }
+</style>
+"""
+    }
+
+    fun LayoutSchueler(styling: Styling): String {
+        return """td{
 height: 1;
 width:1;
 }
 table {
-border: ${border}em; //Border Size
-border-color: ${BorderColor};
+border: ${styling.border}em; //Border Size
  border-style: solid;
     width: 100%;
     height: 100%;
@@ -86,10 +100,7 @@ font[size="7"] { font-size: calc(var(--base-font-size) * 2.4); }
 
 font[size] {
   text-align: center;
-}
-</style>
-"""
+}"""
+
     }
-
-
 }

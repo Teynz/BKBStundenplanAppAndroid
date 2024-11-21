@@ -16,8 +16,8 @@ class ParameterWhichMayChangeOverTime {/*
                     "t" -> typeArrays.teachers
                     "r" -> typeArrays.rooms
                     "g" -> typeArrays.corridors
-                    "w" -> mutableMapOf(typeArrays.flc1.toInt() to "-Alle-")
-                    "v" -> mutableMapOf(typeArrays.flc1.toInt() to "-Alle-")
+                    "w" -> mutableMapOf(VERKLAVALUE to "-Alle-")
+                    "v" -> mutableMapOf(VERLEHVALUE to "-Alle-")
                     else -> typeArrays.classes
 
                 }
@@ -32,13 +32,14 @@ class ParameterWhichMayChangeOverTime {/*
         *sollten diese sich nach der Abwesenheit der Schule ändern, hoffe ich, dass sie diese einfach abändern können
         * */
         const val CLASSES_FULL = "classes"
-        const val CLASSES_Short = "c"
+        const val CLASSES_SHORT = "c"
         const val TEACHERS_FULL = "teachers"
-        const val TEACHERS_Short = "t"
         const val ROOMS_FULL = "rooms"
         const val CORRIDORS_FULL = "corridors"
         const val FLC1 = "flc1"
         const val FLTE = "flte"
+        const val VERKLAVALUE = 0
+        const val VERLEHVALUE = 0
 
     }
 

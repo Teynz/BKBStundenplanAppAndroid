@@ -161,12 +161,11 @@ class SaveHandler(
 
     fun saveLoginName(value: String) {
         valueLoginName = value
-        scope.launch {
-            savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
-        }
+        savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
         scope.launch {
             viewModel.viewModelInit()
         }
+
     }
 
     var valuePassword by mutableStateOf(getValuePasswordSave())
@@ -180,12 +179,11 @@ class SaveHandler(
 
     fun savePassword(value: String) {
         valuePassword = value
-        scope.launch {
-            savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
-        }
+        savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
         scope.launch {
             viewModel.viewModelInit()
         }
+
     }
 
 
@@ -204,10 +202,15 @@ class SaveHandler(
     }
 
     var valueType by mutableStateOf(getValueTypeSave())
+
     private fun getValueTypeSave(): String {
-        return runBlocking {
-            getPreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c")
+        var value:String
+        runBlocking {
+            value = getPreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c")
         }
+
+        return if(teacherMode) value else ParameterWhichMayChangeOverTime.CLASSES_SHORT
+
     }
 
     fun saveValueType(value: String) {
@@ -216,6 +219,8 @@ class SaveHandler(
             savePreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), value)
         }
     }
+    val effectiveValueType: String
+        get() = if (teacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
 
     var valueElement by mutableIntStateOf(getValueElementSave())
     private fun getValueElementSave(): Int {

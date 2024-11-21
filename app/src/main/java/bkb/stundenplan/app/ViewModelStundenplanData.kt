@@ -30,14 +30,16 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var heightTopAppBar = mutableStateOf(80.dp)
 
 
+
+
     var isPortrait by mutableStateOf(true)
 
 
-    var TypesMapsObject: Scraping.TypeArrays? = null
+    var TypesMapsObject: MutableState<Scraping.TypeArrays?> = mutableStateOf(null)
 
     suspend fun updateTypesMapsObject() {
         val URL = URLMaker(this).getBaseUrl() + "frames/navbar.htm"
-        TypesMapsObject = scraping.extractVariables(scraping.navbarHTML(URL).toString())
+        TypesMapsObject.value = scraping.extractVariables(scraping.navbarHTML(URL).toString())
 
     }
 
@@ -68,14 +70,14 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         }
 
 
-    var typesMap: Pair<String?, Map<String, String>?>? = null
+    var typesMap: MutableState<Pair<String?, Map<String, String>?>?> = mutableStateOf(null)
         get() {
-            if (field != null) {
+            if (field.value != null) {
                 return field
             }
             else {
                 runBlocking(Dispatchers.IO) {
-                    field = Scraping().getTypesPairMap(scrapingSelectBoxes)
+                    field.value = Scraping().getTypesPairMap(scrapingSelectBoxes)
                 }
                 return field
             }
@@ -109,15 +111,17 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
 
     @Suppress("MemberVisibilityCanBePrivate")
-    val viewModelInitJob = Job()
+
     fun viewModelInit() {
-        CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             urlMaker.updateURL()
             scrapingSelectBoxes = scraping.getSelectBoxes(
                 saveHandler.teacherMode, saveHandler.valueLoginName, saveHandler.valuePassword
             )
 
-            val typesMap = async { typesMap }
+            val typesMap = async {
+                typesMap.value = Scraping().getTypesPairMap(scrapingSelectBoxes)
+            }
 
 
             val initElementMap = async {
@@ -127,7 +131,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                     updateTypesMapsObject()
                     elementMap = Pair(
                         "Art", ParameterWhichMayChangeOverTime.selectType(
-                            saveHandler.valueType, TypesMapsObject
+                            saveHandler.effectiveValueType, TypesMapsObject.value
                         )
                     )
                     elementMap?.let { if (it.second == null) elementMap = null }
@@ -141,7 +145,6 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             }
 
 
-
             val initDatesMap =
                 async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
             //val typesMapObjectDeffered= async {scraping.extractVariables(scraping.navbarHTML(URLMaker(this).getBaseUrl()).toString())}
@@ -149,8 +152,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             initDatesMap.await()
             typesMap.await()
             urlMaker.updateURL()
-           // updateTypesMapsObject()
-            viewModelInitJob.complete()
+            // updateTypesMapsObject()
+
         }
 
     }

@@ -65,7 +65,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
                         calenderWeekAsString(
                             valueDate
                         )
-                    }/${valueType}/${valueType}${numberOfElementAsString(valueElement)}.htm"
+                    }/${effectiveValueType}/${effectiveValueType}${numberOfElementAsString(valueElement)}.htm"
 
                 }
                 else if (!teacherMode) {

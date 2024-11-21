@@ -82,14 +82,14 @@ object StundenplanPage {
                         .weight(1f)
                 ) {
 
-                    if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
+
                         StundenplanWebview(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(0.dp),
                             viewModel = viewModel,
                         )
-                    }
+
                 }
 
 
@@ -116,7 +116,7 @@ object StundenplanPage {
                     modifier = Modifier.weight(1f)
                 ) {
 
-                    if (viewModel.saveHandler.valueDate != 0 && viewModel.saveHandler.valueElement != 0) {
+
                         StundenplanWebview(
                             modifier = Modifier.padding(
                                 start = 4.dp,
@@ -126,7 +126,7 @@ object StundenplanPage {
                             ),
                             viewModel = viewModel,
                         )
-                    }
+
                 }
 
             }
@@ -204,7 +204,7 @@ object StundenplanPage {
             }
 
         }
-        else if (!viewModel.saveHandler.experimentellerStundenplan) {
+        else  {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
@@ -212,6 +212,7 @@ object StundenplanPage {
                     )
                 }
             }, update = {
+
                 it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
                 it.getSettings().loadWithOverviewMode = true
                 it.getSettings().useWideViewPort = true
@@ -236,6 +237,8 @@ fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 fun TableWebView(
     modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
+    var styleHTML: HTMLStrings.Styling =
+        HTMLStrings.Styling(typeValue = viewModel.saveHandler.valueType, darkMode = viewModel.saveHandler.darkmode)
 
     val webView = remember { mutableStateOf<WebView?>(null) }
 
@@ -244,14 +247,6 @@ fun TableWebView(
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
             )
-            settings.apply {
-                loadWithOverviewMode = true
-                useWideViewPort = false
-                builtInZoomControls = true
-                displayZoomControls = false
-
-
-            }
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
@@ -261,12 +256,19 @@ fun TableWebView(
             webView.value = this
         }
     }, update = { view ->
-        view.setInitialScale(5)
+
+        view.getSettings().loadWithOverviewMode = true
+        view.getSettings().useWideViewPort = true
+        view.getSettings().builtInZoomControls = true
+        view.getSettings().displayZoomControls = false
+
+
+        //view.setInitialScale(5)
         runBlocking { viewModel.saveHandler.saveHandlerInitJob.join() }
+
+
         view.loadDataWithBaseURL(
-            null, HTMLStrings.styleExperimentellerStundenplan(
-                viewModel.saveHandler.darkmode,
-            ) + htmlString, "text/html", "UTF-8", null
+            null, HTMLStrings.styleExperimentellerStundenplan(styleHTML) + htmlString, "text/html", "UTF-8", null
         )
 
 
