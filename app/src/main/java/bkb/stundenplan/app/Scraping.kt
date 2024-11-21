@@ -4,20 +4,22 @@ package bkb.stundenplan.app
 
 
 import android.annotation.SuppressLint
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.CLASSES_FULL
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.CORRIDORS_FULL
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.FLC1
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.FLTE
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.ROOMS_FULL
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.navBarParameter.TEACHERS_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CLASSES_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CORRIDORS_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.FLC1
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.FLTE
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.ROOMS_FULL
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.TEACHERS_FULL
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
-import it.skrape.fetcher.extract
 import it.skrape.fetcher.extractIt
+import it.skrape.fetcher.response
 import it.skrape.fetcher.skrape
 import it.skrape.selects.Doc
 import it.skrape.selects.DocElement
 import it.skrape.selects.html5.table
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class Scraping {
@@ -53,7 +55,12 @@ class Scraping {
             selectBoxes = null
             println("Could not fetch select Boxes from the Web")
         }
-        return selectBoxes
+        return if (selectBoxes == null && teacherMode) {
+            getSelectBoxes()
+        }
+        else {
+            selectBoxes
+        }
     }
 
 
@@ -85,6 +92,7 @@ class Scraping {
     }
 
     fun getTypesPairMap(selectionBoxes: List<DocElement>?): Pair<String?, Map<String, String>?>? {
+
         if (selectionBoxes == null) return null
         val selectionBoxes = selectionBoxes
         var typesMap: MutableMap<String, String>?
@@ -100,7 +108,11 @@ class Scraping {
                 }
             }
         }
+
+
+
         return Pair(nameOfSelectBox, typesMap?.toMap())
+
     }
 
 
@@ -122,26 +134,27 @@ class Scraping {
         return Pair(nameOfSelectBox, elementMap?.toMap())
     }
 
-    suspend fun navbarHTML(navBarStundenplanURL: String): Doc?
-    {
+    suspend fun navbarHTML(navBarStundenplanURL: String): Doc? {
 
-        return try {
-        skrape(BrowserFetcher) {
-            request {
-
-                url = navBarStundenplanURL
-                timeout = 10000
-            }
-            extract {
-                htmlDocument {
-                    this
+        return withContext(Dispatchers.IO) {
+            try {
+                skrape(BrowserFetcher) {
+                    request {
+                        url = navBarStundenplanURL
+                        timeout = 10000
+                    }
+                    response {
+                        htmlDocument {
+                            this
+                        }
+                    }
                 }
             }
+            catch (e: Exception) {
+                println("could not load navbar")
+                null
+            }
         }
-    } catch (e: Exception) {
-        println("could not load navbar")
-        null
-    }
     }
 
 
@@ -154,11 +167,12 @@ class Scraping {
         arrayRegex.findAll(htmlContent).forEach { matchResult ->
             val (varName, varContent) = matchResult.destructured
             val items = varContent.split(",").map { it.trim().removeSurrounding("\"") }
-            val itemMap = items.mapIndexed { index, item -> (index + 1) to item }.toMap().toMutableMap()
+            val itemMap =
+                items.mapIndexed { index, item -> (index + 1) to item }.toMap().toMutableMap()
 
             when (varName) {
                 CLASSES_FULL -> result.classes = itemMap
-                TEACHERS_FULL  -> result.teachers = itemMap
+                TEACHERS_FULL -> result.teachers = itemMap
                 ROOMS_FULL -> result.rooms = itemMap
                 CORRIDORS_FULL -> result.corridors = itemMap
             }

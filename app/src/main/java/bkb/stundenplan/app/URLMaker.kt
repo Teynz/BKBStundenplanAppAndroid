@@ -3,6 +3,7 @@ package bkb.stundenplan.app
 import android.annotation.SuppressLint
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.runBlocking
 
 class URLMaker(private var viewModel: ViewModelStundenplanData) {
 
@@ -34,6 +35,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
 
     @SuppressLint("AuthLeak")
     fun updateURL() {
+
 
         fun calenderWeekAsString(week: Int): String {
             return when (week) {

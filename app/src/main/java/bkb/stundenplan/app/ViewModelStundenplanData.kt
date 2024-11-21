@@ -25,7 +25,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
     var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
-    var scraping = Scraping()
+    private var scraping = Scraping()
     var portraitMode = mutableStateOf(true)
     var heightTopAppBar = mutableStateOf(80.dp)
 
@@ -33,21 +33,21 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var isPortrait by mutableStateOf(true)
 
 
-    var TypesMapsObject:Scraping.TypeArrays? = null
+    var TypesMapsObject: Scraping.TypeArrays? = null
 
     suspend fun updateTypesMapsObject() {
         val URL = URLMaker(this).getBaseUrl() + "frames/navbar.htm"
         TypesMapsObject = scraping.extractVariables(scraping.navbarHTML(URL).toString())
 
-
     }
 
-     var scrapingSelectBoxes: List<DocElement>? = null
+    var scrapingSelectBoxes: List<DocElement>? = null
         get() {
 
             if (field != null) {
                 return field
-            } else {
+            }
+            else {
                 runBlocking { field = scraping.getSelectBoxes() }
                 return field
             }
@@ -58,7 +58,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         get() {
             if (field != null) {
                 return field
-            } else {
+            }
+            else {
                 runBlocking(Dispatchers.IO) {
                     field = scraping.getDatesPairMap(scrapingSelectBoxes)
                 }
@@ -71,7 +72,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         get() {
             if (field != null) {
                 return field
-            } else {
+            }
+            else {
                 runBlocking(Dispatchers.IO) {
                     field = Scraping().getTypesPairMap(scrapingSelectBoxes)
                 }
@@ -84,7 +86,8 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
         get() {
             if (field != null) {
                 return field
-            } else {
+            }
+            else {
                 runBlocking(Dispatchers.IO) {
                     field = scraping.getElementsPairMap(scrapingSelectBoxes)
                 }
@@ -105,24 +108,55 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     }
 
 
-
-
-
-
     @Suppress("MemberVisibilityCanBePrivate")
     val viewModelInitJob = Job()
-
-    init {
+    fun viewModelInit() {
         CoroutineScope(Dispatchers.IO + viewModelInitJob).launch {
-            scrapingSelectBoxes = scraping.getSelectBoxes()
-            val first = async { elementMap = scraping.getElementsPairMap(scrapingSelectBoxes) }
-            val second =
+            urlMaker.updateURL()
+            scrapingSelectBoxes = scraping.getSelectBoxes(
+                saveHandler.teacherMode, saveHandler.valueLoginName, saveHandler.valuePassword
+            )
+
+            val typesMap = async { typesMap }
+
+
+            val initElementMap = async {
+                if (saveHandler.teacherMode && saveHandler.valueLoginName.trim()
+                            .isNotEmpty() && saveHandler.valuePassword.trim().isNotEmpty()
+                ) {
+                    updateTypesMapsObject()
+                    elementMap = Pair(
+                        "Art", ParameterWhichMayChangeOverTime.selectType(
+                            saveHandler.valueType, TypesMapsObject
+                        )
+                    )
+                    elementMap?.let { if (it.second == null) elementMap = null }
+
+                }
+
+                if (elementMap == null) {
+                    elementMap = scraping.getElementsPairMap(scrapingSelectBoxes)
+
+                }
+            }
+
+
+
+            val initDatesMap =
                 async { selectCurrentDate() }//this function also creates the datesMap because of the getter function
             //val typesMapObjectDeffered= async {scraping.extractVariables(scraping.navbarHTML(URLMaker(this).getBaseUrl()).toString())}
-            first.await()
-            second.await()
+            initElementMap.await()
+            initDatesMap.await()
+            typesMap.await()
+            urlMaker.updateURL()
+           // updateTypesMapsObject()
             viewModelInitJob.complete()
         }
+
+    }
+
+    init {
+        viewModelInit()
     }
 
 

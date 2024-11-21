@@ -145,7 +145,7 @@ class SaveHandler(
         teacherMode = value
         savePreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), value)
         scope.launch {
-            viewModel.updateTypesMapsObject()
+            viewModel.viewModelInit()
         }
     }
 
@@ -165,7 +165,7 @@ class SaveHandler(
             savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
         }
         scope.launch {
-            viewModel.updateTypesMapsObject()
+            viewModel.viewModelInit()
         }
     }
 
@@ -184,7 +184,7 @@ class SaveHandler(
             savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
         }
         scope.launch {
-            viewModel.updateTypesMapsObject()
+            viewModel.viewModelInit()
         }
     }
 
@@ -236,50 +236,40 @@ class SaveHandler(
 
     init {
         scope.launch {
-            val darkModeDeferred = async {
-                getPreference(
-                    context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true
-                )
-            }
-            val adaptiveColorDeferred = async {
-                getPreference(
-                    context.dataStoreSettings, booleanPreferencesKey(ADAPTIVECOLOR), true
-                )
-            }
-            val experimentellerStundenplanDeferred = async {
-                getPreference(
-                    context.dataStoreSettings,
-                    booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN),
-                    true
-                )
-            }
+            val teacherModeDeferred = async { getTeacherModeSave() }
+            val valueLoginNameDeferred = async { getValueLoginNameSave() }
+            val valuePasswordDeferred = async { getValuePasswordSave() }
+            val valueDateDeferred = async { getValueDateSave() }
+            val valueTypeDeferred = async { getValueTypeSave() }
+            val valueElementDeferred = async { getValueElementSave() }
 
-            val valueDateDeferred =
-                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), 0) }
+            val darkModeDeferred = async { getDarkModeSave() }
+            val adaptiveColorDeferred = async { getAdaptiveColorSave() }
+            val experimentellerStundenplanDeferred = async { getExperimentellerStundenplanSave() }
 
-            val valueTypeDeferred = async {
-                getPreference(
-                    context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c"
-                )
-            }
-
-            val valueElementDeferred =
-                async { getPreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), 0) }
+            val alteStundenplaeneDeferred = async { getAlteStundenplaeneSave() }
 
 
 
-
-            darkmode = darkModeDeferred.await()
-
-            adaptiveColor = adaptiveColorDeferred.await()
-            experimentellerStundenplan = experimentellerStundenplanDeferred.await()
-
-
+            teacherMode = teacherModeDeferred.await()
+            valueLoginName = valueLoginNameDeferred.await()
+            valuePassword = valuePasswordDeferred.await()
             valueDate = valueDateDeferred.await()
             valueType = valueTypeDeferred.await()
             valueElement = valueElementDeferred.await()
 
-            viewModel.urlMaker.updateURL()
+
+            alteStundenplaene = alteStundenplaeneDeferred.await()
+            darkmode = darkModeDeferred.await()
+            adaptiveColor = adaptiveColorDeferred.await()
+            experimentellerStundenplan = experimentellerStundenplanDeferred.await()
+
+
+
+
+
+
+
             saveHandlerInitJob.complete()
         }
     }

@@ -30,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -40,8 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -54,16 +55,18 @@ fun SelectionDialog(
     ondialogStateChange: (DialogStateEnum) -> Unit
 ) {
     val searchFilter = rememberSaveable { mutableStateOf("") }
-    val configuration = LocalConfiguration.current
+
 
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
+    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.valueType, viewModel.TypesMapsObject)?: viewModel.elementMap?.second
+
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
-        viewModel.elementMap?.second?.filter { entry ->
+        currentElementMap?.filter { entry ->
             entry.value.replace(" ", "")
                 .contains(searchFilter.value.replace(" ", ""), ignoreCase = true)
         }
-    } else viewModel.elementMap?.second
+    } else currentElementMap
 
 
     if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
@@ -118,6 +121,8 @@ fun SelectionDialog(
                                         viewModel.saveHandler.saveValueType(it)
                                         viewModel.urlMaker.updateURL()
                                         viewModel.updateTablesScraped()
+                                        runBlocking {viewModel.updateTypesMapsObject()}
+
                                     },
                                     currentValue = viewModel.saveHandler.valueType
                                 )
@@ -129,6 +134,10 @@ fun SelectionDialog(
                             modifier = Modifier
                                 .weight(1F)
                         ) {
+
+
+
+
                             SectionSelectionDialog(modifier = Modifier.weight(1F),
                                 map = filteredElementMap,
                                 rowsOfSections = columnMultiplier,
