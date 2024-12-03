@@ -72,7 +72,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.webkit)
     implementation(libs.skrapeit)
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation(libs.jsoup)
+    implementation(libs.androidx.datastore.preferences)
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
