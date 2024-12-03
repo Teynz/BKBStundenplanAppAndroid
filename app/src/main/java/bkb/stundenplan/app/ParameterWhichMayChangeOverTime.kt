@@ -41,6 +41,12 @@ class ParameterWhichMayChangeOverTime {/*
         const val VERKLAVALUE = 0
         const val VERLEHVALUE = 0
 
+        const val STUNDENPLANLOGIN ="schueler"
+        const val STUNDENPLANPASSWORT ="stundenplan"
+
+        const val VERZEICHNISSNAMESCHUELER = "schueler"
+        const val VERZEICHNISSNAMELEHRER = "lehrer"
+
     }
 
 }

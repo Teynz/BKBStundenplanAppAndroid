@@ -2,6 +2,12 @@ package bkb.stundenplan.app
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANLOGIN
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANPASSWORT
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -12,23 +18,27 @@ class ScrapingJSoup {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getSelectBoxes(
         teacherMode: Boolean = false,
-        loginName: String = "schueler",
-        password: String = "stundenplan"
+        loginName: String = STUNDENPLANLOGIN,
+        password: String = STUNDENPLANPASSWORT
     ): Elements? {
 
+
         val navBarStundenplanURL =
-            "https://stundenplan.bkb.nrw/${if (teacherMode) "lehrer" else "schueler"}/frames/navbar.htm"
-        var selectBoxes: Elements? = null
+            "https://stundenplan.bkb.nrw/${if (teacherMode) VERZEICHNISSNAMELEHRER else VERZEICHNISSNAMESCHUELER}/frames/navbar.htm"
+        var selectBoxes: Elements?
 
         //authentication https://webscraping.ai/faq/jsoup/how-do-i-manage-sessions-and-authentication-with-jsoup
         val login = "$loginName:$password"
         val base64login = Base64.getEncoder().encodeToString(login.toByteArray())
 
         try {
-            var siteDoc =
-                Jsoup.connect(navBarStundenplanURL).header("Authorization", "Basic " + base64login)
-                    .timeout(10000).userAgent("Mozilla/5.0").get()
-            selectBoxes = siteDoc.select(".selectbox")
+            //withContext(Dispatchers.IO) {
+                val siteDoc =
+                    Jsoup.connect(navBarStundenplanURL)
+                        .header("Authorization", "Basic $base64login")
+                        .timeout(10000).userAgent("Mozilla/5.0").get()
+                selectBoxes = siteDoc.select(".selectbox")
+            //}
         }
         catch (e: Exception) {
             selectBoxes = null
@@ -43,22 +53,23 @@ class ScrapingJSoup {
     }
 
 
-    fun <K,V>getMap(selectBoxes: Element?): Map<K, V>?
-    {
-        var map: MutableMap<K, V>? = null
+    @Suppress("UNCHECKED_CAST")
+    fun <K, V> getMap(selectBox: Element?): Pair<String?, Map<K, V>?>? {
+        if (selectBox == null) return null
+        var map: MutableMap<K, V>?
         var nameOfSelectBox: String?
 
-        selectBoxes.let { sBox ->
-            if (sBox != null) {
-                nameOfSelectBox = sBox.attributes()["name"]
+        selectBox.let { sBox ->
+            nameOfSelectBox = sBox.attributes()["name"]
+            map = mutableMapOf()
 
-                sBox.select("option").forEach { listEntry ->
+            sBox.select("option").forEach { listEntry ->
 
-                    listEntry.attributes()["value"]?.let { value ->
-                        map?.let { it[value as K] = listEntry.text() as V }
+                listEntry.attributes()["value"]?.let { value ->
+                    map?.let { map ->
+                        map[value as K] = listEntry.text() as V
                     }
                 }
-
             }
 
 
@@ -66,7 +77,7 @@ class ScrapingJSoup {
 
 
 
-    return map
+        return Pair(nameOfSelectBox, map?.toMap())
     }
 
 }
