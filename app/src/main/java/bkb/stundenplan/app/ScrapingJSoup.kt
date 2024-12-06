@@ -13,6 +13,7 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLAN
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.TEACHERS_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
+import it.skrape.selects.DocElement
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -41,6 +42,7 @@ class ScrapingJSoup(
 
     private var navBarURL: String = getNavBarURL(teacherMode)
     private var navBarDoc: MutableState<Document?> = mutableStateOf(null)
+    var StundenplanSite: MutableState<Document?> = mutableStateOf(null)
 
 
     fun myInit(
@@ -173,4 +175,31 @@ class ScrapingJSoup(
         return result
     }
 
-}
+
+    fun updateStundenplanSite()
+    {
+        val login = "$loginName:$password"
+        val base64login = encodeToBase64(login)
+
+
+        try {
+            //withContext(Dispatchers.IO) {
+            StundenplanSite.value = Jsoup.connect().header("Authorization", "Basic $base64login")
+                .timeout(10000).userAgent("Mozilla/5.0").get()
+
+            //}
+        }
+        catch (e: Exception) {
+            StundenplanSite.value = null
+            println("Could not fetch navBar from the Web")
+        }
+    }
+
+
+
+
+    fun getStundenplanTable(siteDoc: Document?): Element? {
+        return siteDoc?.select("table")?.get(0)
+    }
+
+    }
