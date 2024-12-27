@@ -13,7 +13,9 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLAN
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.TEACHERS_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
-import it.skrape.selects.DocElement
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -25,7 +27,7 @@ class ScrapingJSoup(
     private var password: String = STUNDENPLANPASSWORT
 ) {
 
-    data class TypeArrays (
+    data class TypeArrays(
         var classes: MutableMap<Int, String> = mutableMapOf(),
         var teachers: MutableMap<Int, String> = mutableMapOf(),
         var rooms: MutableMap<Int, String> = mutableMapOf(),
@@ -33,35 +35,81 @@ class ScrapingJSoup(
         var flc1: Float = 1F,
         var flte: Float = 1F
     )
-    var typeArrays:TypeArrays? = null
 
-    val getNavBarURL: (Boolean) -> String = { teacherMode ->
+    var typeArrays: TypeArrays? = null
+    var datesPairMap: MutableState<Pair<String?, Map<Int, String>?>?> = mutableStateOf(null)
+    fun updateMapDates() {
+        updateSelectBoxes()
+        datesPairMap.value = getMap(selectBoxes.value?.get(0))
+
+    }
+
+    var typesPairMap: MutableState<Pair<String?, Map<String, String>?>?> = mutableStateOf(null)
+    fun updateMapTypes() {
+        updateSelectBoxes()
+        datesPairMap.value = getMap(selectBoxes.value?.get(1))
+
+    }
+
+    private val getNavBarURL: (Boolean) -> String = { teacherMode ->
         "https://stundenplan.bkb.nrw/${if (teacherMode) VERZEICHNISSNAMELEHRER else VERZEICHNISSNAMESCHUELER}/frames/navbar.htm"
     }
+    private var selectBoxes: MutableState<Elements?> = mutableStateOf(null)
 
 
     private var navBarURL: String = getNavBarURL(teacherMode)
     private var navBarDoc: MutableState<Document?> = mutableStateOf(null)
-    var StundenplanSite: MutableState<Document?> = mutableStateOf(null)
+    fun updateNavBarDoc() {
+        navBarDoc.value = getNavBarDoc(teacherMode, loginName, password)
+    }
+
+    var stundenplanSite: MutableState<Document?> = mutableStateOf(null)
+    fun updateStundenplanSite(url: String) {
+        val login = "$loginName:$password"
+        val base64login = encodeToBase64(login)
+
+
+        try {
+
+            stundenplanSite.value =
+                Jsoup.connect(url).header("Authorization", "Basic $base64login").timeout(10000)
+                    .userAgent("Mozilla/5.0").get()
+
+
+        }
+        catch (e: Exception) {
+            stundenplanSite.value = null
+            println("Could not fetch StundenplanSite from the Web")
+        }
+    }
+
 
 
     fun myInit(
         teacherMode: Boolean = false,
         loginName: String = STUNDENPLANLOGIN,
-        password: String = STUNDENPLANPASSWORT
+        password: String = STUNDENPLANPASSWORT,
+        onlyInitStundenplan: Boolean = false
     ) {
         this.teacherMode = teacherMode
         this.loginName = loginName
         this.password = password
-        getNavBarURL(this.teacherMode)
-        navBarDoc.value = getNavBarDoc(teacherMode, loginName, password)
-        val selectBoxes = getSelectBoxes(navBarDoc.value, teacherMode)
+
+
+
+        if (!onlyInitStundenplan) {
+            getNavBarURL(this.teacherMode)
+            CoroutineScope(Dispatchers.IO).launch {
+                updateNavBarDoc()
+                updateSelectBoxes()
+                typeArrays = extractVariables(navBarDoc.value.toString())
+                updateMapDates()
+            }
+        }
 
     }
 
-    init {
-        myInit(teacherMode, loginName, password)
-    }
+
 
     private fun encodeToBase64(input: String): String {
         val bytes = input.toByteArray()
@@ -70,6 +118,7 @@ class ScrapingJSoup(
         }
         else {
             android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+
         }
     }
 
@@ -79,7 +128,7 @@ class ScrapingJSoup(
         loginName: String = STUNDENPLANLOGIN,
         password: String = STUNDENPLANPASSWORT
     ): Document? {
-        var siteDoc: Document?
+        var navBarDoc: Document?
 
         //authentication https://webscraping.ai/faq/jsoup/how-do-i-manage-sessions-and-authentication-with-jsoup
         val login = "$loginName:$password"
@@ -87,31 +136,36 @@ class ScrapingJSoup(
 
         try {
             //withContext(Dispatchers.IO) {
-            siteDoc = Jsoup.connect(navBarURL).header("Authorization", "Basic $base64login")
+            navBarDoc = Jsoup.connect(navBarURL).header("Authorization", "Basic $base64login")
                 .timeout(10000).userAgent("Mozilla/5.0").get()
 
             //}
         }
         catch (e: Exception) {
-            siteDoc = null
+            navBarDoc = null
             println("Could not fetch navBar from the Web")
         }
-        return if (siteDoc == null && teacherMode) {
+        return if (navBarDoc == null && teacherMode) {
             getNavBarDoc()
         }
         else {
-            siteDoc
+            navBarDoc
         }
     }
 
 
+    fun updateSelectBoxes() {
+
+        selectBoxes.value = getSelectBoxes(navBarDoc.value, teacherMode)
+    }
+
     fun getSelectBoxes(
-        siteDoc: Document?, teacherMode: Boolean
+        navBarDoc: Document?, teacherMode: Boolean
     ): Elements? {
-        val selectBoxes: Elements? = siteDoc?.select(".selectbox")
+        val selectBoxes: Elements? = navBarDoc?.select(".selectbox")
 
         return if (selectBoxes == null && teacherMode) {
-            getSelectBoxes(siteDoc, false)
+            getSelectBoxes(navBarDoc, false)
         }
         else {
             selectBoxes
@@ -120,7 +174,7 @@ class ScrapingJSoup(
 
 
     @Suppress("UNCHECKED_CAST")
-    fun <K, V> getMap(selectBox: Element?): Pair<String?, Map<K, V>?>? {
+    private fun <K, V> getMap(selectBox: Element?): Pair<String?, Map<K, V>?>? {
         if (selectBox == null) return null
         var map: MutableMap<K, V>?
         var nameOfSelectBox: String?
@@ -144,7 +198,7 @@ class ScrapingJSoup(
         return Pair(nameOfSelectBox, map?.toMap())
     }
 
-    fun extractVariables(htmlContent: String): TypeArrays {
+    private fun extractVariables(htmlContent: String): TypeArrays {
         val result = TypeArrays()
 
         val arrayRegex = """var\s+(\w+)\s*=\s*\[(.*?)\];""".toRegex()
@@ -175,31 +229,4 @@ class ScrapingJSoup(
         return result
     }
 
-
-    fun updateStundenplanSite()
-    {
-        val login = "$loginName:$password"
-        val base64login = encodeToBase64(login)
-
-
-        try {
-            //withContext(Dispatchers.IO) {
-            StundenplanSite.value = Jsoup.connect().header("Authorization", "Basic $base64login")
-                .timeout(10000).userAgent("Mozilla/5.0").get()
-
-            //}
-        }
-        catch (e: Exception) {
-            StundenplanSite.value = null
-            println("Could not fetch navBar from the Web")
-        }
-    }
-
-
-
-
-    fun getStundenplanTable(siteDoc: Document?): Element? {
-        return siteDoc?.select("table")?.get(0)
-    }
-
-    }
+}

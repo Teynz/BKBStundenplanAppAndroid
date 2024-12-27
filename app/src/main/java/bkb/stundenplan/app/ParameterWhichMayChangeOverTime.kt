@@ -9,7 +9,7 @@ class ParameterWhichMayChangeOverTime {/*
 
 
     companion object {
-        fun selectType(type: String, typeArrays: Scraping.TypeArrays?): MutableMap<Int, String>? {
+        fun selectType(type: String, typeArrays: ScrapingJSoup.TypeArrays?): MutableMap<Int, String>? {
             return typeArrays?.let {
                 return when (type) {
                     "c" -> typeArrays.classes

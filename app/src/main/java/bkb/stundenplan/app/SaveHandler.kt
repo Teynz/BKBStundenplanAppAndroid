@@ -49,6 +49,9 @@ class SaveHandler(
         const val VALUEELEMENT = "ValueElement"
     }
 
+    var lambdaUpdateStundenplanSite: () -> Unit = {}
+
+
 
     private val Context.dataStoreSettings: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
     private val Context.dataStoreValues: DataStore<Preferences> by preferencesDataStore(name = VALUES)
@@ -133,7 +136,8 @@ class SaveHandler(
 
 
     var teacherMode by mutableStateOf(getTeacherModeSave())
-        private set
+
+
 
     private fun getTeacherModeSave(): Boolean {
         return runBlocking {

@@ -62,7 +62,7 @@ fun SelectionDialog(
 
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
-    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.effectiveValueType, viewModel.TypesMapsObject.value)?: viewModel.elementMap?.second
+    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.effectiveValueType, viewModel.scraping.typeArrays)
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
         currentElementMap?.filter { entry ->
@@ -95,16 +95,16 @@ fun SelectionDialog(
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
                             val weeksBackMap =
-                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.datesPairMap?.second) else null
+                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.value?.second) else null
                             SectionSelectionDialog(
                                 modifier = Modifier,
-                                map = viewModel.datesPairMap?.second,
+                                map = viewModel.scraping.datesPairMap.value?.second,
                                 secondMap = weeksBackMap,
                                 rowsOfSections = 1,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
                                     viewModel.urlMaker.updateURL()
-                                    viewModel.updateTablesScraped()
+                                    viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
                                 },
                                 swapOrderBeforeDisplay = true,
                                 currentValue = viewModel.saveHandler.valueDate
@@ -118,15 +118,15 @@ fun SelectionDialog(
                             ) {
                                 SectionSelectionDialog(
                                     modifier = Modifier,
-                                    map = viewModel.typesMap.value?.second,
+                                    map = viewModel.scraping.typesPairMap.value?.second,
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
                                         viewModel.urlMaker.updateURL()
-                                        viewModel.updateTablesScraped()
+                                        viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
 
                                         CoroutineScope(Dispatchers.IO ).launch  {
-                                            viewModel.updateTypesMapsObject()
+                                            viewModel.scraping.myInit()
                                         }
 
                                     },
@@ -150,7 +150,7 @@ fun SelectionDialog(
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueElement(it)
                                     viewModel.urlMaker.updateURL()
-                                    viewModel.updateTablesScraped()
+                                    viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
                                 },
                                 currentValue = viewModel.saveHandler.valueElement
                             )
