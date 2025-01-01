@@ -28,7 +28,7 @@ import kotlinx.coroutines.runBlocking
 class SaveHandler(
     private val context: Context,
     private val scope: CoroutineScope,
-    val viewModel: ViewModelStundenplanData
+    private val viewModel: ViewModelStundenplanData
 ) {
     companion object SaveNames {
         const val SETTINGS = "settings"
@@ -48,10 +48,6 @@ class SaveHandler(
         const val VALUETYPE = "ValueType"
         const val VALUEELEMENT = "ValueElement"
     }
-
-    var lambdaUpdateStundenplanSite: () -> Unit = {}
-
-
 
     private val Context.dataStoreSettings: DataStore<Preferences> by preferencesDataStore(name = SETTINGS)
     private val Context.dataStoreValues: DataStore<Preferences> by preferencesDataStore(name = VALUES)

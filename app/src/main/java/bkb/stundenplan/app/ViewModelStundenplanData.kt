@@ -30,7 +30,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     @Suppress("MemberVisibilityCanBePrivate")
 
     fun viewModelInit() {
-        CoroutineScope(Dispatchers.IO).launch {
+
             scraping.myInit(
                 saveHandler.teacherMode, saveHandler.valueLoginName, saveHandler.valuePassword
             )
@@ -38,15 +38,14 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             selectCurrentDate()
 
 
-        }
-        CoroutineScope(Dispatchers.IO).launch {
+
+
             scraping.updateStundenplanSite(urlMaker.urlStundenplan.value)
-        }
+
 
     }
 
     init {
-
         viewModelInit()
 
     }
@@ -68,9 +67,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
                 saveHandler.valueDate = it.key
             }
             urlMaker.updateURL()
-            if (saveHandler.experimentellerStundenplan) {
-                scraping.updateStundenplanSite(urlMaker.urlStundenplan.value)
-            }
+
         }
     }
 }

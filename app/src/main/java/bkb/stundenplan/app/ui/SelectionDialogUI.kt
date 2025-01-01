@@ -125,10 +125,6 @@ fun SelectionDialog(
                                         viewModel.urlMaker.updateURL()
                                         viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
 
-                                        CoroutineScope(Dispatchers.IO ).launch  {
-                                            viewModel.scraping.myInit()
-                                        }
-
                                     },
                                     currentValue = viewModel.saveHandler.effectiveValueType
                                 )
