@@ -62,14 +62,17 @@ fun SelectionDialog(
 
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
-    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(viewModel.saveHandler.effectiveValueType, viewModel.scraping.typeArrays)
+    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(
+        viewModel.saveHandler.effectiveValueType, viewModel.scraping.typeArrays
+    )
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
         currentElementMap?.filter { entry ->
             entry.value.replace(" ", "")
                 .contains(searchFilter.value.replace(" ", ""), ignoreCase = true)
         }
-    } else currentElementMap
+    }
+    else currentElementMap
 
 
     if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
@@ -104,7 +107,13 @@ fun SelectionDialog(
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
                                     viewModel.urlMaker.updateURL()
-                                    viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
+                                    viewModel.scraping.smartUpdate(
+                                        viewModel.saveHandler.teacherMode,
+                                        viewModel.saveHandler.valueLoginName,
+                                        viewModel.saveHandler.valuePassword,
+                                        false,
+                                        viewModel.urlMaker.urlStundenplan.value
+                                    )
                                 },
                                 swapOrderBeforeDisplay = true,
                                 currentValue = viewModel.saveHandler.valueDate
@@ -123,7 +132,13 @@ fun SelectionDialog(
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
                                         viewModel.urlMaker.updateURL()
-                                        viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
+                                        viewModel.scraping.smartUpdate(
+                                            viewModel.saveHandler.teacherMode,
+                                            viewModel.saveHandler.valueLoginName,
+                                            viewModel.saveHandler.valuePassword,
+                                            false,
+                                            viewModel.urlMaker.urlStundenplan.value
+                                        )
 
                                     },
                                     currentValue = viewModel.saveHandler.effectiveValueType
@@ -132,21 +147,24 @@ fun SelectionDialog(
                             Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
                         }
                         Column(
-                            verticalArrangement = Arrangement.Bottom,
-                            modifier = Modifier
-                                .weight(1F)
+                            verticalArrangement = Arrangement.Bottom, modifier = Modifier.weight(1F)
                         ) {
 
 
-
-
-                            SectionSelectionDialog(modifier = Modifier.weight(1F),
+                            SectionSelectionDialog(
+                                modifier = Modifier.weight(1F),
                                 map = filteredElementMap,
                                 rowsOfSections = columnMultiplier,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueElement(it)
                                     viewModel.urlMaker.updateURL()
-                                    viewModel.scraping.updateStundenplanSite(viewModel.urlMaker.urlStundenplan.value)
+                                    viewModel.scraping.smartUpdate(
+                                        viewModel.saveHandler.teacherMode,
+                                        viewModel.saveHandler.valueLoginName,
+                                        viewModel.saveHandler.valuePassword,
+                                        false,
+                                        viewModel.urlMaker.urlStundenplan.value
+                                    )
                                 },
                                 currentValue = viewModel.saveHandler.valueElement
                             )
@@ -195,8 +213,7 @@ fun SelectionDialog(
 
 
 fun weeksAgo(
-    datesMap: Map<Int, String>?,
-    weeksAgo: Int = 8
+    datesMap: Map<Int, String>?, weeksAgo: Int = 8
 ): Map<Int, String> {
     val firstValue = datesMap?.keys?.first()
 
@@ -208,8 +225,7 @@ fun weeksAgo(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
                 LocalDate.parse(datesMap?.values?.first(), formatter)
-                    .minusWeeks(weekCounter.toLong())
-                    .format(formatter)
+                    .minusWeeks(weekCounter.toLong()).format(formatter)
             }
             else {
                 null
@@ -246,12 +262,9 @@ private fun FindAndSave(
     modifierSaveButton: Modifier
 ) {
 
-    TextField(
-        modifier = modifierSearchTextField.border(
-            width = 0.3.dp,
-            color = Color.Gray,
-            shape = RoundedCornerShape(80.dp)
-        ),
+    TextField(modifier = modifierSearchTextField.border(
+        width = 0.3.dp, color = Color.Gray, shape = RoundedCornerShape(80.dp)
+    ),
         value = searchFilter.value,
         onValueChange = { searchFilter.value = it },
         label = { Text("Element Suchen") },

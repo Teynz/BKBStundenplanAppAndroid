@@ -31,16 +31,15 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     fun viewModelInit() {
 
-            scraping.myInit(
-                saveHandler.teacherMode, saveHandler.valueLoginName, saveHandler.valuePassword
-            )
-            urlMaker.updateURL()
-            selectCurrentDate()
+        urlMaker.updateURL()
+        scraping.myInit(
+            saveHandler.teacherMode,
+            saveHandler.valueLoginName,
+            saveHandler.valuePassword,
+            urlMaker.urlStundenplan.value
+        )
 
-
-
-
-            scraping.updateStundenplanSite(urlMaker.urlStundenplan.value)
+        selectCurrentDate()
 
 
     }

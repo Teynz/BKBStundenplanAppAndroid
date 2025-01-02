@@ -2,7 +2,10 @@ package bkb.stundenplan.app
 
 import android.os.Build
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CLASSES_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CORRIDORS_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.FLC1
@@ -14,9 +17,7 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.TEACHERS_FU
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -24,9 +25,9 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
 class ScrapingJSoup {
-    private var teacherMode: Boolean = false
-    private var loginName: String = STUNDENPLANLOGIN
-    private var password: String = STUNDENPLANPASSWORT
+    var teacherMode by mutableStateOf(false)
+    var loginName by mutableStateOf(STUNDENPLANLOGIN)
+    var password by mutableStateOf(STUNDENPLANPASSWORT)
 
     data class TypeArrays(
         var classes: MutableMap<Int, String> = mutableMapOf(),
@@ -89,26 +90,10 @@ class ScrapingJSoup {
     fun myInit(
         teacherMode: Boolean = false,
         loginName: String = STUNDENPLANLOGIN,
-        password: String = STUNDENPLANPASSWORT
+        password: String = STUNDENPLANPASSWORT,
+        stundenplanSiteUrl: String?
     ) {
-        this.teacherMode = teacherMode
-        this.loginName = loginName
-        this.password = password
-
-
-        getNavBarURL(this.teacherMode)
-        CoroutineScope(Dispatchers.IO).launch {
-
-
-            updateNavBarDoc()
-            updateSelectBoxes()
-            typeArrays = extractVariables(navBarDoc.value.toString())
-            updateMapDates()
-            updateMapTypes()
-
-
-        }
-
+        smartUpdate(teacherMode, loginName, password,true, stundenplanSiteUrl)
     }
 
 
