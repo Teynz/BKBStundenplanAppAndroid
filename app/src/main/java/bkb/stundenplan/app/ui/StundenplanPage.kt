@@ -188,7 +188,7 @@ object StundenplanPage {
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan && viewModel.saveHandler.valueType == "c") {
-            viewModel.scraping.stundenplanSite.value?.select("table")?.get(0)?.let { valueTablesScraped ->
+            viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->
                 TableWebView(
                     viewModel = viewModel,
                     htmlString = valueTablesScraped.toString(),

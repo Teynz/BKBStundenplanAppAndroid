@@ -61,7 +61,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     private fun selectCurrentDate() {
 
-        scraping.datesPairMap.value?.second?.forEach {
+        scraping.datesPairMap?.second?.forEach {
             if (it.value == firstMondayofWeek()) {
                 saveHandler.valueDate = it.key
             }

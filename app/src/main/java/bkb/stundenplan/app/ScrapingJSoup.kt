@@ -1,11 +1,9 @@
 package bkb.stundenplan.app
 
 import android.os.Build
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CLASSES_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CORRIDORS_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.FLC1
@@ -28,6 +26,7 @@ class ScrapingJSoup {
     var teacherMode by mutableStateOf(false)
     var loginName by mutableStateOf(STUNDENPLANLOGIN)
     var password by mutableStateOf(STUNDENPLANPASSWORT)
+    var stundenplanSiteUrl: String? by mutableStateOf(null)
 
     data class TypeArrays(
         var classes: MutableMap<Int, String> = mutableMapOf(),
@@ -38,36 +37,34 @@ class ScrapingJSoup {
         var flte: Float = 1F
     )
 
-    var typeArrays: TypeArrays? = null
-    var datesPairMap: MutableState<Pair<String?, Map<Int, String>?>?> = mutableStateOf(null)
+    var typeArrays by mutableStateOf<TypeArrays?>(null)
+    var datesPairMap by mutableStateOf<Pair<String?, Map<Int, String>?>?>(null)
     fun updateMapDates() {
-        if (selectBoxes.value == null) {
+        if (selectBoxes == null) {
             updateSelectBoxes()
         }
-        datesPairMap.value = getMap(selectBoxes.value?.get(0))
+        datesPairMap = getMap(selectBoxes?.get(0))
     }
 
-    var typesPairMap: MutableState<Pair<String?, Map<String, String>?>?> = mutableStateOf(null)
+    var typesPairMap by mutableStateOf<Pair<String?, Map<String, String>?>?>(null)
     fun updateMapTypes() {
-        if (selectBoxes.value == null) {
+        if (selectBoxes == null) {
             updateSelectBoxes()
         }
-        typesPairMap.value = getMap(selectBoxes.value?.get(1))
+        typesPairMap = getMap(selectBoxes?.get(1))
 
     }
 
     private val getNavBarURL: (Boolean) -> String = { teacherMode ->
         "https://stundenplan.bkb.nrw/${if (teacherMode) VERZEICHNISSNAMELEHRER else VERZEICHNISSNAMESCHUELER}/frames/navbar.htm"
     }
-    private var selectBoxes: MutableState<Elements?> = mutableStateOf(null)
-
-
-    private var navBarDoc: MutableState<Document?> = mutableStateOf(null)
+    var selectBoxes by mutableStateOf<Elements?>(null)
+    var navBarDoc by mutableStateOf<Document?>(null)
     fun updateNavBarDoc() {
-        navBarDoc.value = getNavBarDoc(teacherMode, loginName, password)
+        navBarDoc = getNavBarDoc(teacherMode, loginName, password)
     }
 
-    var stundenplanSite: MutableState<Document?> = mutableStateOf(null)
+    var stundenplanSite by mutableStateOf<Document?>(null)
     fun updateStundenplanSite(url: String) {
         val login = "$loginName:$password"
         val base64login = encodeToBase64(login)
@@ -75,13 +72,13 @@ class ScrapingJSoup {
 
         try {
 
-            stundenplanSite.value =
+            stundenplanSite =
                 Jsoup.connect(url).header("Authorization", "Basic $base64login").timeout(10000)
                     .userAgent("Mozilla/5.0").get()
 
         }
         catch (e: Exception) {
-            stundenplanSite.value = null
+            stundenplanSite = null
             println("Could not fetch StundenplanSite from the Web")
         }
     }
@@ -93,7 +90,7 @@ class ScrapingJSoup {
         password: String = STUNDENPLANPASSWORT,
         stundenplanSiteUrl: String?
     ) {
-        smartUpdate(teacherMode, loginName, password,true, stundenplanSiteUrl)
+        smartUpdate(teacherMode, loginName, password, true, stundenplanSiteUrl)
     }
 
 
@@ -144,7 +141,7 @@ class ScrapingJSoup {
 
     private fun updateSelectBoxes() {
 
-        selectBoxes.value = getSelectBoxes(navBarDoc.value, teacherMode)
+        selectBoxes = getSelectBoxes(navBarDoc, teacherMode)
     }
 
     private fun getSelectBoxes(
@@ -233,21 +230,27 @@ class ScrapingJSoup {
             CoroutineScope(Dispatchers.IO).launch {
 
                 if (updateNavBarValues) {
-                    navBarDoc.value = getNavBarDoc(teacherMode, loginName, password)
-                    selectBoxes.value = getSelectBoxes(navBarDoc.value, teacherMode)
+                    navBarDoc = getNavBarDoc(teacherMode, loginName, password)
+                    selectBoxes = getSelectBoxes(navBarDoc, teacherMode)
 
-                    if (selectBoxes.value == null) updateSelectBoxes()
-                    typeArrays = extractVariables(navBarDoc.value.toString())
-                    datesPairMap.value = getMap(selectBoxes.value?.get(0))
-                    typesPairMap.value = getMap(selectBoxes.value?.get(1))
+                    if (selectBoxes == null) updateSelectBoxes()
+                    typeArrays = extractVariables(navBarDoc.toString())
+                    datesPairMap = getMap(selectBoxes?.get(0))
+                    typesPairMap = getMap(selectBoxes?.get(1))
 
-                }
-                stundenplanSiteUrl?.let { url ->
-                    updateStundenplanSite(url = url)
                 }
 
             }
 
+        }
+
+        if (teacherMode != this.teacherMode || loginName != this.loginName || password != this.password || stundenplanSiteUrl != this.stundenplanSiteUrl) {
+            this.stundenplanSiteUrl = stundenplanSiteUrl
+            CoroutineScope(Dispatchers.IO).launch {
+                stundenplanSiteUrl?.let { url ->
+                    updateStundenplanSite(url = url)
+                }
+            }
         }
 
     }

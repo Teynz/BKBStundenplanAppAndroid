@@ -132,6 +132,8 @@ class SaveHandler(
 
 
     var teacherMode by mutableStateOf(getTeacherModeSave())
+    val effectiveTeacherMode: Boolean
+        get() = if (teacherMode && valuePassword.trim().isNotEmpty() && valueLoginName.trim().isNotEmpty()) teacherMode else false
 
 
 

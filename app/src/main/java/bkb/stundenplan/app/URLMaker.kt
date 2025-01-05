@@ -14,7 +14,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
 
     fun getBaseUrl(
     ): String {
-        return "https://${
+        return "https://${if (!viewModel.saveHandler.experimentellerStundenplan)"${
             if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
                         .isNotEmpty()
             ) viewModel.saveHandler.valueLoginName
@@ -24,7 +24,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
                         .isNotEmpty()
             ) viewModel.saveHandler.valuePassword
             else "stundenplan"
-        }@stundenplan.bkb.nrw/${
+        }@" else ""}stundenplan.bkb.nrw/${
             if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
                         .isNotEmpty() && viewModel.saveHandler.valuePassword.trim().isNotEmpty()
             ) "lehrer/"

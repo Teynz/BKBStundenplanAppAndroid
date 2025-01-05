@@ -98,10 +98,10 @@ fun SelectionDialog(
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
                             val weeksBackMap =
-                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.value?.second) else null
+                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap?.second) else null
                             SectionSelectionDialog(
                                 modifier = Modifier,
-                                map = viewModel.scraping.datesPairMap.value?.second,
+                                map = viewModel.scraping.datesPairMap?.second,
                                 secondMap = weeksBackMap,
                                 rowsOfSections = 1,
                                 onButtonClick = {
@@ -127,7 +127,7 @@ fun SelectionDialog(
                             ) {
                                 SectionSelectionDialog(
                                     modifier = Modifier,
-                                    map = viewModel.scraping.typesPairMap.value?.second,
+                                    map = viewModel.scraping.typesPairMap?.second,
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
