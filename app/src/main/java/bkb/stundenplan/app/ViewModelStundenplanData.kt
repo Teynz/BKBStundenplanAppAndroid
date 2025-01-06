@@ -8,9 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -21,8 +18,14 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     @SuppressLint("StaticFieldLeak")
     var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
-    var scraping = ScrapingJSoup()
-    var portraitMode = mutableStateOf(true)
+    val scraping by lazy {
+        ScrapingJSoup(
+            saveHandler.effectiveTeacherMode,
+            saveHandler.valueLoginName,
+            saveHandler.valuePassword,
+            urlMaker.urlStundenplan.value
+        )
+    }
     var heightTopAppBar = mutableStateOf(80.dp)
     var isPortrait by mutableStateOf(true)
 
@@ -32,12 +35,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     fun viewModelInit() {
 
         urlMaker.updateURL()
-        scraping.myInit(
-            saveHandler.teacherMode,
-            saveHandler.valueLoginName,
-            saveHandler.valuePassword,
-            urlMaker.urlStundenplan.value
-        )
+        scraping.smartUpdate( true, scraping.stundenplanSiteUrl)
 
         selectCurrentDate()
 
@@ -46,6 +44,16 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     init {
         viewModelInit()
+
+        viewModelScope.launch {
+            scraping.datesPairMap.collect { pair ->
+                if (pair != null) {
+                   selectCurrentDate()
+
+                }
+            }
+        }
+
 
     }
 
@@ -61,7 +69,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
     private fun selectCurrentDate() {
 
-        scraping.datesPairMap?.second?.forEach {
+        scraping.datesPairMap.value?.second?.forEach {
             if (it.value == firstMondayofWeek()) {
                 saveHandler.valueDate = it.key
             }

@@ -79,7 +79,7 @@ class SaveHandler(
             }
             else {
                 getPreference(context.dataStoreSettings, booleanPreferencesKey(DARKMODE), true)
-            }/*todo add as system*/
+            }
 
         }
     }
@@ -222,7 +222,7 @@ class SaveHandler(
         }
     }
     val effectiveValueType: String
-        get() = if (teacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
+        get() = if (effectiveTeacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
 
     var valueElement by mutableIntStateOf(getValueElementSave())
     private fun getValueElementSave(): Int {

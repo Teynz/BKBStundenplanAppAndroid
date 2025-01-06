@@ -16,17 +16,26 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNIS
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
-class ScrapingJSoup {
-    var teacherMode by mutableStateOf(false)
-    var loginName by mutableStateOf(STUNDENPLANLOGIN)
-    var password by mutableStateOf(STUNDENPLANPASSWORT)
-    var stundenplanSiteUrl: String? by mutableStateOf(null)
+class ScrapingJSoup(
+    private var teacherMode: Boolean,
+    private var loginName: String,
+    private var password: String,
+    var stundenplanSiteUrl: String?
+) {
+    private var oldTeacherMode: Boolean? = null
+    private var oldLoginName: String? = null
+    private var oldPassword: String? = null
+    private var oldStundenplanSiteUrl: String? = null
+
+
 
     data class TypeArrays(
         var classes: MutableMap<Int, String> = mutableMapOf(),
@@ -38,31 +47,21 @@ class ScrapingJSoup {
     )
 
     var typeArrays by mutableStateOf<TypeArrays?>(null)
-    var datesPairMap by mutableStateOf<Pair<String?, Map<Int, String>?>?>(null)
-    fun updateMapDates() {
-        if (selectBoxes == null) {
-            updateSelectBoxes()
-        }
-        datesPairMap = getMap(selectBoxes?.get(0))
-    }
+    private val _datesPairMap = MutableStateFlow<Pair<String?, Map<Int, String>?>?>(null)
+    val datesPairMap = _datesPairMap.asStateFlow()
+
+
+
 
     var typesPairMap by mutableStateOf<Pair<String?, Map<String, String>?>?>(null)
-    fun updateMapTypes() {
-        if (selectBoxes == null) {
-            updateSelectBoxes()
-        }
-        typesPairMap = getMap(selectBoxes?.get(1))
 
-    }
 
     private val getNavBarURL: (Boolean) -> String = { teacherMode ->
         "https://stundenplan.bkb.nrw/${if (teacherMode) VERZEICHNISSNAMELEHRER else VERZEICHNISSNAMESCHUELER}/frames/navbar.htm"
     }
-    var selectBoxes by mutableStateOf<Elements?>(null)
-    var navBarDoc by mutableStateOf<Document?>(null)
-    fun updateNavBarDoc() {
-        navBarDoc = getNavBarDoc(teacherMode, loginName, password)
-    }
+    private var selectBoxes by mutableStateOf<Elements?>(null)
+    private var navBarDoc by mutableStateOf<Document?>(null)
+
 
     var stundenplanSite by mutableStateOf<Document?>(null)
     fun updateStundenplanSite(url: String) {
@@ -84,14 +83,7 @@ class ScrapingJSoup {
     }
 
 
-    fun myInit(
-        teacherMode: Boolean = false,
-        loginName: String = STUNDENPLANLOGIN,
-        password: String = STUNDENPLANPASSWORT,
-        stundenplanSiteUrl: String?
-    ) {
-        smartUpdate(teacherMode, loginName, password, true, stundenplanSiteUrl)
-    }
+
 
 
     private fun encodeToBase64(input: String): String {
@@ -215,17 +207,14 @@ class ScrapingJSoup {
         return result
     }
 
-    public fun smartUpdate(
-        teacherMode: Boolean = this.teacherMode,
-        loginName: String = this.loginName,
-        password: String = this.password,
+     fun smartUpdate(
         updateNavBarValues: Boolean = true,
         stundenplanSiteUrl: String? = null,
     ) {
-        if (teacherMode != this.teacherMode || loginName != this.loginName || password != this.password) {
-            this.teacherMode = teacherMode
-            this.loginName = if (!teacherMode) STUNDENPLANLOGIN else loginName
-            this.password = if (!teacherMode) STUNDENPLANPASSWORT else password
+        if (teacherMode != oldTeacherMode || loginName != oldLoginName || password != oldLoginName) {
+
+
+
 
             CoroutineScope(Dispatchers.IO).launch {
 
@@ -235,7 +224,7 @@ class ScrapingJSoup {
 
                     if (selectBoxes == null) updateSelectBoxes()
                     typeArrays = extractVariables(navBarDoc.toString())
-                    datesPairMap = getMap(selectBoxes?.get(0))
+                    _datesPairMap.value = getMap(selectBoxes?.get(0))
                     typesPairMap = getMap(selectBoxes?.get(1))
 
                 }
@@ -244,7 +233,7 @@ class ScrapingJSoup {
 
         }
 
-        if (teacherMode != this.teacherMode || loginName != this.loginName || password != this.password || stundenplanSiteUrl != this.stundenplanSiteUrl) {
+        if (teacherMode != oldTeacherMode || loginName != oldLoginName || password != oldPassword || stundenplanSiteUrl != oldStundenplanSiteUrl) {
             this.stundenplanSiteUrl = stundenplanSiteUrl
             CoroutineScope(Dispatchers.IO).launch {
                 stundenplanSiteUrl?.let { url ->
@@ -252,6 +241,14 @@ class ScrapingJSoup {
                 }
             }
         }
+
+        if(oldTeacherMode != teacherMode) oldTeacherMode = teacherMode
+        if(oldLoginName != loginName) oldLoginName = loginName
+        if(oldPassword != password )oldPassword = password
+
+
+
+
 
     }
 

@@ -237,7 +237,7 @@ fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 fun TableWebView(
     modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
-    var styleHTML: HTMLStrings.Styling =
+    val styleHTML: HTMLStrings.Styling =
         HTMLStrings.Styling(typeValue = viewModel.saveHandler.valueType, darkMode = viewModel.saveHandler.darkmode)
 
     val webView = remember { mutableStateOf<WebView?>(null) }

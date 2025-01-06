@@ -58,10 +58,10 @@ object SettingsPage {
         var appInfoState by rememberSaveable { mutableStateOf(false) }
 
         if (appInfoState) {
-            ImpressumDialog(appInfoState = appInfoState, onStateChange = { appInfoState = it })
+            ImpressumDialog(onStateChange = { appInfoState = it })
         }
 
-        ImpressumDialog(appInfoState = appInfoState, onStateChange = { appInfoState = it })
+
         Column(
             modifier = modifier
                 .fillMaxWidth()
@@ -227,9 +227,9 @@ object SettingsPage {
 
     @Composable
     fun ImpressumDialog(
-        modifier: Modifier = Modifier, appInfoState: Boolean, onStateChange: (Boolean) -> Unit
+        modifier: Modifier = Modifier, onStateChange: (Boolean) -> Unit
     ) {
-        if (appInfoState) {
+
             Dialog(onDismissRequest = { onStateChange(false) }, content = {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -311,7 +311,7 @@ object SettingsPage {
                     }
                 }
             })
-        }
+
     }
 }
 
@@ -357,7 +357,7 @@ fun Login(
 @Preview(showBackground = true, apiLevel = 31, device = "id:pixel_8")
 @Composable
 fun SettingsAppPreview() {
-    ImpressumDialog(appInfoState = true, onStateChange = {})
+    ImpressumDialog( onStateChange = {})
 
 }
 

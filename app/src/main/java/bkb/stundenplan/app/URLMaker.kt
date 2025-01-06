@@ -3,32 +3,32 @@ package bkb.stundenplan.app
 import android.annotation.SuppressLint
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import kotlinx.coroutines.runBlocking
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANLOGIN
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANPASSWORT
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
 
 class URLMaker(private var viewModel: ViewModelStundenplanData) {
 
     @SuppressLint("AuthLeak")
 
     var urlStundenplan: MutableState<String> =
-        mutableStateOf("https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/")
+        mutableStateOf("https://$STUNDENPLANLOGIN:$STUNDENPLANPASSWORT@stundenplan.bkb.nrw/$VERZEICHNISSNAMESCHUELER/")
 
-    fun getBaseUrl(
+    private fun getBaseUrl(
     ): String {
         return "https://${if (!viewModel.saveHandler.experimentellerStundenplan)"${
-            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
-                        .isNotEmpty()
+            if (viewModel.saveHandler.effectiveTeacherMode
             ) viewModel.saveHandler.valueLoginName
-            else "schueler"
+            else STUNDENPLANLOGIN
         }:${
-            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valuePassword.trim()
-                        .isNotEmpty()
+            if (viewModel.saveHandler.effectiveTeacherMode
             ) viewModel.saveHandler.valuePassword
-            else "stundenplan"
+            else STUNDENPLANPASSWORT
         }@" else ""}stundenplan.bkb.nrw/${
-            if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.trim()
-                        .isNotEmpty() && viewModel.saveHandler.valuePassword.trim().isNotEmpty()
-            ) "lehrer/"
-            else "schueler/"
+            if (viewModel.saveHandler.effectiveTeacherMode
+            ) "$VERZEICHNISSNAMELEHRER/"
+            else "$VERZEICHNISSNAMESCHUELER/"
         }"
 
     }//returns base url for example "https://schueler:stundenplan@stundenplan.bkb.nrw/schueler/"
@@ -57,8 +57,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
         try {
             with(viewModel.saveHandler) {
 
-                if (valueLoginName.trim().isNotEmpty() && valuePassword.trim()
-                            .isNotEmpty() && teacherMode
+                if (effectiveTeacherMode
                 ) {
 
                     urlStundenplan.value = "${getBaseUrl()}${
@@ -68,7 +67,7 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
                     }/${effectiveValueType}/${effectiveValueType}${numberOfElementAsString(valueElement)}.htm"
 
                 }
-                else if (!teacherMode) {
+                else if (!effectiveTeacherMode) {
                     urlStundenplan.value = "${getBaseUrl()}${
                         calenderWeekAsString(
                             valueDate

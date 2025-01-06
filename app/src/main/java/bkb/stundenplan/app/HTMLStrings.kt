@@ -37,7 +37,7 @@ td{
         return """<style>
             ${if (styling.darkMode&&(styling.typeValue == ParameterWhichMayChangeOverTime.CLASSES_SHORT)) addDarkMode(styling) else ""}  
             ${
-            if (styling.typeValue == ParameterWhichMayChangeOverTime.CLASSES_SHORT) LayoutSchueler(
+            if (styling.typeValue == ParameterWhichMayChangeOverTime.CLASSES_SHORT) layoutSchueler(
                 styling
             )
             else ""
@@ -46,7 +46,7 @@ td{
 """
     }
 
-    fun LayoutSchueler(styling: Styling): String {
+    private fun layoutSchueler(styling: Styling): String {
         return """td{
 height: 1;
 width:1;

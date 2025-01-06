@@ -25,6 +25,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -42,10 +43,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -62,7 +59,7 @@ fun SelectionDialog(
 
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
-    var currentElementMap = ParameterWhichMayChangeOverTime.selectType(
+    val currentElementMap = ParameterWhichMayChangeOverTime.selectType(
         viewModel.saveHandler.effectiveValueType, viewModel.scraping.typeArrays
     )
 
@@ -98,21 +95,18 @@ fun SelectionDialog(
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
                             val weeksBackMap =
-                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap?.second) else null
+                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.collectAsState().value?.second) else null
                             SectionSelectionDialog(
                                 modifier = Modifier,
-                                map = viewModel.scraping.datesPairMap?.second,
+                                map = viewModel.scraping.datesPairMap.collectAsState().value?.second,
                                 secondMap = weeksBackMap,
                                 rowsOfSections = 1,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
                                     viewModel.urlMaker.updateURL()
                                     viewModel.scraping.smartUpdate(
-                                        viewModel.saveHandler.teacherMode,
-                                        viewModel.saveHandler.valueLoginName,
-                                        viewModel.saveHandler.valuePassword,
-                                        false,
-                                        viewModel.urlMaker.urlStundenplan.value
+
+                                        false, viewModel.urlMaker.urlStundenplan.value
                                     )
                                 },
                                 swapOrderBeforeDisplay = true,
@@ -120,7 +114,7 @@ fun SelectionDialog(
                             )
                         }
                         Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
-                        if (viewModel.saveHandler.teacherMode && viewModel.saveHandler.valueLoginName.isNotEmpty() && viewModel.saveHandler.valuePassword.isNotEmpty()) {
+                        if (viewModel.saveHandler.effectiveTeacherMode) {
                             Column(
                                 verticalArrangement = Arrangement.Bottom,
                                 modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
@@ -133,11 +127,8 @@ fun SelectionDialog(
                                         viewModel.saveHandler.saveValueType(it)
                                         viewModel.urlMaker.updateURL()
                                         viewModel.scraping.smartUpdate(
-                                            viewModel.saveHandler.teacherMode,
-                                            viewModel.saveHandler.valueLoginName,
-                                            viewModel.saveHandler.valuePassword,
-                                            false,
-                                            viewModel.urlMaker.urlStundenplan.value
+
+                                            false, viewModel.urlMaker.urlStundenplan.value
                                         )
 
                                     },
@@ -159,11 +150,7 @@ fun SelectionDialog(
                                     viewModel.saveHandler.saveValueElement(it)
                                     viewModel.urlMaker.updateURL()
                                     viewModel.scraping.smartUpdate(
-                                        viewModel.saveHandler.teacherMode,
-                                        viewModel.saveHandler.valueLoginName,
-                                        viewModel.saveHandler.valuePassword,
-                                        false,
-                                        viewModel.urlMaker.urlStundenplan.value
+                                        false, viewModel.urlMaker.urlStundenplan.value
                                     )
                                 },
                                 currentValue = viewModel.saveHandler.valueElement
