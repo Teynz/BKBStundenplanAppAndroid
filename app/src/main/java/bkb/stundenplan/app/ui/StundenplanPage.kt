@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.HTMLStrings
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
@@ -67,9 +68,9 @@ object StundenplanPage {
                     .padding(5.dp)
                     .height(45.dp),
 
-                    valueDate = viewModel.saveHandler.valueDate,
-                    valueType = viewModel.saveHandler.valueType,
-                    valueElement = viewModel.saveHandler.valueElement,
+                    valueDate = viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value,
+                    valueType = viewModel.saveHandler.valueType.collectAsStateWithLifecycle().value,
+                    valueElement = viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value,
                     onStateSelectedChange = { enumState ->
                         dialogState = enumState
 
@@ -106,9 +107,9 @@ object StundenplanPage {
                         .padding(top = 40.dp)
                         .padding(5.dp)
                         .height(50.dp),
-                    valueDate = viewModel.saveHandler.valueDate,
-                    valueType = viewModel.saveHandler.valueType,
-                    valueElement = viewModel.saveHandler.valueElement,
+                    valueDate = viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value,
+                    valueType = viewModel.saveHandler.valueType.collectAsStateWithLifecycle().value,
+                    valueElement = viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value,
                     onStateSelectedChange = { newState ->
                         dialogState = newState
                     })
@@ -187,7 +188,7 @@ object StundenplanPage {
         modifier: Modifier,
         viewModel: ViewModelStundenplanData,
     ) {
-        if (viewModel.saveHandler.experimentellerStundenplan && viewModel.saveHandler.valueType == "c") {
+        if (viewModel.saveHandler.experimentellerStundenplan.collectAsStateWithLifecycle().value && viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value == "c") {
             viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->
                 TableWebView(
                     viewModel = viewModel,
@@ -238,7 +239,7 @@ fun TableWebView(
     modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
     val styleHTML: HTMLStrings.Styling =
-        HTMLStrings.Styling(typeValue = viewModel.saveHandler.valueType, darkMode = viewModel.saveHandler.darkmode)
+        HTMLStrings.Styling(typeValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, darkMode = viewModel.saveHandler.darkmode)
 
     val webView = remember { mutableStateOf<WebView?>(null) }
 

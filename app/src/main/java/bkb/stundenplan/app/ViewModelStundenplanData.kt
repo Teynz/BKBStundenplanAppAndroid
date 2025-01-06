@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -15,6 +17,17 @@ import java.time.temporal.WeekFields
 import java.util.Locale
 
 class ViewModelStundenplanData(context: Context) : ViewModel() {
+    data class CombinedState(
+        val teacherMode: Boolean,
+        val valueDate: Int,
+        val valueType: String,
+        val valueElement: Int,
+        val loginName: String,
+        val password: String
+    )
+
+    private var previousState: CombinedState? = null
+
     @SuppressLint("StaticFieldLeak")
     var urlMaker = URLMaker(this)
     var saveHandler = SaveHandler(context, viewModelScope, this)
@@ -23,7 +36,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             saveHandler.effectiveTeacherMode,
             saveHandler.valueLoginName,
             saveHandler.valuePassword,
-            urlMaker.urlStundenplan.value
+            urlMaker.urlStundenplan
         )
     }
     var heightTopAppBar = mutableStateOf(80.dp)
@@ -35,25 +48,69 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     fun viewModelInit() {
 
         urlMaker.updateURL()
-        scraping.smartUpdate( true, scraping.stundenplanSiteUrl)
-
-        selectCurrentDate()
-
+        scraping.smartUpdate(true, saveHandler.experimentellerStundenplan.value)
 
     }
+
+    private fun tablesStateBackground()//Execute when either teacherMode, valueDate, valueType, valueElement, LoginName or Password changes
+    {
+
+
+        viewModelScope.launch {
+            previousState = CombinedState(
+                teacherMode = saveHandler.teacherMode.value,
+                valueDate = saveHandler.valueDate.value,
+                valueType = saveHandler.effectiveValueType.value,
+                valueElement = saveHandler.valueElement.value,
+                loginName = saveHandler.valueLoginName.value,
+                password = saveHandler.valuePassword.value
+            )
+
+            combine(
+                saveHandler.effectiveTeacherMode,
+                saveHandler.valueDate,
+                saveHandler.effectiveValueType,
+                saveHandler.valueElement,
+                saveHandler.valueLoginName,
+                saveHandler.valuePassword
+            ) {
+                CombinedState(
+                    teacherMode = saveHandler.effectiveTeacherMode.value,
+                    valueDate = saveHandler.valueDate.value,
+                    valueType = saveHandler.effectiveValueType.value,
+                    valueElement = saveHandler.valueElement.value,
+                    loginName = saveHandler.valueLoginName.value,
+                    password = saveHandler.valuePassword.value
+                )
+            }.collect { newState ->
+                urlMaker.updateURL()
+                scraping.smartUpdate(
+                    newState.teacherMode != previousState?.teacherMode || newState.loginName != previousState?.loginName || newState.password != previousState?.password,
+                    saveHandler.experimentellerStundenplan.value
+                )
+
+                previousState = newState
+            }
+
+        }
+    }
+
 
     init {
         viewModelInit()
 
         viewModelScope.launch {
-            scraping.datesPairMap.collect { pair ->
+            scraping.datesPairMap.first { pair ->
                 if (pair != null) {
-                   selectCurrentDate()
-
+                    selectCurrentDate()
+                    true // Coroutine wird beendet
+                }
+                else {
+                    false
                 }
             }
         }
-
+        tablesStateBackground()
 
     }
 
@@ -71,7 +128,7 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
 
         scraping.datesPairMap.value?.second?.forEach {
             if (it.value == firstMondayofWeek()) {
-                saveHandler.valueDate = it.key
+                saveHandler.saveValueDate(it.key)
             }
             urlMaker.updateURL()
 

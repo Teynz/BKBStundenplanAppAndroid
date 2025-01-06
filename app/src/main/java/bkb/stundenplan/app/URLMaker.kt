@@ -1,32 +1,31 @@
 package bkb.stundenplan.app
 
 import android.annotation.SuppressLint
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANLOGIN
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.STUNDENPLANPASSWORT
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMELEHRER
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNISSNAMESCHUELER
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class URLMaker(private var viewModel: ViewModelStundenplanData) {
 
     @SuppressLint("AuthLeak")
 
-    var urlStundenplan: MutableState<String> =
-        mutableStateOf("https://$STUNDENPLANLOGIN:$STUNDENPLANPASSWORT@stundenplan.bkb.nrw/$VERZEICHNISSNAMESCHUELER/")
+    var urlStundenplan: MutableStateFlow<String> =
+        MutableStateFlow("https://$STUNDENPLANLOGIN:$STUNDENPLANPASSWORT@stundenplan.bkb.nrw/$VERZEICHNISSNAMESCHUELER/")
 
     private fun getBaseUrl(
     ): String {
-        return "https://${if (!viewModel.saveHandler.experimentellerStundenplan)"${
-            if (viewModel.saveHandler.effectiveTeacherMode
-            ) viewModel.saveHandler.valueLoginName
+        return "https://${
+            if (viewModel.saveHandler.effectiveTeacherMode.value
+            ) viewModel.saveHandler.valueLoginName.value
             else STUNDENPLANLOGIN
         }:${
-            if (viewModel.saveHandler.effectiveTeacherMode
-            ) viewModel.saveHandler.valuePassword
+            if (viewModel.saveHandler.effectiveTeacherMode.value
+            ) viewModel.saveHandler.valuePassword.value
             else STUNDENPLANPASSWORT
-        }@" else ""}stundenplan.bkb.nrw/${
-            if (viewModel.saveHandler.effectiveTeacherMode
+        }@stundenplan.bkb.nrw/${
+            if (viewModel.saveHandler.effectiveTeacherMode.value
             ) "$VERZEICHNISSNAMELEHRER/"
             else "$VERZEICHNISSNAMESCHUELER/"
         }"
@@ -57,22 +56,22 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
         try {
             with(viewModel.saveHandler) {
 
-                if (effectiveTeacherMode
+                if (effectiveTeacherMode.value
                 ) {
 
                     urlStundenplan.value = "${getBaseUrl()}${
                         calenderWeekAsString(
-                            valueDate
+                            valueDate.value
                         )
-                    }/${effectiveValueType}/${effectiveValueType}${numberOfElementAsString(valueElement)}.htm"
+                    }/${effectiveValueType.value}/${effectiveValueType.value}${numberOfElementAsString(valueElement.value)}.htm"
 
                 }
-                else if (!effectiveTeacherMode) {
+                else if (!effectiveTeacherMode.value) {
                     urlStundenplan.value = "${getBaseUrl()}${
                         calenderWeekAsString(
-                            valueDate
+                            valueDate.value
                         )
-                    }/c/c${numberOfElementAsString(valueElement)}.htm"
+                    }/c/c${numberOfElementAsString(valueElement.value)}.htm"
                 }
             }
 
@@ -81,4 +80,8 @@ class URLMaker(private var viewModel: ViewModelStundenplanData) {
             println("URLMaker: Failed to update URL")
         }
     }
+
+
+
+
 }

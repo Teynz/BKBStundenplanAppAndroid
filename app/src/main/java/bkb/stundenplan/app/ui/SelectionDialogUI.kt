@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
@@ -60,7 +61,7 @@ fun SelectionDialog(
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
     val currentElementMap = ParameterWhichMayChangeOverTime.selectType(
-        viewModel.saveHandler.effectiveValueType, viewModel.scraping.typeArrays
+        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, viewModel.scraping.typeArrays
     )
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
@@ -103,18 +104,13 @@ fun SelectionDialog(
                                 rowsOfSections = 1,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
-                                    viewModel.urlMaker.updateURL()
-                                    viewModel.scraping.smartUpdate(
-
-                                        false, viewModel.urlMaker.urlStundenplan.value
-                                    )
                                 },
                                 swapOrderBeforeDisplay = true,
-                                currentValue = viewModel.saveHandler.valueDate
+                                currentValue = viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value
                             )
                         }
                         Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
-                        if (viewModel.saveHandler.effectiveTeacherMode) {
+                        if (viewModel.saveHandler.effectiveTeacherMode.collectAsStateWithLifecycle().value) {
                             Column(
                                 verticalArrangement = Arrangement.Bottom,
                                 modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
@@ -125,14 +121,8 @@ fun SelectionDialog(
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
-                                        viewModel.urlMaker.updateURL()
-                                        viewModel.scraping.smartUpdate(
-
-                                            false, viewModel.urlMaker.urlStundenplan.value
-                                        )
-
                                     },
-                                    currentValue = viewModel.saveHandler.effectiveValueType
+                                    currentValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value
                                 )
                             }
                             Spacer(modifier = Modifier.padding(end = horizontalPaddingRowsSpacer))
@@ -148,12 +138,8 @@ fun SelectionDialog(
                                 rowsOfSections = columnMultiplier,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueElement(it)
-                                    viewModel.urlMaker.updateURL()
-                                    viewModel.scraping.smartUpdate(
-                                        false, viewModel.urlMaker.urlStundenplan.value
-                                    )
                                 },
-                                currentValue = viewModel.saveHandler.valueElement
+                                currentValue = viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value
                             )
 
                             if (!viewModel.isPortrait) {

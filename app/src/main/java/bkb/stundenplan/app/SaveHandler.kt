@@ -5,7 +5,6 @@ package bkb.stundenplan.app
 import android.app.UiModeManager
 import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
@@ -19,8 +18,14 @@ import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -102,7 +107,9 @@ class SaveHandler(
         savePreference(context.dataStoreSettings, booleanPreferencesKey(ADAPTIVECOLOR), value)
     }
 
-    var experimentellerStundenplan by mutableStateOf(getExperimentellerStundenplanSave())
+    private val _experimentellerStundenplan = MutableStateFlow(getExperimentellerStundenplanSave())
+    val experimentellerStundenplan = _experimentellerStundenplan.asStateFlow()
+
     private fun getExperimentellerStundenplanSave(): Boolean {
         return runBlocking {
             getPreference(
@@ -112,7 +119,7 @@ class SaveHandler(
     }
 
     fun saveExperimentellerStundenplan(value: Boolean) {
-        experimentellerStundenplan = value
+        _experimentellerStundenplan.value = value
         savePreference(
             context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value
         )
@@ -130,11 +137,38 @@ class SaveHandler(
         savePreference(context.dataStoreSettings, booleanPreferencesKey(ALTESTUNDENPLENE), value)
     }
 
+    private val _valueLoginName = MutableStateFlow(getValueLoginNameSave())
+    val valueLoginName: StateFlow<String> = _valueLoginName.asStateFlow()
 
-    var teacherMode by mutableStateOf(getTeacherModeSave())
-    val effectiveTeacherMode: Boolean
-        get() = if (teacherMode && valuePassword.trim().isNotEmpty() && valueLoginName.trim().isNotEmpty()) teacherMode else false
+    private fun getValueLoginNameSave(): String {
+        return runBlocking {
+            getPreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), "")
+        }
+    }
 
+    fun saveLoginName(value: String) {
+        _valueLoginName.value = value
+        savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
+    }
+
+
+    private val _valuePassword = MutableStateFlow(getValuePasswordSave())
+    val valuePassword: StateFlow<String> = _valuePassword.asStateFlow()
+
+    private fun getValuePasswordSave(): String {
+        return runBlocking {
+            getPreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), "")
+        }
+    }
+
+    fun savePassword(value: String) {
+        _valuePassword.value = value
+        savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
+    }
+
+
+    private val _teacherMode = MutableStateFlow(getTeacherModeSave())
+    val teacherMode: StateFlow<Boolean> = _teacherMode.asStateFlow()
 
 
     private fun getTeacherModeSave(): Boolean {
@@ -144,52 +178,17 @@ class SaveHandler(
     }
 
     fun saveTeacherMode(value: Boolean) {
-        teacherMode = value
+        _teacherMode.value = value
         savePreference(context.dataStoreSettings, booleanPreferencesKey(TEACHERMODE), value)
-        scope.launch {
-            viewModel.viewModelInit()
-        }
     }
+    val effectiveTeacherMode: StateFlow<Boolean> =combine(_teacherMode, _valuePassword, _valueLoginName) { teacherMode, password, loginName ->
+        teacherMode && password.trim().isNotEmpty() && loginName.trim().isNotEmpty()
+    }.stateIn(scope, SharingStarted.Eagerly, false)
 
 
-    var valueLoginName by mutableStateOf(getValueLoginNameSave())
-        private set
 
-    private fun getValueLoginNameSave(): String {
-        return runBlocking {
-            getPreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), "")
-        }
-    }
-
-    fun saveLoginName(value: String) {
-        valueLoginName = value
-        savePreference(context.dataStoreValues, stringPreferencesKey(LOGINNAME), value)
-        scope.launch {
-            viewModel.viewModelInit()
-        }
-
-    }
-
-    var valuePassword by mutableStateOf(getValuePasswordSave())
-        private set
-
-    private fun getValuePasswordSave(): String {
-        return runBlocking {
-            getPreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), "")
-        }
-    }
-
-    fun savePassword(value: String) {
-        valuePassword = value
-        savePreference(context.dataStoreValues, stringPreferencesKey(PASSWORD), value)
-        scope.launch {
-            viewModel.viewModelInit()
-        }
-
-    }
-
-
-    var valueDate by mutableIntStateOf(getValueDateSave())
+    private val _valueDate = MutableStateFlow(getValueDateSave())
+    val valueDate: StateFlow<Int> = _valueDate.asStateFlow()
     private fun getValueDateSave(): Int {
         return runBlocking {
             getPreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), 0)
@@ -197,13 +196,12 @@ class SaveHandler(
     }
 
     fun saveValueDate(value: Int) {
-        valueDate = value
-        scope.launch {
-            savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), value)
-        }
+        _valueDate.value = value
+        scope.launch { savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), value) }
     }
 
-    var valueType by mutableStateOf(getValueTypeSave())
+    private val _valueType = MutableStateFlow(getValueTypeSave())
+    val valueType: StateFlow<String> = _valueType.asStateFlow()
 
     private fun getValueTypeSave(): String {
         var value:String
@@ -211,20 +209,21 @@ class SaveHandler(
             value = getPreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), "c")
         }
 
-        return if(teacherMode) value else ParameterWhichMayChangeOverTime.CLASSES_SHORT
+        return if(teacherMode.value) value else ParameterWhichMayChangeOverTime.CLASSES_SHORT
 
     }
-
     fun saveValueType(value: String) {
-        valueType = value
-        scope.launch {
-            savePreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), value)
-        }
+        _valueType.value = value
+        scope.launch { savePreference(context.dataStoreValues, stringPreferencesKey(VALUETYPE), value) }
     }
-    val effectiveValueType: String
-        get() = if (effectiveTeacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
 
-    var valueElement by mutableIntStateOf(getValueElementSave())
+
+    val effectiveValueType: StateFlow<String> = combine(_teacherMode, _valueType) { teacherMode, valueType ->
+        if (teacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
+    }.stateIn(scope, SharingStarted.Eagerly, ParameterWhichMayChangeOverTime.CLASSES_SHORT)
+
+    private val _valueElement = MutableStateFlow(getValueElementSave())
+    val valueElement: StateFlow<Int> = _valueElement.asStateFlow()
     private fun getValueElementSave(): Int {
         return runBlocking {
             getPreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), 0)
@@ -232,10 +231,8 @@ class SaveHandler(
     }
 
     fun saveValueElement(value: Int) {
-        valueElement = value
-        scope.launch {
-            savePreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), value)
-        }
+        _valueElement.value = value
+        scope.launch { savePreference(context.dataStoreValues, intPreferencesKey(VALUEELEMENT), value) }
     }
 
 
@@ -256,20 +253,18 @@ class SaveHandler(
 
             val alteStundenplaeneDeferred = async { getAlteStundenplaeneSave() }
 
-
-
-            teacherMode = teacherModeDeferred.await()
-            valueLoginName = valueLoginNameDeferred.await()
-            valuePassword = valuePasswordDeferred.await()
-            valueDate = valueDateDeferred.await()
-            valueType = valueTypeDeferred.await()
-            valueElement = valueElementDeferred.await()
+            _teacherMode.value = teacherModeDeferred.await()
+            _valueLoginName.value = valueLoginNameDeferred.await()
+            _valuePassword.value = valuePasswordDeferred.await()
+            _valueDate.value = valueDateDeferred.await()
+            _valueType.value = valueTypeDeferred.await()
+            _valueElement.value = valueElementDeferred.await()
 
 
             alteStundenplaene = alteStundenplaeneDeferred.await()
             darkmode = darkModeDeferred.await()
             adaptiveColor = adaptiveColorDeferred.await()
-            experimentellerStundenplan = experimentellerStundenplanDeferred.await()
+            _experimentellerStundenplan.value = experimentellerStundenplanDeferred.await()
 
 
 
@@ -279,6 +274,7 @@ class SaveHandler(
 
             saveHandlerInitJob.complete()
         }
+
     }
 
 }

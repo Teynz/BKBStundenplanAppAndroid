@@ -44,7 +44,7 @@ object MenuContent {
                 )
             },
             selected = stateSelected == StateSelectedEnum.SETTINGS,
-            onClick = { onStateSettingsChange() })//() Sehr wichtig, sonst wird die Funktion nicht aufgerufen, sondern nur weitergereicht
+            onClick = { onStateSettingsChange() })
     }
 }
 

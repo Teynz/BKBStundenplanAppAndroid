@@ -24,6 +24,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.ui.SettingsPage.ImpressumDialog
@@ -86,7 +88,7 @@ object SettingsPage {
             SwitchAbfrage(
                 mainText = stringResource(R.string.experimenteller_stundenplan),
                 subText = stringResource(R.string.experimenteller_stundenplan_description),
-                checked = viewModel.saveHandler.experimentellerStundenplan,
+                checked = viewModel.saveHandler.experimentellerStundenplan.collectAsStateWithLifecycle().value,
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
                 })
@@ -208,19 +210,20 @@ object SettingsPage {
 
     @Composable
     fun TeacherSection(modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData) {
-        Column {
+        val teacherMode by viewModel.saveHandler.teacherMode.collectAsStateWithLifecycle()
+
+        Column(modifier = modifier) {
             SwitchAbfrage(
                 mainText = stringResource(R.string.lehrer_modus),
                 subText = stringResource(R.string.schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden),
-                checked = viewModel.saveHandler.teacherMode,
-                onCheckedChange = { viewModel.saveHandler.saveTeacherMode(it) })
+                checked = teacherMode,
+                onCheckedChange = { viewModel.saveHandler.saveTeacherMode(it) }
+            )
 
-
-            if (viewModel.saveHandler.teacherMode) {
+            if (teacherMode) {
                 Spacer(modifier = Modifier.padding(5.dp))
                 Login(modifier = Modifier.fillMaxWidth(), viewModel = viewModel)
             }
-
         }
     }
 
@@ -328,7 +331,7 @@ fun Login(
             modifier = Modifier
                 .weight(1F)
                 .padding(end = 5.dp),
-            value = viewModel.saveHandler.valueLoginName,
+            value = viewModel.saveHandler.valueLoginName.collectAsStateWithLifecycle().value,
             onValueChange = { viewModel.saveHandler.saveLoginName(it) },
             label = { Text(stringResource(R.string.anmeldename)) },
             singleLine = true,
@@ -342,7 +345,7 @@ fun Login(
             modifier = Modifier
                 .weight(1F)
                 .padding(start = 5.dp),
-            value = viewModel.saveHandler.valuePassword,
+            value = viewModel.saveHandler.valuePassword.collectAsStateWithLifecycle().value,
             onValueChange = { viewModel.saveHandler.savePassword(it) },
             label = { Text(stringResource(R.string.passwort)) },
             singleLine = true,
