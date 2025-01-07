@@ -227,4 +227,7 @@ class ScrapingJSoup(
         }
     }
 
+    fun updateStundenplanCustomObject
+
+
 }
