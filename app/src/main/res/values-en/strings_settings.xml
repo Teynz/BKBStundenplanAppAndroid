@@ -8,7 +8,7 @@
     <string name="experimenteller_stundenplan_description">Activates darkmode compatibility with the timetable and zooms it up</string>
     <string name="alte_stundenpl_ne">Old Timetables</string>
     <string name="alte_stundenplaene_description">Shows the timetables of the last 8 weeks. Timetables may be incorrect and belong to another class</string>
-    <string name="impressum_Credits">The app was developed with the programming language Kotlin using the Jetpack Compose framework. The Skrape{It} library is used so that the app can load the timetables from the school server</string>
+    <string name="impressum_Credits">The app was developed with the programming language Kotlin using the Jetpack Compose framework. The JSoup library is used so that the app can load the timetables from the school server</string>
     <string name="impressum_kontakt">Responsible for the content:  Paul Brandt\nStudent\nBerufskolleg der Stadt Bottrop\nAn der Berufsschule 20\n46236 Bottrop\nTelefon: 02041 70627–0\nTelefax: 02041 70627–77\nschule@bkb.nrw</string>
     <string name="impressum_zusatz">If you have any complaints, comments or suggestions, please contact the current app maintainer\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
     <string name="impressum_urheberrecht">Copyright notice\n\nThe current source code is provided on request, and new versions are regularly handed over to the school. The app maintainer assumes no liability for the accuracy of the timetables.</string>
