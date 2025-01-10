@@ -110,7 +110,7 @@ fun Document.getWeek(): Week {
     }
 
 
-    var rowspanCounter = 0 //max 20 one cell takes 2
+    var rowspanCounter = 2 //max 20 Eine Zelle nimmt 2, startet deswegen für die erste zeile bei 2
     var cDayOne = 0
     var cDayTwo = 0
     var cDayThree = 0
@@ -135,7 +135,7 @@ fun Document.getWeek(): Week {
 
                     if (counterCell != cells.first()) {
 
-                        var oldRowspan = when (dayCounter) {
+                        var rowspanOfColumn = when (dayCounter) {
                             1 -> cDayOne
                             2 -> cDayTwo
                             3 -> cDayThree
@@ -144,8 +144,9 @@ fun Document.getWeek(): Week {
                             else -> 20
                         }
 
-                        while (rowspanCounter <= oldRowspan) {
-                            oldRowspan = when (dayCounter) {
+                        while (rowspanCounter <= rowspanOfColumn && dayCounter <= 5) {
+                            dayCounter++
+                            rowspanOfColumn = when (dayCounter) {
                                 1 -> cDayOne
                                 2 -> cDayTwo
                                 3 -> cDayThree
@@ -153,11 +154,11 @@ fun Document.getWeek(): Week {
                                 5 -> cDayFive
                                 else -> 20
                             }
-                            dayCounter++
-                        }
 
+                        }
+                        if (0 <dayCounter && dayCounter <= 5){
                         val multiplier = counterCell.attributes()["rowspan"]?.toInt() ?: 0
-                         when (dayCounter) {
+                        when (dayCounter) {
                             1 -> cDayOne += multiplier
                             2 -> cDayTwo += multiplier
                             3 -> cDayThree += multiplier
@@ -165,20 +166,22 @@ fun Document.getWeek(): Week {
                             5 -> cDayFive += multiplier
                         }
 
-                            week.accessDay(dayCounter)
-                            {
-                                it.subjects.add(
-                                    Subject(
-                                        multiplier, counterCell
-                                    )
+                        week.accessDay(dayCounter)
+                        {
+                            it.subjects.add(
+                                Subject(
+                                    multiplier, counterCell
                                 )
-                            }
+                            )
+                        }
 
+                    }
                         dayCounter++
                     }
                 }
                 rowspanCounter += 2
             }
+
         }
     }
     return week
