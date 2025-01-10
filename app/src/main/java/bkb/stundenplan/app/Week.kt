@@ -21,15 +21,15 @@ data class Subject(
 )
 
 data class Day(
-    var date: LocalDate?, var subjects: MutableList<Subject>?
+    var date: LocalDate? = null, var subjects: MutableList<Subject> = mutableListOf()
 )
 
 class Week(
-    var monday: Day?, var tuesday: Day?, var wednesday: Day?, var thursday: Day?, var friday: Day?
+    private var monday: Day = Day(), private var tuesday: Day = Day(), private var wednesday: Day = Day(), private var thursday: Day = Day(), private var friday: Day = Day()
 ) {
 
     fun asList(): List<Day?> = listOf(monday, tuesday, wednesday, thursday, friday)
-    fun asMap(): Map<LocalDate?,Day?> = mapOf(monday?.date to monday,tuesday?.date to tuesday,wednesday?.date to wednesday,thursday?.date to thursday,friday?.date to friday)
+    fun asMap(): Map<LocalDate?,Day?> = mapOf(monday.date to monday,tuesday.date to tuesday,wednesday.date to wednesday,thursday.date to thursday,friday.date to friday)
 
     fun setDay(index: Int, day: Day) {
         when (index)
@@ -41,7 +41,18 @@ class Week(
             5 -> friday = day
         }
     }
-    fun getDay(index: Int):Day? {
+    fun accessDay(index: Int, unit: (day:Day) -> Unit)
+    {
+        when (index)
+        {
+            1 -> unit(monday)
+            2 -> unit(tuesday)
+            3 -> unit(wednesday)
+            4 -> unit(thursday)
+            5 -> unit(friday)
+        }
+    }
+    fun getDay(index: Int):Day {
         return when (index)
         {
             1 -> monday
@@ -53,32 +64,27 @@ class Week(
         }
     }
 
-
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun getToday(): Day? {
         val today = LocalDate.now()
-         this.asMap().forEach(){if(it.key == today) return it.value}
+         this.asMap().forEach{if(it.key == today) return it.value}
     return null
     }
     @RequiresApi(Build.VERSION_CODES.O)
     fun getNextDayOrMonday(): Day? {
         val today = LocalDate.now()
-        this.asMap().forEach(){if(it.key == today.plusDays(1)) return it.value}
-        this.asMap().forEach(){if(it.key == today.plusDays(2)) return it.value}
+        this.asMap().forEach{if(it.key == today.plusDays(1)) return it.value}
+        this.asMap().forEach{if(it.key == today.plusDays(2)) return it.value}
         return null
     }
- /*
-    fun getWeek(): List<Day>? {
-        return null
-    }*/
+
 }
 
 /**
  * Return the Week as `List<Day>?`
  */
-fun Document.getWeek(): Week? {
-    data class weekStringsClass(
+fun Document.getWeek(): Week {
+    data class WeekStringsClass(
         var mo: String = "error",
         var tu: String = "error",
         var we: String = "error",
@@ -86,8 +92,8 @@ fun Document.getWeek(): Week? {
         var fr: String = "error"
     )
 
-    fun getDates(dates: Element): weekStringsClass {
-        var weekStrings = weekStringsClass()
+    fun getDates(dates: Element): WeekStringsClass {
+        val weekStrings = WeekStringsClass()
 
         var count = 0
         dates.select("td > table > tbody > tr > td > font").forEach {
@@ -111,8 +117,8 @@ fun Document.getWeek(): Week? {
     var cDayFour = 0
     var cDayFive = 0
 
-    var week: Week = Week()
-    var weekStrings = weekStringsClass()
+    val week: Week = Week()
+    var weekStrings = WeekStringsClass()
 
     val rows = this.select("table")?.get(0)?.selectFirst("table > tbody")?.select("> tr")
 
@@ -128,39 +134,52 @@ fun Document.getWeek(): Week? {
                 cells?.forEach { counterCell ->
 
                     if (counterCell != cells.first()) {
-                        val multiplier = counterCell.attributes()["rowspan"]?.toInt() ?: 0
-                        var currentRowspan = when (dayCounter) {
-                            1 -> {cDayOne += multiplier
-                                cDayOne}
-                            2 -> {cDayTwo += multiplier
-                                cDayTwo}
-                            3 -> {cDayThree += multiplier
-                                cDayThree}
-                            4 -> {cDayFour += multiplier
-                                cDayFour}
-                            5 -> {cDayFive += multiplier
-                             cDayFive}
+
+                        var oldRowspan = when (dayCounter) {
+                            1 -> cDayOne
+                            2 -> cDayTwo
+                            3 -> cDayThree
+                            4 -> cDayFour
+                            5 -> cDayFive
                             else -> 20
                         }
-                        var oldRowspan = currentRowspan - multiplier
 
-                        if (rowspanCounter > oldRowspan)// der rowspan der sein sollte ist  größer als der der momentan ist, deswegen ist noch platz
-                        {
-                            week.setDay()
-
+                        while (rowspanCounter <= oldRowspan) {
+                            oldRowspan = when (dayCounter) {
+                                1 -> cDayOne
+                                2 -> cDayTwo
+                                3 -> cDayThree
+                                4 -> cDayFour
+                                5 -> cDayFive
+                                else -> 20
+                            }
+                            dayCounter++
                         }
 
+                        val multiplier = counterCell.attributes()["rowspan"]?.toInt() ?: 0
+                         when (dayCounter) {
+                            1 -> cDayOne += multiplier
+                            2 -> cDayTwo += multiplier
+                            3 -> cDayThree += multiplier
+                            4 -> cDayFour += multiplier
+                            5 -> cDayFive += multiplier
+                        }
+
+                            week.accessDay(dayCounter)
+                            {
+                                it.subjects.add(
+                                    Subject(
+                                        multiplier, counterCell
+                                    )
+                                )
+                            }
 
                         dayCounter++
                     }
                 }
-
-
                 rowspanCounter += 2
             }
-
         }
-
     }
     return week
 }
