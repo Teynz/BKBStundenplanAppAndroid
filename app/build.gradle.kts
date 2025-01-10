@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId = "bkb.stundenplan.app"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 7
         versionName = "@string/app_Version"
