@@ -53,6 +53,10 @@ class Week(
             5 -> unit(friday)
         }
     }
+
+    /**
+     * Tage 1-5
+     */
     fun getDay(index: Int):Day {
         return when (index)
         {
