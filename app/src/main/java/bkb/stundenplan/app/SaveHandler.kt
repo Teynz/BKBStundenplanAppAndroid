@@ -40,6 +40,8 @@ class SaveHandler(
         const val DARKMODE = "darkmode"
         const val ADAPTIVECOLOR = "adaptiveColor"
         const val EXPERIMENTELLERSTUNDENPLAN = "ExperimentellerStundenplan"
+        const val STUNDENPLANZOOM = "StundenplanZoom"
+        const val FANCYSTUNDENPLAN = "FancyStundenplan"
         const val ALTESTUNDENPLENE = "AlteStundenplaene"
         const val STUNDENPLANPADDING = "StundenplanPadding"
 
@@ -124,6 +126,75 @@ class SaveHandler(
             context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value
         )
     }
+
+    private val _stundenplanZoom = MutableStateFlow(getStundenplanZoomSave())
+    val stundenplanZoom = _stundenplanZoom.asStateFlow()
+    val effectiveStundenplanZoom= combine(stundenplanZoom, experimentellerStundenplan) {stundenplanZoom, experimentellerStundenplan->
+        experimentellerStundenplan && stundenplanZoom
+    }.stateIn(scope, SharingStarted.Eagerly, false)
+
+    private fun getStundenplanZoomSave(): Boolean {
+        return runBlocking {
+            getPreference(
+                context.dataStoreSettings, booleanPreferencesKey(STUNDENPLANZOOM), false
+            )
+        }
+    }
+
+    fun saveStundenplanZoom(value: Boolean) {
+        _stundenplanZoom.value = value
+        savePreference(
+            context.dataStoreSettings, booleanPreferencesKey(STUNDENPLANZOOM), value
+        )
+    }
+
+
+
+
+    private val _fancyStundenplan = MutableStateFlow(getFancyStundenplanSave())
+    val fancyStundenplan = _fancyStundenplan.asStateFlow()
+    val effectiveFancyStundenplan= combine(fancyStundenplan, experimentellerStundenplan) {fancyStundenplan, experimentellerStundenplan->
+        experimentellerStundenplan && fancyStundenplan
+    }.stateIn(scope, SharingStarted.Eagerly, false)
+
+    private fun getFancyStundenplanSave(): Boolean {
+        return runBlocking {
+            getPreference(
+                context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), false
+            )
+        }
+    }
+
+    fun saveFancyStundenplan(value: Boolean) {
+        _fancyStundenplan.value = value
+        savePreference(
+            context.dataStoreSettings, booleanPreferencesKey(EXPERIMENTELLERSTUNDENPLAN), value
+        )
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     var alteStundenplaene by mutableStateOf(getAlteStundenplaeneSave())
     private fun getAlteStundenplaeneSave(): Boolean {
@@ -250,6 +321,10 @@ class SaveHandler(
             val darkModeDeferred = async { getDarkModeSave() }
             val adaptiveColorDeferred = async { getAdaptiveColorSave() }
             val experimentellerStundenplanDeferred = async { getExperimentellerStundenplanSave() }
+            val stundenplanZoomDeferred = async { getStundenplanZoomSave()  }
+            val fancyStundenplanDeferred = async { getFancyStundenplanSave() }
+
+
 
             val alteStundenplaeneDeferred = async { getAlteStundenplaeneSave() }
 
@@ -265,6 +340,9 @@ class SaveHandler(
             darkmode = darkModeDeferred.await()
             adaptiveColor = adaptiveColorDeferred.await()
             _experimentellerStundenplan.value = experimentellerStundenplanDeferred.await()
+            _stundenplanZoom.value = stundenplanZoomDeferred.await()
+            _fancyStundenplan.value = fancyStundenplanDeferred.await()
+
 
 
 

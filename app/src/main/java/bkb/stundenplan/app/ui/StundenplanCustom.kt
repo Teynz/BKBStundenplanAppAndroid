@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.sp
 import bkb.stundenplan.app.Day
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
-import bkb.stundenplan.app.exampleStundenplanString
 import bkb.stundenplan.app.getWeek
 import org.jsoup.Jsoup
 
@@ -105,7 +104,7 @@ class StundenplanCustom {
     }
 
 
-    @Composable
+    /*@Composable
     @Preview
     fun DayColumnPreview() {
     val doc = Jsoup.parse(exampleStundenplanString().html)
@@ -113,9 +112,5 @@ class StundenplanCustom {
     val week = doc.getWeek()
 
         DayColumn(Modifier, week.getDay(1), Color.Red, 16.sp)
-
-
-
-
-    }
+    }*/
 }
