@@ -44,11 +44,8 @@ class StundenplanCustom {
 
                     SubjectToComposeable(Modifier, subject, farbeVertretung, standardTextSize)
                 }
-
             }
-
         }
-
     }
 
     @Composable

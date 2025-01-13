@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id ("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.compose.compiler)
-
 }
 
 android {
@@ -91,6 +90,4 @@ dependencies {
     //kapt(libs.androidx.lifecycle.compiler) removed 18.11.24
     // alternately - if using Java8, use the following instead of lifecycle-compiler
     //implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
-
-
 }

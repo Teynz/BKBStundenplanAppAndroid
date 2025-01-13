@@ -129,9 +129,7 @@ class SaveHandler(
 
     private val _stundenplanZoom = MutableStateFlow(getStundenplanZoomSave())
     val stundenplanZoom = _stundenplanZoom.asStateFlow()
-    val effectiveStundenplanZoom= combine(stundenplanZoom, experimentellerStundenplan) {stundenplanZoom, experimentellerStundenplan->
-        experimentellerStundenplan && stundenplanZoom
-    }.stateIn(scope, SharingStarted.Eagerly, false)
+
 
     private fun getStundenplanZoomSave(): Boolean {
         return runBlocking {
@@ -153,9 +151,7 @@ class SaveHandler(
 
     private val _fancyStundenplan = MutableStateFlow(getFancyStundenplanSave())
     val fancyStundenplan = _fancyStundenplan.asStateFlow()
-    val effectiveFancyStundenplan= combine(fancyStundenplan, experimentellerStundenplan) {fancyStundenplan, experimentellerStundenplan->
-        experimentellerStundenplan && fancyStundenplan
-    }.stateIn(scope, SharingStarted.Eagerly, false)
+
 
     private fun getFancyStundenplanSave(): Boolean {
         return runBlocking {
@@ -292,6 +288,14 @@ class SaveHandler(
     val effectiveValueType: StateFlow<String> = combine(_teacherMode, _valueType) { teacherMode, valueType ->
         if (teacherMode) valueType else ParameterWhichMayChangeOverTime.CLASSES_SHORT
     }.stateIn(scope, SharingStarted.Eagerly, ParameterWhichMayChangeOverTime.CLASSES_SHORT)
+
+    val effectiveFancyStundenplan= combine(fancyStundenplan, experimentellerStundenplan, valueType) {fancyStundenplan, experimentellerStundenplan, valueType->
+        experimentellerStundenplan && fancyStundenplan && (valueType == "c"||valueType == "t"||valueType == "r")
+    }.stateIn(scope, SharingStarted.Eagerly, false)
+
+    val effectiveStundenplanZoom= combine(stundenplanZoom, experimentellerStundenplan, valueType) {stundenplanZoom, experimentellerStundenplan, valueType->
+        experimentellerStundenplan && stundenplanZoom && (valueType == "c"||valueType == "t"||valueType == "r")
+    }.stateIn(scope, SharingStarted.Eagerly, false)
 
     private val _valueElement = MutableStateFlow(getValueElementSave())
     val valueElement: StateFlow<Int> = _valueElement.asStateFlow()

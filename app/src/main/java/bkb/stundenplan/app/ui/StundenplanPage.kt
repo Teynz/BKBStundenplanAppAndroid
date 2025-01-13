@@ -84,20 +84,19 @@ object StundenplanPage {
                 ) {
 
 
-                        StundenplanWebview(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(0.dp),
-                            viewModel = viewModel,
-                        )
+                    StundenplanWebview(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(0.dp),
+                        viewModel = viewModel,
+                    )
 
                 }
 
 
             }
 
-        }
-        else {
+        } else {
             Row(
                 verticalAlignment = Alignment.Top, modifier = modifier.fillMaxWidth()
             ) {
@@ -118,15 +117,15 @@ object StundenplanPage {
                 ) {
 
 
-                        StundenplanWebview(
-                            modifier = Modifier.padding(
-                                start = 4.dp,
-                                end = 8.dp,
-                                top = 2.dp,
-                                bottom = 2.dp
-                            ),
-                            viewModel = viewModel,
-                        )
+                    StundenplanWebview(
+                        modifier = Modifier.padding(
+                            start = 4.dp,
+                            end = 8.dp,
+                            top = 2.dp,
+                            bottom = 2.dp
+                        ),
+                        viewModel = viewModel,
+                    )
 
                 }
 
@@ -182,6 +181,56 @@ object StundenplanPage {
     }
 
 
+    @Composable
+    fun Stundenplan(
+        modifier: Modifier,
+        viewModel: ViewModelStundenplanData,
+    ) {
+        if (viewModel.saveHandler.effectiveFancyStundenplan.collectAsStateWithLifecycle().value) {
+
+
+
+
+
+
+
+        } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
+            viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->
+                TableWebView(
+                    viewModel = viewModel,
+                    htmlString = valueTablesScraped.toString(),
+                    modifier = modifier
+                )
+            } ?: run {
+                Text(
+                    modifier = modifier, text = "Fehler: Experimenteller Stundenplan"
+                )
+
+            }
+
+        } else {
+            AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                WebView(it).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+            }, update = {
+
+                it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
+                it.getSettings().loadWithOverviewMode = true
+                it.getSettings().useWideViewPort = true
+                it.getSettings().builtInZoomControls = true
+                it.getSettings().displayZoomControls = false
+            })
+
+
+        }
+
+
+    }
+
+
     @SuppressLint("AuthLeak")
     @Composable
     fun StundenplanWebview(
@@ -204,8 +253,7 @@ object StundenplanPage {
 
             }
 
-        }
-        else  {
+        } else {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
@@ -239,7 +287,10 @@ fun TableWebView(
     modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
     val styleHTML: HTMLStrings.Styling =
-        HTMLStrings.Styling(typeValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, darkMode = viewModel.saveHandler.darkmode)
+        HTMLStrings.Styling(
+            typeValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value,
+            darkMode = viewModel.saveHandler.darkmode
+        )
 
     val webView = remember { mutableStateOf<WebView?>(null) }
 
@@ -269,7 +320,11 @@ fun TableWebView(
 
 
         view.loadDataWithBaseURL(
-            null, HTMLStrings.styleExperimentellerStundenplan(styleHTML) + htmlString, "text/html", "UTF-8", null
+            null,
+            HTMLStrings.styleExperimentellerStundenplan(styleHTML) + htmlString,
+            "text/html",
+            "UTF-8",
+            null
         )
 
 
