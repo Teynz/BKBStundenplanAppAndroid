@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -50,15 +51,18 @@ import bkb.stundenplan.app.ui.SettingsPage
 import bkb.stundenplan.app.ui.StateSelectedEnum
 import bkb.stundenplan.app.ui.StundenplanPage
 import bkb.stundenplan.app.ui.theme.BKBStundenplanTheme
+import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity()
+{
 
 
     @SuppressLint("StateFlowValueCalledInComposition")
 
-    override fun attachBaseContext(newBase: Context?) {
+    override fun attachBaseContext(newBase: Context?)
+    {
         val newOverride = Configuration(newBase?.resources?.configuration)
         newOverride.fontScale = 1.0f
         applyOverrideConfiguration(newOverride)
@@ -67,7 +71,8 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -75,8 +80,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             //Viewmodel, welches die Daten beinhaltet, welche sich während der Nutzung der App ändern
             val appViewModel =
-                viewModel<ViewModelStundenplanData>(factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                viewModel<ViewModelStundenplanData>(factory = object : ViewModelProvider.Factory
+                {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T
+                    {
                         @Suppress("UNCHECKED_CAST") return ViewModelStundenplanData(context = applicationContext) as T
                     }
                 })
@@ -84,11 +91,13 @@ class MainActivity : ComponentActivity() {
 
             appViewModel.isPortrait =
                 LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
-            appViewModel.heightTopAppBar.value =
-                if (!appViewModel.isPortrait) 60.dp else 100.dp
+            appViewModel.heightTopAppBar.value = if (!appViewModel.isPortrait) 60.dp else 100.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
-                AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
+                AppContent(
+                        modifier = Modifier.fillMaxSize(),
+                        appViewModel
+                          )
             }
         }
     }
@@ -97,120 +106,136 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(
-    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
-) {
-    LeftSideBar(modifier, appViewModel)
+        modifier: Modifier = Modifier,
+        appViewModel: ViewModelStundenplanData = viewModel()
+              )
+{
+    LeftSideBar(
+            modifier,
+            appViewModel
+               )
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeftSideBar(
-    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
-) {
+        modifier: Modifier = Modifier,
+        appViewModel: ViewModelStundenplanData = viewModel()
+               )
+{
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = false,
-        drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
-            Row(
-                horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Menu", modifier = Modifier.padding(16.dp)
-                )
-                IconButton(onClick = {
-                    scope.launch {
-                        drawerState.apply {
-                            if (isClosed) open() else close()
-                        }
-                    }
-                }, content = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = "Zurück Pfeil"
-                    )
-                })
-            }
+    ModalNavigationDrawer(drawerState = drawerState,
+                          gesturesEnabled = false,
+                          drawerContent = {
+                              ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
+                                  Row(
+                                          horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
+                                          verticalAlignment = Alignment.CenterVertically,
+                                     ) {
+                                      Text(
+                                              text = "Menu",
+                                              modifier = Modifier.padding(16.dp)
+                                          )
+                                      IconButton(onClick = {
+                                          scope.launch {
+                                              drawerState.apply {
+                                                  if (isClosed) open() else close()
+                                              }
+                                          }
+                                      },
+                                                 content = {
+                                                     Icon(
+                                                             painter = painterResource(id = R.drawable.back),
+                                                             contentDescription = "Zurück Pfeil"
+                                                         )
+                                                 })
+                                  }
 
-            HorizontalDivider()
+                                  HorizontalDivider()
 
-            MenuContent.LoadMenuContent(onStateSettingsChange = {
-                stateSelected =
-                    if (stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
-                    else StateSelectedEnum.SETTINGS
+                                  MenuContent.LoadMenuContent(
+                                          onStateSettingsChange = {
+                                              stateSelected =
+                                                  if (stateSelected == StateSelectedEnum.SETTINGS) StateSelectedEnum.UNSELECTED
+                                                  else StateSelectedEnum.SETTINGS
 
-            }, onStateStundenplanChange = {
-                stateSelected =
-                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
-                    else StateSelectedEnum.STUNDENPLAN
-            }, stateSelected = stateSelected
-            )
-            Spacer(modifier.weight(1f))
-            Text(
-                textAlign = TextAlign.Right,
-                lineHeight = 10.sp,
-                fontSize = 10.sp,
-                text = stringResource(
-                    R.string.version,
-                    stringResource(R.string.app_Version),
-                ),
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(4.dp)
-            )
-        }
-    }) {
+                                          },
+                                          onStateStundenplanChange = {
+                                              stateSelected =
+                                                  if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
+                                                  else StateSelectedEnum.STUNDENPLAN
+                                          },
+                                          stateSelected = stateSelected
+                                                             )
+                                  Spacer(modifier.weight(1f))
+                                  Text(
+                                          textAlign = TextAlign.Right,
+                                          lineHeight = 10.sp,
+                                          fontSize = 10.sp,
+                                          text = stringResource(
+                                                  R.string.version,
+                                                  stringResource(R.string.app_Version),
+                                                               ),
+                                          modifier = Modifier
+                                              .align(Alignment.End)
+                                              .padding(4.dp)
+                                      )
+                              }
+                          }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
-                modifier = Modifier.height(appViewModel.heightTopAppBar.value),
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
-                navigationIcon = {
+//MaterialTheme.colorScheme.secondaryContainer
+                                   colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                                   modifier = Modifier.height(appViewModel.heightTopAppBar.value),
+                                   navigationIcon = {
 
 
-                    IconButton(
-                        modifier = Modifier,
-                        onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
-                            }
-                        }
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_menu_24),
-                            contentDescription = stringResource(R.string.menu),
-                            tint = Color.Unspecified
-                        )
+                                       IconButton(modifier = Modifier,
+                                                  onClick = {
+                                                      scope.launch {
+                                                          drawerState.apply {
+                                                              if (isClosed) open() else close()
+                                                          }
+                                                      }
+                                                  }) {
+                                           Icon(
+                                                   painter = painterResource(id = R.drawable.baseline_menu_24),
+                                                   contentDescription = stringResource(R.string.menu),
+                                                   tint = Color.Unspecified
+                                               )
 
 
-                    }
+                                       }
 
 
-                })
+                                   }
+                                   )
         }
 
 
-        ) { contentPadding ->
+                ) { contentPadding ->
             // Screen content
-            if (stateSelected == StateSelectedEnum.SETTINGS) {
+            if (stateSelected == StateSelectedEnum.SETTINGS)
+            {
                 SettingsPage.MainPage(
-                    Modifier
-                        .padding(contentPadding)
-                        .fillMaxSize(), viewModel = appViewModel
-                )
-            } else if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                        Modifier
+                            .padding(contentPadding)
+                            .fillMaxSize(),
+                        viewModel = appViewModel
+                                     )
+            } else if (stateSelected == StateSelectedEnum.STUNDENPLAN)
+            {
                 StundenplanPage.MainPage(
-                    Modifier
-                        .padding(contentPadding)
-                        .fillMaxSize(), viewModel = appViewModel
-                )
+                        Modifier
+                            .padding(contentPadding)
+                            .fillMaxSize(),
+                        viewModel = appViewModel
+                                        )
             }
         }
     }

@@ -84,13 +84,13 @@ object StundenplanPage {
                         .weight(1f)
                 ) {
 
+                    Stundenplan(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(0.dp),
+                            viewModel = viewModel,
+                               )
 
-                    StundenplanWebview(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(0.dp),
-                        viewModel = viewModel,
-                    )
 
                 }
 
@@ -118,15 +118,17 @@ object StundenplanPage {
                 ) {
 
 
-                    StundenplanWebview(
-                        modifier = Modifier.padding(
-                            start = 4.dp,
-                            end = 8.dp,
-                            top = 2.dp,
-                            bottom = 2.dp
-                        ),
-                        viewModel = viewModel,
-                    )
+                    Stundenplan(
+                            modifier = Modifier.padding(
+                                    start = 4.dp,
+                                    end = 8.dp,
+                                    top = 2.dp,
+                                    bottom = 2.dp
+                                                       ),
+                            viewModel = viewModel,
+                               )
+
+
 
                 }
 
@@ -188,8 +190,13 @@ object StundenplanPage {
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.effectiveFancyStundenplan.collectAsStateWithLifecycle().value) {
+            val configuration = LocalConfiguration.current
+
+            val screenHeight = configuration.screenHeightDp.dp
+            val screenWidth = configuration.screenWidthDp.dp
+
             StundenplanCompose(
-                modifier = modifier, viewModel = viewModel
+                modifier = modifier, viewModel = viewModel, cellWidth = (screenWidth.value/7).dp, cellHeight = (screenHeight.value/13).dp
             )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
