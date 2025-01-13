@@ -2,6 +2,7 @@ package bkb.stundenplan.app.ui
 
 //import it.skrape.fetcher.request.Json
 
+import bkb.stundenplan.app.ui.StundenplanCustom.StundenplanCompose
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.view.ViewGroup
@@ -187,12 +188,9 @@ object StundenplanPage {
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.effectiveFancyStundenplan.collectAsStateWithLifecycle().value) {
-
-
-
-
-
-
+            StundenplanCompose(
+                modifier = modifier, viewModel = viewModel
+            )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
             viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->

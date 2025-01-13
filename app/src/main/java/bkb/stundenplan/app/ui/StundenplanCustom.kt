@@ -16,18 +16,30 @@ import bkb.stundenplan.app.Day
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.getWeek
+import bkb.stundenplan.app.ui.StundenplanCustom.SubjectToComposeable
 import org.jsoup.Jsoup
 
-class StundenplanCustom {
+object StundenplanCustom {
 
     @Composable
     fun StundenplanCompose(modifier: Modifier, viewModel: ViewModelStundenplanData) {
         var week = viewModel.scraping.stundenplanSite?.getWeek()
-
-        Row {
-
+        Row()
+        {
 
         }
+
+
+
+    }
+    @Composable
+    fun RowHours()
+    {
+        val map = mapOf("7:30" to "8:15", "8:15" to "9:00",
+            "9:15" to "10:00","10:00" to "10:45",
+            "11:00" to "11:45", "11:45" to "12:30",
+            "12:45" to "13:30", "13:30" to "14:15",
+            "14:15" to "15:00", "15:15" to "16:00")
 
     }
 
@@ -90,15 +102,7 @@ class StundenplanCustom {
         }
     }
 
-    @Composable
-    @Preview
-    fun SubjectToComposeablePreview() {
-        val html =
-            "<td colspan=\"12\" rowspan=\"2\" align=\"center\" nowrap=\"1\"><table><tbody><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\" color=\"#000000\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"1\" face=\"Arial\">\n" + "11)\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Loev\n" + "</font> </td>\n" + "</tr><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td colspan=\"2\" width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Gohr\n" + "</font> </td>\n" + "</tr></tbody></table></td>"
-        val element = Jsoup.parse("<table><tr>$html</tr></table>").select("td").first()
-        SubjectToComposeable(Modifier, Subject(2, element), Color.Red, 16.sp)
 
-    }
 
 
     /*@Composable
@@ -110,4 +114,14 @@ class StundenplanCustom {
 
         DayColumn(Modifier, week.getDay(1), Color.Red, 16.sp)
     }*/
+}
+
+@Composable
+@Preview
+fun SubjectToComposeablePreview() {
+    val html =
+        "<td colspan=\"12\" rowspan=\"2\" align=\"center\" nowrap=\"1\"><table><tbody><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\" color=\"#000000\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"1\" face=\"Arial\">\n" + "11)\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Loev\n" + "</font> </td>\n" + "</tr><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td colspan=\"2\" width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Gohr\n" + "</font> </td>\n" + "</tr></tbody></table></td>"
+    val element = Jsoup.parse("<table><tr>$html</tr></table>").select("td").first()
+    SubjectToComposeable(Modifier, Subject(2, element), Color.Red, 16.sp)
+
 }
