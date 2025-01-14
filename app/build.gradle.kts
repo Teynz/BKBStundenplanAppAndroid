@@ -11,7 +11,7 @@ android {
         resources.excludes.add("mozilla/public-suffix-list.txt")
     }
     namespace = "bkb.stundenplan.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "bkb.stundenplan.app"
@@ -33,6 +33,10 @@ android {
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
                          )
+        }
+        debug{
+            applicationIdSuffix = ".debug"
+
         }
     }
     compileOptions {
@@ -70,7 +74,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.webkit)
-    implementation(libs.skrapeit)
     implementation(libs.jsoup)
     implementation(libs.androidx.datastore.preferences)
 

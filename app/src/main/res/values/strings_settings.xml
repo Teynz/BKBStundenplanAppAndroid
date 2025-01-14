@@ -21,4 +21,8 @@
     <string name="schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden">Schaltet die Lehrer Stundenpläne frei, Anmeldename und Passwort müssen dafür einmalig eingetragen werden</string>
     <string name="anmeldename">Anmeldename</string>
     <string name="passwort">Passwort</string>
+    <string name="stundenplan_zoom">Stundenplan Zoom</string>
+    <string name="zoomt_den_stundenplan_heran">Zoomt den Stundenplan heran</string>
+    <string name="fancy_stundenplan">Fancy Stundenplan</string>
+    <string name="verwendet_eine_eigene_ansicht_f_r_die_stundenpl_ne_inspiriert_von_google_calendar">verwendet eine eigene Ansicht für die Stundenpläne. Inspiriert von Google Calendar</string>
 </resources>
