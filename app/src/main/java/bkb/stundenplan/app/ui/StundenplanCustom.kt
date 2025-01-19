@@ -18,6 +18,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -43,7 +44,11 @@ object StundenplanCustom {
             cellHeight, true
         ) {
 
-            week?.let { WeekRow(modifier = Modifier.background(Color.Red), it, Color.Red, 4.sp, cellHeight) }
+            week?.let {
+                WeekRow(
+                    modifier = Modifier.background(Color.Red), it, Color.Red, 4.sp, cellHeight
+                )
+            }
 
 
         }
@@ -75,10 +80,6 @@ object StundenplanCustom {
 
 
         Row {
-            Spacer(modifier = Modifier.width(12.dp))
-
-
-
             Column {
                 map.forEach { entry ->
                     Column(
@@ -107,24 +108,33 @@ object StundenplanCustom {
                 }
             }
 
-            Box(modifier = Modifier.weight(1f)) {
 
-                VerticalDivider(modifier = Modifier.padding(start = 10.dp))
-                Box(modifier = Modifier.height(cellHeight * 10)) {
-                    content()
 
-                    Box(modifier = Modifier.background(Color.Red))
-                    Column {
-                        for (i in 1..10) {
-                            HorizontalDivider(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(cellHeight)
-                            )
-                        }
+
+            Box(
+                modifier = Modifier
+                    .height(cellHeight * 10)
+                    .weight(1f)
+            ) {
+                Column {
+
+                    for (i in 1..10) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(cellHeight)
+                        )
                     }
                 }
+
+                Box(modifier = Modifier.padding(start = 10.dp)) {
+                    VerticalDivider()
+                    content()
+                }
+
+
             }
+
         }
     }
 
@@ -140,8 +150,11 @@ object StundenplanCustom {
 
         Row(modifier = Modifier) {
             week.asList().forEach { day ->
-                day?.let { DayColumn(Modifier.weight(1f), day, farbeVertretung, standardTextSize, cellHeight) }
-                    ?: run { Text(text = "Fehler") }
+                day?.let {
+                    DayColumn(
+                        Modifier.weight(1f), day, farbeVertretung, standardTextSize, cellHeight
+                    )
+                } ?: run { Text(text = "Fehler") }
             }
 
         }
@@ -162,7 +175,14 @@ fun DayColumn(
             for (count in 1..(subject.multiplier / 2)) {
 
                 SubjectToComposeable(
-                    Modifier.background(MaterialTheme.colorScheme.secondaryContainer), subject, farbeVertretung, standardTextSize, cellHeight
+                    Modifier
+                        .padding(4.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    subject,
+                    farbeVertretung,
+                    standardTextSize,
+                    cellHeight
                 )
             }
         }
@@ -203,7 +223,11 @@ fun SubjectToComposeable(
                     Text(
                         text = cell.text(),
                         color = composeColor,
-                        fontSize = try {standardTextSize * fontSize.toInt() / 2} catch (e: Exception) {standardTextSize},
+                        fontSize = try {
+                            standardTextSize * fontSize.toInt() / 2
+                        } catch (e: Exception) {
+                            standardTextSize
+                        },
                     )
                 }
             }
