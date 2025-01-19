@@ -196,7 +196,7 @@ object StundenplanPage {
             val screenWidth = configuration.screenWidthDp.dp
 
             StundenplanCompose(
-                modifier = modifier, viewModel = viewModel, cellWidth = (screenWidth.value/7).dp, cellHeight = (screenHeight.value/13).dp
+                modifier = modifier, viewModel = viewModel, cellWidth = (screenWidth.value/7).dp, cellHeight = (screenHeight.value/12.2).dp
             )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
@@ -223,10 +223,10 @@ object StundenplanPage {
             }, update = {
 
                 it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
-                it.getSettings().loadWithOverviewMode = true
-                it.getSettings().useWideViewPort = true
-                it.getSettings().builtInZoomControls = true
-                it.getSettings().displayZoomControls = false
+                it.settings.loadWithOverviewMode = true
+                it.settings.useWideViewPort = true
+                it.settings.builtInZoomControls = true
+                it.settings.displayZoomControls = false
             })
 
 
@@ -268,10 +268,10 @@ object StundenplanPage {
             }, update = {
 
                 it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
-                it.getSettings().loadWithOverviewMode = true
-                it.getSettings().useWideViewPort = true
-                it.getSettings().builtInZoomControls = true
-                it.getSettings().displayZoomControls = false
+                it.settings.loadWithOverviewMode = true
+                it.settings.useWideViewPort = true
+                it.settings.builtInZoomControls = true
+                it.settings.displayZoomControls = false
             })
         }
     }
@@ -314,10 +314,10 @@ fun TableWebView(
         }
     }, update = { view ->
 
-        view.getSettings().loadWithOverviewMode = true
-        view.getSettings().useWideViewPort = true
-        view.getSettings().builtInZoomControls = true
-        view.getSettings().displayZoomControls = false
+        view.settings.loadWithOverviewMode = true
+        view.settings.useWideViewPort = true
+        view.settings.builtInZoomControls = true
+        view.settings.displayZoomControls = false
 
 
         //view.setInitialScale(5)

@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -57,6 +56,10 @@ class ScrapingJSoup(
 
 
     var stundenplanSite by mutableStateOf<Document?>(null)
+
+
+
+
     fun updateStundenplanSite(url: String) {
         val login = "${if(teacherMode.value)loginName.value else STUNDENPLANLOGIN}:${if(teacherMode.value)password.value else STUNDENPLANPASSWORT}"
         val base64login = encodeToBase64(login)
