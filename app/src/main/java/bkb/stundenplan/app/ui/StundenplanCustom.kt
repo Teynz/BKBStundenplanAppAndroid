@@ -46,7 +46,7 @@ object StundenplanCustom {
 
             week?.let {
                 WeekRow(
-                    modifier = Modifier.background(Color.Red), it, Color.Red, 4.sp, cellHeight
+                    modifier = Modifier.background(Color.Red), it, Color.Red, 7.sp, cellHeight
                 )
             }
 
@@ -60,7 +60,7 @@ object StundenplanCustom {
     fun Ruler(
         cellHeight: Dp,
         onlyShowStart: Boolean,
-        clockFontSize: TextUnit = 10.sp,
+        clockFontSize: TextUnit = 7.sp,
         content: @Composable () -> Unit
 
     ) {
@@ -127,7 +127,7 @@ object StundenplanCustom {
                     }
                 }
 
-                Box(modifier = Modifier.padding(start = 10.dp)) {
+                Box(modifier = Modifier.padding(start = 7.dp)) {
                     VerticalDivider()
                     content()
                 }
