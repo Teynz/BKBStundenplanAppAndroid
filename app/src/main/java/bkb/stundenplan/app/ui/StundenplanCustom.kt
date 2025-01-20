@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,12 @@ import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.Week
 import bkb.stundenplan.app.getWeek
+import kotlin.math.min
+
+private val CustomStundenplanDateLine = HorizontalAlignmentLine(merger = { old, new ->
+    min(old, new)
+})
+
 
 object StundenplanCustom {
 
@@ -41,7 +48,7 @@ object StundenplanCustom {
 
 
         Ruler(
-            cellHeight, true
+            Modifier, cellHeight, true
         ) {
 
             week?.let {
@@ -58,6 +65,7 @@ object StundenplanCustom {
 
     @Composable
     fun Ruler(
+        modifier: Modifier,
         cellHeight: Dp,
         onlyShowStart: Boolean,
         clockFontSize: TextUnit = 7.sp,
@@ -77,6 +85,8 @@ object StundenplanCustom {
             "15:15" to "16:00"
         )
         var onlyShowStart = false
+
+
 
 
         Row {
@@ -164,26 +174,36 @@ object StundenplanCustom {
 
 @Composable
 fun DayColumn(
-    modifier: Modifier, day: Day, farbeVertretung: Color, standardTextSize: TextUnit, cellHeight: Dp
+    modifier: Modifier,
+    day: Day,
+    farbeVertretung: Color,
+    standardTextSize: TextUnit,
+    cellHeight: Dp,
+    showDate: Boolean = false
 ) {
+
     Column(modifier = modifier) {
-        Text(
-            text = day.date.toString(), modifier = Modifier.padding()
-        )
+        if (showDate) {
+            Text(
+                text = day.date.toString(), modifier = Modifier.padding()
+            )
+        }
 
         day.subjects.forEach { subject ->
             for (count in 1..(subject.multiplier / 2)) {
 
-                SubjectToComposeable(
-                    Modifier
-                        .padding(4.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.secondaryContainer),
-                    subject,
-                    farbeVertretung,
-                    standardTextSize,
-                    cellHeight
-                )
+                Box() {
+                    SubjectToComposeable(
+                        Modifier
+                            .height(cellHeight)
+                            .padding(1.dp)
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        subject,
+                        farbeVertretung,
+                        standardTextSize
+                    )
+                }
             }
         }
     }
@@ -191,48 +211,52 @@ fun DayColumn(
 
 @Composable
 fun SubjectToComposeable(
-    modifier: Modifier,
-    subject: Subject,
-    farbeVertretung: Color,
-    standardTextSize: TextUnit,
-    cellHeight: Dp
+    modifier: Modifier, subject: Subject, farbeVertretung: Color, standardTextSize: TextUnit
 ) {
+
     //start at td
     //continue at > table > tbody > tr
+    val subjectIsEmpty= subject.content.select("> table > tbody > tr > td > font").isEmpty()
+    if (!subjectIsEmpty) {
+        Column(modifier = modifier) {
+            subject.content.select("> table > tbody > tr").forEach { row ->
 
-    Column(modifier = modifier.height(cellHeight)) {
-        subject.content.select("> table > tbody > tr").forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    row.select("> td").forEach { cell ->
+                        val fontSize = cell.select("> font").attr("size")
+                        val fontColor = cell.select("> font").attr("color")
+                        val composeColor: Color =
+                            if (fontColor != "#000000" && fontColor != "#ff0000") {
+                                try {
+                                    Color(android.graphics.Color.parseColor(fontColor))
+                                } catch (e: Exception) {
+                                    Color.Unspecified
+                                }
+                            } else if (fontColor == "#ff0000") {
+                                farbeVertretung
+                            } else Color.Unspecified
 
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                row.select("> td").forEach { cell ->
-                    val fontSize = cell.select("> font").attr("size")
-                    val fontColor = cell.select("> font").attr("color")
-                    val composeColor: Color =
-                        if (fontColor != "#000000" && fontColor != "#ff0000") {
-                            try {
-                                Color(android.graphics.Color.parseColor(fontColor))
+                        Text(
+                            text = cell.text(),
+                            color = composeColor,
+                            fontSize = try {
+                                standardTextSize * fontSize.toInt() / 2
                             } catch (e: Exception) {
-                                Color.Unspecified
-                            }
-                        } else if (fontColor == "#ff0000") {
-                            farbeVertretung
-                        } else Color.Unspecified
-
-                    Text(
-                        text = cell.text(),
-                        color = composeColor,
-                        fontSize = try {
-                            standardTextSize * fontSize.toInt() / 2
-                        } catch (e: Exception) {
-                            standardTextSize
-                        },
-                    )
+                                standardTextSize
+                            },
+                        )
+                    }
                 }
-            }
 
+            }
         }
+    }
+    else
+    {
+        Spacer(modifier = modifier)
     }
 }
 

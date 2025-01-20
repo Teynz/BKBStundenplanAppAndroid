@@ -263,8 +263,17 @@ class SaveHandler(
     }
 
     fun saveValueDate(value: Int) {
-        _valueDate.value = value
-        scope.launch { savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), value) }
+        var newValue = value
+        if(value <= 0)
+        {
+        newValue = 53
+        }
+        else if(value >= 54)
+        {
+            newValue = 1
+        }
+        _valueDate.value = newValue
+        scope.launch { savePreference(context.dataStoreValues, intPreferencesKey(VALUEDATE), newValue) }
     }
 
     private val _valueType = MutableStateFlow(getValueTypeSave())
