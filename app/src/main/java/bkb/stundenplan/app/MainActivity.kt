@@ -52,7 +52,6 @@ import bkb.stundenplan.app.ui.SettingsPage
 import bkb.stundenplan.app.ui.StateSelectedEnum
 import bkb.stundenplan.app.ui.StundenplanPage
 import bkb.stundenplan.app.ui.theme.BKBStundenplanTheme
-import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.launch
 
 
@@ -90,24 +89,13 @@ class MainActivity : ComponentActivity() {
             appViewModel.heightTopAppBar.value = if (!appViewModel.isPortrait) 60.dp else 100.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
-                AppContent(
-                    modifier = Modifier.fillMaxSize(), appViewModel
+                LeftSideBar(
+                    Modifier.fillMaxSize(), appViewModel
                 )
             }
         }
     }
 }
-
-
-@Composable
-fun AppContent(
-    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
-) {
-    LeftSideBar(
-        modifier, appViewModel
-    )
-}
-
 
 
 @Composable
@@ -178,7 +166,7 @@ fun LeftSideBar(
 ) {
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
+    var stateSelectionDialog by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(drawerState = drawerState, gesturesEnabled = false, drawerContent = {
@@ -236,7 +224,10 @@ fun LeftSideBar(
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
 //MaterialTheme.colorScheme.secondaryContainer
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.secondary,
+                ),
                 modifier = Modifier.height(appViewModel.heightTopAppBar.value),
                 navigationIcon = {
 
@@ -261,7 +252,11 @@ fun LeftSideBar(
 
                 },
                 actions = {
-                    AppBarAction(viewModel = appViewModel)
+                    AppBarAction(viewModel = appViewModel){
+                        stateSelectionDialog = true
+
+
+                    }
 
 
                 })
@@ -280,7 +275,8 @@ fun LeftSideBar(
                 StundenplanPage.MainPage(
                     Modifier
                         .padding(contentPadding)
-                        .fillMaxSize(), viewModel = appViewModel
+                        .fillMaxSize(), viewModel = appViewModel, dialogState = stateSelectionDialog,
+                    onDialogStateChange = {value -> stateSelectionDialog = value}
                 )
             }
         }

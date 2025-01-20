@@ -1,7 +1,6 @@
 package bkb.stundenplan.app.ui
 
 import android.annotation.SuppressLint
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +42,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
-import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -52,8 +50,8 @@ import java.time.format.DateTimeFormatter
 fun SelectionDialog(
     modifier: Modifier = Modifier,
     viewModel: ViewModelStundenplanData = viewModel(),
-    dialogState: DialogStateEnum,
-    ondialogStateChange: (DialogStateEnum) -> Unit
+    dialogState: Boolean,
+    ondialogStateChange: (Boolean) -> Unit
 ) {
     val searchFilter = rememberSaveable { mutableStateOf("") }
 
@@ -73,9 +71,9 @@ fun SelectionDialog(
     else currentElementMap
 
 
-    if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
+    if (dialogState) {
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
-            onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
+            onDismissRequest = { ondialogStateChange(false) }) {
             Column(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
@@ -195,14 +193,9 @@ fun weeksAgo(
     for (weekCounter in weeksAgo downTo 1) {
         val entryValue = firstValue?.minus(weekCounter)
         val dateString = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
-                LocalDate.parse(datesMap?.values?.first(), formatter)
-                    .minusWeeks(weekCounter.toLong()).format(formatter)
-            }
-            else {
-                null
-            }
+            val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+            LocalDate.parse(datesMap?.values?.first(), formatter)
+                .minusWeeks(weekCounter.toLong()).format(formatter)
         }
         catch (_: Exception) {
             null
@@ -230,7 +223,7 @@ fun weeksAgo(
 @Composable
 private fun FindAndSave(
     searchFilter: MutableState<String>,
-    ondialogStateChange: (DialogStateEnum) -> Unit,
+    ondialogStateChange: (Boolean) -> Unit,
     @SuppressLint("ModifierParameter") modifierSearchTextField: Modifier,
     modifierSaveButton: Modifier
 ) {
@@ -254,7 +247,7 @@ private fun FindAndSave(
 
     Button(
         modifier = modifierSaveButton,
-        onClick = { ondialogStateChange(DialogStateEnum.NONE) },
+        onClick = { ondialogStateChange(false) },
         contentPadding = PaddingValues(8.dp),
     ) {
         Text(
