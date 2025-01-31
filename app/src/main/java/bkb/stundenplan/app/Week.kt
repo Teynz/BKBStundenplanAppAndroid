@@ -3,6 +3,7 @@ package bkb.stundenplan.app
 import androidx.compose.ui.graphics.Color
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
@@ -95,24 +96,29 @@ class Week(
 /**
  * verwandelt Stundenplan Datum in aktuelles, Das Jahr ist entweder das der Letzten 8 Monate oder das der nächsten 4 Monate
  */
-private fun String.toDate(): LocalDate {
-    val parts = this.split(" ") // teilt String in 2 Teile auf, 1. Wochentag 2. datum
-    val dateString = parts[1].removeSuffix(".") //Entfernt den Punkt hinter dem Monat.
-    val currentDate = LocalDate.now()
+private fun String.toDate(): LocalDate? {
+    try {
+        val parts = this.split(" ") // teilt String in 2 Teile auf, 1. Wochentag 2. datum
+        val dateString = parts[1].removeSuffix(".") //Entfernt den Punkt hinter dem Monat.
+        val currentDate = LocalDate.now()
 
-    val formatter = DateTimeFormatter.ofPattern("d.M")
-    val parsedDate = formatter.parse(dateString)
-    val day = parsedDate.get(ChronoField.DAY_OF_MONTH)
-    val month = parsedDate.get(ChronoField.MONTH_OF_YEAR)
+        val formatter = DateTimeFormatter.ofPattern("d.M")
+        val parsedDate = formatter.parse(dateString)
+        val day = parsedDate.get(ChronoField.DAY_OF_MONTH)
+        val month = parsedDate.get(ChronoField.MONTH_OF_YEAR)
 
-    var resultDate = LocalDate.of(currentDate.year, month, day) //Setzt das Datum auf das Momentane Jahr
+        var resultDate = LocalDate.of(currentDate.year, month, day) //Setzt das Datum auf das Momentane Jahr
 
-    if (ChronoUnit.MONTHS.between(resultDate, currentDate) > 8) {
-        resultDate = resultDate.plusYears(1)
-    } else if (ChronoUnit.MONTHS.between(currentDate, resultDate) > 4) {
-        resultDate = resultDate.minusYears(1)
-    }
-    return resultDate
+        if (ChronoUnit.MONTHS.between(resultDate, currentDate) > 8) {
+            resultDate = resultDate.plusYears(1)
+        } else if (ChronoUnit.MONTHS.between(currentDate, resultDate) > 4) {
+            resultDate = resultDate.minusYears(1)
+        }
+        return resultDate
+
+    }catch (e:DateTimeException){return null}
+
+
 }
 
 

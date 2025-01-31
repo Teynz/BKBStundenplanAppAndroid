@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.Day
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
@@ -44,7 +45,7 @@ object StundenplanCustom {
         modifier: Modifier, cellHeight: Dp, cellWidth: Dp, viewModel: ViewModelStundenplanData
     ) {
 
-        var week = viewModel.scraping.stundenplanSite?.getWeek()
+        var week = viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.getWeek()
 
 
         Ruler(

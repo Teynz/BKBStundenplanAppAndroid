@@ -104,14 +104,17 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
 
     //backbutton per week
     IconButton(onClick = {
-        viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value - 1)
+        if (viewModel.saveHandler.valueDate.value - 1 <= 0) {
+            viewModel.saveHandler.saveValueDate(52)
+
+        } else viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value - 1)
 
     }) {
         Icon(
             painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
             contentDescription = "",
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.scale(0.5f)
+            modifier = Modifier.scale(0.65f)
         )
 
 
@@ -127,7 +130,7 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
             painter = painterResource(id = R.drawable.outline_calendar_month_24),
             contentDescription = "",
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.scale(0.5f)
+            modifier = Modifier.scale(0.65f)
         )
 
 
@@ -136,7 +139,21 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
 
 //forwardButton per week
     IconButton(onClick = {
-        viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value + 1)
+        val lastKey = viewModel.scraping.datesPairMap.value?.second?.keys?.maxOrNull()
+        lastKey?.let { itLastKey ->
+            if (itLastKey != (viewModel.saveHandler.valueDate.value)) {
+
+                if (viewModel.saveHandler.valueDate.value + 1 >= 53) {
+                    viewModel.saveHandler.saveValueDate(1)
+                } else {
+                    viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value + 1)
+                }
+
+
+            }
+        }
+
+
     }) {
         Icon(
             painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
@@ -144,13 +161,11 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
             contentDescription = "",
             modifier = Modifier
                 .scale(scaleX = -1f, scaleY = 1f)
-                .scale(0.5f)
+                .scale(0.65f)
         )
 
 
     }
-
-
 }
 
 @Composable
@@ -159,7 +174,7 @@ fun AppBarTitle(viewModel: ViewModelStundenplanData) {
 
     val elementString = ParameterWhichMayChangeOverTime.selectType(
         viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value,
-        viewModel.scraping.typeArrays
+        viewModel.scraping.typeArrays.collectAsStateWithLifecycle().value
     )?.get(viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value)
     val dateString =
         viewModel.scraping.datesPairMap.collectAsStateWithLifecycle().value?.second?.get(viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value)
@@ -199,7 +214,7 @@ fun LeftSideBar(
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
                         contentDescription = "Zurück Pfeil",
-                        modifier = Modifier.scale(0.5f)
+                        modifier = Modifier.scale(0.65f)
                     )
                 })
             }
@@ -258,6 +273,7 @@ fun LeftSideBar(
 
                             painter = painterResource(id = R.drawable.menu_24px),
                             contentDescription = stringResource(R.string.menu),
+                            modifier = Modifier.scale(1.2f),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
 
