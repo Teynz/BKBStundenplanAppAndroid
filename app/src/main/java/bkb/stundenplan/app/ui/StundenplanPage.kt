@@ -126,7 +126,7 @@ object StundenplanPage {
             )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
-            viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->
+            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")?.get(0)?.let { valueTablesScraped ->
                 TableWebView(
                     viewModel = viewModel,
                     htmlString = valueTablesScraped.toString(),
@@ -169,7 +169,7 @@ object StundenplanPage {
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan.collectAsStateWithLifecycle().value && viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value == "c") {
-            viewModel.scraping.stundenplanSite?.select("table")?.get(0)?.let { valueTablesScraped ->
+            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")?.get(0)?.let { valueTablesScraped ->
                 TableWebView(
                     viewModel = viewModel,
                     htmlString = valueTablesScraped.toString(),

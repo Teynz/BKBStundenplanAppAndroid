@@ -25,6 +25,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -59,7 +60,7 @@ fun SelectionDialog(
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
     val currentElementMap = ParameterWhichMayChangeOverTime.selectType(
-        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, viewModel.scraping.typeArrays
+        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, viewModel.scraping.typeArrays.collectAsStateWithLifecycle().value
     )
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
@@ -93,12 +94,12 @@ fun SelectionDialog(
                             verticalArrangement = Arrangement.Bottom,
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
-                            val weeksBackMap =
-                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.collectAsState().value?.second) else null
+                            val datesPairMap by viewModel.scraping.datesPairMap.collectAsStateWithLifecycle()
+
                             SectionSelectionDialog(
                                 modifier = Modifier,
-                                map = viewModel.scraping.datesPairMap.collectAsState().value?.second,
-                                secondMap = weeksBackMap,
+                                map = viewModel.scraping.datesPairMap.collectAsStateWithLifecycle().value?.second,
+                                secondMap =  if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.collectAsState().value?.second) else null,
                                 rowsOfSections = 1,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
@@ -115,7 +116,7 @@ fun SelectionDialog(
                             ) {
                                 SectionSelectionDialog(
                                     modifier = Modifier,
-                                    map = viewModel.scraping.typesPairMap?.second,
+                                    map = viewModel.scraping.typesPairMap.collectAsStateWithLifecycle().value?.second,
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
@@ -182,7 +183,6 @@ fun SelectionDialog(
     }
 }
 
-
 fun weeksAgo(
     datesMap: Map<Int, String>?, weeksAgo: Int = 8
 ): Map<Int, String> {
@@ -218,6 +218,7 @@ fun weeksAgo(
 
     return newMap
 }
+
 
 
 @Composable
