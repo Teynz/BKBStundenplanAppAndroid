@@ -3,63 +3,72 @@ package bkb.stundenplan.app.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.HorizontalAlignmentLine
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.Day
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.Week
 import bkb.stundenplan.app.getWeek
-import kotlin.math.min
-
-private val CustomStundenplanDateLine = HorizontalAlignmentLine(merger = { old, new ->
-    min(old, new)
-})
 
 
 object StundenplanCustom {
 
     @Composable
     fun StundenplanCompose(
-        modifier: Modifier, cellHeight: Dp, cellWidth: Dp, viewModel: ViewModelStundenplanData
+        modifier: Modifier, viewModel: ViewModelStundenplanData
     ) {
+        val textSizeCells = if (viewModel.isPortrait) 9.3.sp else 7.5.sp
 
-        var week = viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.getWeek()
+        val week = viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.getWeek()
+
+        BoxWithConstraints(modifier = modifier) {
 
 
-        Ruler(
-            Modifier, cellHeight, true
-        ) {
+            Ruler(
+                Modifier, this.maxHeight / 10, true
+            ) {
 
-            week?.let {
-                WeekRow(
-                    modifier = Modifier.background(Color.Red), it, Color.Red, 7.sp, cellHeight
-                )
+                week?.let {
+                    WeekRow(
+                        modifier = Modifier,
+                        it,
+                        Color.Red,
+                        textSizeCells,
+                        this.maxHeight / 10
+                    )
+                }
+
+
             }
-
-
         }
+
 
     }
 
@@ -85,12 +94,12 @@ object StundenplanCustom {
             "14:15" to "15:00",
             "15:15" to "16:00"
         )
-        var onlyShowStart = false
 
 
 
 
-        Row {
+
+        Row(modifier = modifier) {
             Column {
                 map.forEach { entry ->
                     Column(
@@ -102,7 +111,7 @@ object StundenplanCustom {
                         Text(
                             text = entry.first,
                             fontSize = clockFontSize,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                            textAlign = TextAlign.Start
                         )
 
 
@@ -111,7 +120,7 @@ object StundenplanCustom {
                         if (!onlyShowStart) Text(
                             text = entry.second,
                             fontSize = clockFontSize,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                            textAlign = TextAlign.Start
                         )
 
                     }
@@ -159,12 +168,16 @@ object StundenplanCustom {
     ) {
 
 
-        Row(modifier = Modifier) {
+
+        Row(modifier = modifier) {
             week.asList().forEach { day ->
                 day?.let {
-                    DayColumn(
-                        Modifier.weight(1f), day, farbeVertretung, standardTextSize, cellHeight
-                    )
+                    DayColumn(Modifier.weight(1f),
+                        day,
+                        farbeVertretung,
+                        standardTextSize,
+                        cellHeight,
+                        customCellColor = week.customCellColor)
                 } ?: run { Text(text = "Fehler") }
             }
 
@@ -180,7 +193,8 @@ fun DayColumn(
     farbeVertretung: Color,
     standardTextSize: TextUnit,
     cellHeight: Dp,
-    showDate: Boolean = false
+    showDate: Boolean = false,
+    customCellColor: Boolean
 ) {
 
     Column(modifier = modifier) {
@@ -193,16 +207,17 @@ fun DayColumn(
         day.subjects.forEach { subject ->
             for (count in 1..(subject.multiplier / 2)) {
 
-                Box() {
+                Box {
                     SubjectToComposeable(
                         Modifier
                             .height(cellHeight)
-                            .padding(1.dp)
+                            .padding(vertical = 3.dp, horizontal = 1.dp)
                             .clip(MaterialTheme.shapes.medium)
                             .background(MaterialTheme.colorScheme.secondaryContainer),
                         subject,
                         farbeVertretung,
-                        standardTextSize
+                        standardTextSize,
+                        customCellColor = customCellColor
                     )
                 }
             }
@@ -212,25 +227,51 @@ fun DayColumn(
 
 @Composable
 fun SubjectToComposeable(
-    modifier: Modifier, subject: Subject, farbeVertretung: Color, standardTextSize: TextUnit
+    modifier: Modifier,
+    subject: Subject,
+    farbeVertretung: Color,
+    standardTextSize: TextUnit,
+    customCellColor: Boolean
 ) {
+
+    val regexFilter = "[0-9]+\\)".toRegex()//filter welcher z.b. "3)" oder "10)" erkennen soll
 
     //start at td
     //continue at > table > tbody > tr
-    val subjectIsEmpty= subject.content.select("> table > tbody > tr > td > font").isEmpty()
+    val subjectIsEmpty = subject.content.select("> table > tbody > tr > td > font").isEmpty()
     if (!subjectIsEmpty) {
-        Column(modifier = modifier) {
+
+        val subjectBGColor =if(customCellColor) Color.Unspecified else try {
+            Color(android.graphics.Color.parseColor(subject.content.attr("bgcolor")))
+
+        }catch(e:Exception){Color.White}
+
+        Column(
+            modifier = modifier.background(subjectBGColor),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             subject.content.select("> table > tbody > tr").forEach { row ->
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+
+
                     row.select("> td").forEach { cell ->
-                        val fontSize = cell.select("> font").attr("size")
+
+
+                       // val fontSize = cell.select("> font").attr("size")
+
                         val fontColor = cell.select("> font").attr("color")
                         val composeColor: Color =
-                            if (fontColor != "#000000" && fontColor != "#ff0000") {
+                            if(!customCellColor){
+                                try{Color(android.graphics.Color.parseColor(fontColor))}catch(e:Exception){Color.Black}
+
+                            }
+                            else if (fontColor != "#000000" && fontColor != "#ff0000") {
                                 try {
                                     Color(android.graphics.Color.parseColor(fontColor))
                                 } catch (e: Exception) {
@@ -240,52 +281,36 @@ fun SubjectToComposeable(
                                 farbeVertretung
                             } else Color.Unspecified
 
-                        Text(
-                            text = cell.text(),
-                            color = composeColor,
-                            fontSize = try {
-                                standardTextSize * fontSize.toInt() / 2
+
+                        if (cell.text().isNotEmpty() && !regexFilter.matches(cell.text())) {
+
+                            val isBold = try {cell.children()[0].children()[0].tagName() == "b"} catch (e:Exception){false
+                            }
+                            val textSize = try {
+                                standardTextSize //* fontSize.toInt() / 2
                             } catch (e: Exception) {
                                 standardTextSize
-                            },
-                        )
+                            }
+
+                            Text(
+                                text = ParameterWhichMayChangeOverTime.extractGebaeudeUndNummer(cell.text())
+                                    ?.let { "${it.first}\n${it.second}" } ?: cell.text(),
+                                color = composeColor,
+                                textAlign = TextAlign.Center,
+                                lineHeight = textSize,
+                                fontSize = textSize,
+                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal
+                            )
+
+
+                        }
                     }
                 }
 
             }
         }
-    }
-    else
-    {
+    } else {
         Spacer(modifier = modifier)
     }
 }
 
-
-/*@Composable
-@Preview
-fun DayColumnPreview() {
-val doc = Jsoup.parse(exampleStundenplanString().html)
-
-val week = doc.getWeek()
-
-    DayColumn(Modifier, week.getDay(1), Color.Red, 16.sp)
-}*//*
-@Composable
-@Preview
-fun StundenplanComposePreview()
-{
-StundenplanCustom.StundenplanCompose(Modifier,10,10)
-}*/
-
-
-/*
-@Composable
-@Preview
-fun SubjectToComposeablePreview() {
-    val html =
-        "<td colspan=\"12\" rowspan=\"2\" align=\"center\" nowrap=\"1\"><table><tbody><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\" color=\"#000000\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"1\" face=\"Arial\">\n" + "11)\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Loev\n" + "</font> </td>\n" + "</tr><tr><td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "<b>Phys</b>\n" + "</font> </td>\n" + "<td width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "A 212\n" + "</font> </td>\n" + "<td colspan=\"2\" width=\"25%\" nowrap=\"1\"><font size=\"2\" face=\"Arial\">\n" + "Gohr\n" + "</font> </td>\n" + "</tr></tbody></table></td>"
-    val element = Jsoup.parse("<table><tr>$html</tr></table>").select("td").first()
-    SubjectToComposeable(Modifier, Subject(2, element), Color.Red, 16.sp)
-
-}*/

@@ -114,7 +114,7 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
             painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
             contentDescription = "",
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.scale(0.65f)
+            modifier = Modifier.scale(0.60f)
         )
 
 
@@ -130,7 +130,7 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
             painter = painterResource(id = R.drawable.outline_calendar_month_24),
             contentDescription = "",
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.scale(0.65f)
+            modifier = Modifier.scale(0.60f)
         )
 
 
@@ -161,7 +161,7 @@ fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Uni
             contentDescription = "",
             modifier = Modifier
                 .scale(scaleX = -1f, scaleY = 1f)
-                .scale(0.65f)
+                .scale(0.60f)
         )
 
 
@@ -283,10 +283,12 @@ fun LeftSideBar(
 
                 },
                 actions = {
-                    AppBarAction(viewModel = appViewModel) {
-                        stateSelectionDialog = true
+                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                        AppBarAction(viewModel = appViewModel) {
+                            stateSelectionDialog = true
 
 
+                        }
                     }
 
 

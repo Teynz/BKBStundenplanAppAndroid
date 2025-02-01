@@ -100,7 +100,7 @@ object SettingsPage {
                 SwitchAbfrage(
                     mainText = stringResource(R.string.stundenplan_zoom),
                     subText = stringResource(R.string.zoomt_den_stundenplan_heran),
-                    checked = viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value,
+                    checked = viewModel.saveHandler.stundenplanZoom.collectAsStateWithLifecycle().value,
                     onCheckedChange = {
                         viewModel.saveHandler.saveStundenplanZoom(it)
                     })
@@ -110,7 +110,7 @@ object SettingsPage {
                 SwitchAbfrage(
                     mainText = stringResource(R.string.fancy_stundenplan),
                     subText = stringResource(R.string.verwendet_eine_eigene_ansicht_f_r_die_stundenpl_ne_inspiriert_von_google_calendar),
-                    checked = viewModel.saveHandler.effectiveFancyStundenplan.collectAsStateWithLifecycle().value,
+                    checked = viewModel.saveHandler.fancyStundenplan.collectAsStateWithLifecycle().value,
                     onCheckedChange = {
                         viewModel.saveHandler.saveFancyStundenplan(it)
                     })

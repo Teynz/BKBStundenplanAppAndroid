@@ -27,8 +27,10 @@ data class Day(
 )
 
 class Week(
-    private var monday: Day = Day(), private var tuesday: Day = Day(), private var wednesday: Day = Day(), private var thursday: Day = Day(), private var friday: Day = Day()
+    private var monday: Day = Day(), private var tuesday: Day = Day(), private var wednesday: Day = Day(), private var thursday: Day = Day(), private var friday: Day = Day(), var customCellColor: Boolean = false
 ) {
+
+
 
     fun asList(): List<Day?> = listOf(monday, tuesday, wednesday, thursday, friday)
     fun asMap(): Map<LocalDate?,Day?> = mapOf(monday.date to monday,tuesday.date to tuesday,wednesday.date to wednesday,thursday.date to thursday,friday.date to friday)
@@ -134,8 +136,10 @@ fun Document.getWeek(): Week {
     var cDayFour = 0
     var cDayFive = 0
 
+    val Cells = this.selectFirst("table > tbody")?.select("> tr > td")
+   week.customCellColor= Cells?.attr("bgcolor")?.isEmpty()?: false
 
-    val rows = this.select("table")?.get(0)?.selectFirst("table > tbody")?.select("> tr")
+    val rows = this.selectFirst("table > tbody")?.select("> tr")
 
     rows?.forEach { counterRow ->
 

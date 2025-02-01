@@ -122,7 +122,7 @@ object StundenplanPage {
             val screenWidth = configuration.screenWidthDp.dp
 
             StundenplanCompose(
-                modifier = modifier, viewModel = viewModel, cellWidth = (screenWidth.value/7).dp, cellHeight = (screenHeight.value/12.2).dp
+                modifier = modifier.padding(horizontal = 3.dp, vertical = 4.dp), viewModel = viewModel
             )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {

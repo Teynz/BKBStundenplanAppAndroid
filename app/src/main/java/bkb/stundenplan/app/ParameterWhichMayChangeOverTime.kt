@@ -9,6 +9,20 @@ class ParameterWhichMayChangeOverTime {/*
 
 
     companion object {
+
+        //Regex Objekt für die Räume, nur so können diese später getrennt werden, damit die Stundenplan Ansicht schöner ist.
+        //Berücksichtigt sollen z.B. werden: "x 004", "THR3","E 103", "D 020", "CK 09", "C 212", "BK 12", "B 311" "A 409"
+        fun extractGebaeudeUndNummer(input: String): Pair<String, String>? {
+            val pattern = Regex("""^([A-Za-z]+)\s*(\d+)$""")
+            val matchResult = pattern.matchEntire(input)
+            return matchResult?.let {
+                val prefix = it.groupValues[1]
+                val number = it.groupValues[2]
+                prefix to number
+            }
+        }
+
+
         fun selectType(type: String, typeArrays: ScrapingJSoup.TypeArrays?): MutableMap<Int, String>? {
             return typeArrays?.let {
                 return when (type) {
