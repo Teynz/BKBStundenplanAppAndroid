@@ -16,9 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.Day
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.regexFilterRedundantNumbers
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.Week
@@ -56,13 +54,14 @@ object StundenplanCustom {
             ) {
 
                 week?.let {
+                    val mergeCells by viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle()
                     WeekRow(
                         modifier = Modifier,
-                        it,
+                        it.mergeAndRemoveRedundantAll(mergeCells,false),
                         Color.Red,
                         textSizeCells,
                         this.maxHeight / 10,
-                        viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle().value,
+                        mergeCells,
                     )
                 }
 
@@ -208,19 +207,18 @@ fun DayColumn(
             )
         }
 
-        var currentIndex = 1
-        while (currentIndex <= day.subjects.size) {
-            val subject = day.subjects[currentIndex-1]
-
-            val itemsToSkip = if(mergeCells)(subject.multiplier / 2)-1 else 0
+        var currentIndex = 0
+        while (currentIndex < day.subjects.size) {
+            val subject = day.subjects[currentIndex]
 
 
-            for (count in 1..(subject.multiplier / 2)) {
-                val newCellHeight = cellHeight / subject.multiplier / 2
+
+
+
                 Box {
                     SubjectToComposeable(
                         modifier = Modifier
-                            .height(cellHeight+ cellHeight* itemsToSkip)
+                            .height(cellHeight*subject.multiplier/2)
                             .padding(vertical = 3.dp, horizontal = 1.dp)
                             .clip(MaterialTheme.shapes.medium)
                             .background(MaterialTheme.colorScheme.secondaryContainer),
@@ -230,9 +228,9 @@ fun DayColumn(
                         customCellColor = customCellColor
                     )
                 }
-            }
 
-            currentIndex += 1 + itemsToSkip
+
+            currentIndex++
         }
     }
 }
@@ -246,7 +244,7 @@ fun SubjectToComposeable(
     customCellColor: Boolean
 ) {
 
-    val regexFilter = "[0-9]+\\)".toRegex()//filter welcher z.b. "3)" oder "10)" erkennen soll
+
 
     //start at td
     //continue at > table > tbody > tr
@@ -294,7 +292,7 @@ fun SubjectToComposeable(
                             } else Color.Unspecified
 
 
-                        if (cell.text().isNotEmpty() && !regexFilter.matches(cell.text())) {
+                        if (cell.text().isNotEmpty() && !regexFilterRedundantNumbers.matches(cell.text())) {
 
                             val isBold = try {cell.children()[0].children()[0].tagName() == "b"} catch (e:Exception){false
                             }

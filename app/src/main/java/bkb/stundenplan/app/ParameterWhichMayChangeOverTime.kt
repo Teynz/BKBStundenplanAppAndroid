@@ -9,6 +9,7 @@ class ParameterWhichMayChangeOverTime {/*
 
 
     companion object {
+        val regexFilterRedundantNumbers = "[0-9]+\\)".toRegex()//filter welcher z.b. "3)" oder "10)" erkennen soll
 
         //Regex Objekt für die Räume, nur so können diese später getrennt werden, damit die Stundenplan Ansicht schöner ist.
         //Berücksichtigt sollen z.B. werden: "x 004", "THR3","E 103", "D 020", "CK 09", "C 212", "BK 12", "B 311" "A 409"

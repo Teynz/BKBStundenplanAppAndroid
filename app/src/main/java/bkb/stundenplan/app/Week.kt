@@ -1,6 +1,7 @@
 package bkb.stundenplan.app
 
 import androidx.compose.ui.graphics.Color
+import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.regexFilterRedundantNumbers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.time.DateTimeException
@@ -19,25 +20,102 @@ data class Text(
  *in html wird dieses attribut rowspan genannt
  */
 data class Subject(
-    val multiplier: Int, val content: Element
+    var multiplier: Int, val content: Element
 )
 
-data class Day(
+class Day(
     var date: LocalDate? = null, var subjects: MutableList<Subject> = mutableListOf()
-)
-
-class Week(
-    private var monday: Day = Day(), private var tuesday: Day = Day(), private var wednesday: Day = Day(), private var thursday: Day = Day(), private var friday: Day = Day(), var customCellColor: Boolean = false
 ) {
 
 
+    fun mergeCellsRemoveRedundant(mergeCells: Boolean, removeRedundantNumbers: Boolean): Day {
+        var subjects = subjects
+        //RemoveRedundantNumbers
+
+        if (removeRedundantNumbers) {
+            var newWithoutRedundantSubjectsList = subjects.map { subject ->
+                val modifiedContent = subject.content.clone()
+                modifiedContent.select("font").forEach { font ->
+                    font?.let{ font ->
+                    if (font.text().contains(regexFilterRedundantNumbers)) {
+                        font.remove()
+                    }}
+                }
+                subject.copy(content = modifiedContent)
+            }
+
+            subjects = newWithoutRedundantSubjectsList.toMutableList()
+        }
+
+
+        //Merging Cells
+        if (mergeCells)
+        {
+        var newMergedSubjectsList = mutableListOf<Subject>()
+        var lastNewSubjectAsString: String? = null
+        var indexCounter = 0
+        while (indexCounter < subjects.size) {
+
+            lastNewSubjectAsString?.let {
+                if (lastNewSubjectAsString == subjects[indexCounter].content.toString()) {
+                    newMergedSubjectsList[newMergedSubjectsList.size - 1].multiplier += subjects[indexCounter].multiplier
+                } else {
+                    newMergedSubjectsList.add(subjects[indexCounter])
+                }
+
+                lastNewSubjectAsString =
+                    newMergedSubjectsList[newMergedSubjectsList.size - 1].content.toString()
+            } ?: run {
+                newMergedSubjectsList.add(subjects[0])
+                lastNewSubjectAsString = subjects[0].content.toString()
+            }
+
+            indexCounter++
+
+
+        }
+
+    subjects = newMergedSubjectsList
+    }
+        return Day(date, subjects)
+    }
+
+}
+
+
+class Week(
+    private var monday: Day = Day(),
+    private var tuesday: Day = Day(),
+    private var wednesday: Day = Day(),
+    private var thursday: Day = Day(),
+    private var friday: Day = Day(),
+    var customCellColor: Boolean = false
+) {
+
+
+    fun mergeAndRemoveRedundantAll(mergeCells: Boolean, removeRedundantNumbers: Boolean):Week {
+        return Week(
+        monday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+        tuesday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+        wednesday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+        thursday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+        friday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+            this.customCellColor)
+
+    }
+
 
     fun asList(): List<Day?> = listOf(monday, tuesday, wednesday, thursday, friday)
-    fun asMap(): Map<LocalDate?,Day?> = mapOf(monday.date to monday,tuesday.date to tuesday,wednesday.date to wednesday,thursday.date to thursday,friday.date to friday)
+    fun asMap(): Map<LocalDate?, Day?> = mapOf(
+        monday.date to monday,
+        tuesday.date to tuesday,
+        wednesday.date to wednesday,
+        thursday.date to thursday,
+        friday.date to friday
+    )
 
     fun setDay(index: Int, day: Day) {
-        when (index)
-        {
+        when (index) {
             1 -> monday = day
             2 -> tuesday = day
             3 -> wednesday = day
@@ -45,10 +123,9 @@ class Week(
             5 -> friday = day
         }
     }
-    fun accessDay(index: Int, unit: (day:Day) -> Unit)
-    {
-        when (index)
-        {
+
+    fun accessDay(index: Int, unit: (day: Day) -> Unit) {
+        when (index) {
             1 -> unit(monday)
             2 -> unit(tuesday)
             3 -> unit(wednesday)
@@ -60,9 +137,8 @@ class Week(
     /**
      * Tage 1-5
      */
-    fun getDay(index: Int):Day {
-        return when (index)
-        {
+    fun getDay(index: Int): Day {
+        return when (index) {
             1 -> monday
             2 -> tuesday
             3 -> wednesday
@@ -74,19 +150,20 @@ class Week(
 
     fun getToday(): Day? {
         val today = LocalDate.now()
-         this.asMap().forEach{if(it.key == today) return it.value}
-    return null
-    }
-    fun getNextDayOrMonday(): Day? {
-        val today = LocalDate.now()
-        this.asMap().forEach{if(it.key == today.plusDays(1)) return it.value}
-        this.asMap().forEach{if(it.key == today.plusDays(2)) return it.value}
+        this.asMap().forEach { if (it.key == today) return it.value }
         return null
     }
-     fun setDates(Element: Element)
-    {
+
+    fun getNextDayOrMonday(): Day? {
+        val today = LocalDate.now()
+        this.asMap().forEach { if (it.key == today.plusDays(1)) return it.value }
+        this.asMap().forEach { if (it.key == today.plusDays(2)) return it.value }
+        return null
+    }
+
+    fun setDates(Element: Element) {
         var count = 1
-        Element.select("td > table > tbody > tr > td > font").forEach {font ->
+        Element.select("td > table > tbody > tr > td > font").forEach { font ->
             getDay(count).date = font.text().toDate()
             count++
         }
@@ -109,7 +186,9 @@ private fun String.toDate(): LocalDate? {
         val day = parsedDate.get(ChronoField.DAY_OF_MONTH)
         val month = parsedDate.get(ChronoField.MONTH_OF_YEAR)
 
-        var resultDate = LocalDate.of(currentDate.year, month, day) //Setzt das Datum auf das Momentane Jahr
+        var resultDate = LocalDate.of(
+            currentDate.year, month, day
+        ) //Setzt das Datum auf das Momentane Jahr
 
         if (ChronoUnit.MONTHS.between(resultDate, currentDate) > 8) {
             resultDate = resultDate.plusYears(1)
@@ -118,7 +197,9 @@ private fun String.toDate(): LocalDate? {
         }
         return resultDate
 
-    }catch (e:DateTimeException){return null}
+    } catch (e: DateTimeException) {
+        return null
+    }
 
 
 }
@@ -127,80 +208,50 @@ private fun String.toDate(): LocalDate? {
 /**
  * Return the Week as `List<Day>?`
  */
-fun Document.getWeek(mergeExtraCells: Boolean = false): Week {
-    val week: Week = Week()
-    var rowspanCounter = 2 //max 20 Eine Zelle nimmt 2, startet deswegen für die erste zeile bei 2
-    var cDayOne = 0
-    var cDayTwo = 0
-    var cDayThree = 0
-    var cDayFour = 0
-    var cDayFive = 0
+fun Document.getWeek(): Week {
+    val week = Week()
+    val tbody = this.selectFirst("table > tbody") ?: return week
+    val rows = tbody.select("> tr")
 
-    val Cells = this.selectFirst("table > tbody")?.select("> tr > td")
-   week.customCellColor= Cells?.attr("bgcolor")?.isEmpty()?: false
 
-    val rows = this.selectFirst("table > tbody")?.select("> tr")
+    val rowspanTracker = IntArray(5)
+    var currentRowspanCounter = 2
+    val defaultColor = tbody.select("> tr > td").firstOrNull()?.attr("bgcolor")
+    week.customCellColor = defaultColor.isNullOrEmpty()
 
-    rows?.forEach { counterRow ->
+    rows.forEachIndexed { rowIndex, row ->
+        when {
+            rowIndex == 0 -> week.setDates(row)
+            else -> {
+                val cells = row.select("> td")
+                var currentDay = 0
+                var cellIndex = 0
 
-        if (counterRow.childrenSize() != 0) {
-            if (counterRow == rows.first()) {
-                week.setDates(counterRow)
-            }
-            else {
-                val cells = counterRow.select(">td")
-                var dayCounter = 1//diese Variable steht für Montag bis freitag
-                cells?.forEach { counterCell ->
-
-                    if (counterCell != cells.first()) {
-
-                        var rowspanOfColumn = when (dayCounter) {
-                            1 -> cDayOne
-                            2 -> cDayTwo
-                            3 -> cDayThree
-                            4 -> cDayFour
-                            5 -> cDayFive
-                            else -> 20
-                        }
-
-                        while (rowspanCounter <= rowspanOfColumn && dayCounter <= 5) {
-                            dayCounter++
-                            rowspanOfColumn = when (dayCounter) {
-                                1 -> cDayOne
-                                2 -> cDayTwo
-                                3 -> cDayThree
-                                4 -> cDayFour
-                                5 -> cDayFive
-                                else -> 20
-                            }
-
-                        }
-                        if (0 <dayCounter && dayCounter <= 5){
-                        val multiplier = counterCell.attributes()["rowspan"]?.toInt() ?: 0
-                        when (dayCounter) {
-                            1 -> cDayOne += multiplier
-                            2 -> cDayTwo += multiplier
-                            3 -> cDayThree += multiplier
-                            4 -> cDayFour += multiplier
-                            5 -> cDayFive += multiplier
-                        }
-
-                        week.accessDay(dayCounter)
-                        {
-                            it.subjects.add(
-                                Subject(
-                                    multiplier, counterCell
-                                )
-                            )
-                        }
-
+                while (cellIndex < cells.size && currentDay < 5) {
+                    if (cellIndex == 0) {
+                        cellIndex++
+                        continue
                     }
-                        dayCounter++
+
+                    val cell = cells[cellIndex]
+                    val rowspan = cell.attr("rowspan").toIntOrNull() ?: 1
+
+
+                    while (currentDay < 5 && rowspanTracker[currentDay] > currentRowspanCounter) {
+                        currentDay++
                     }
+
+                    if (currentDay < 5) {
+                        rowspanTracker[currentDay] = currentRowspanCounter + rowspan
+                        week.accessDay(currentDay + 1) {
+                            it.subjects.add(Subject(rowspan, cell))
+                        }
+                        currentDay++
+                    }
+                    cellIndex++
                 }
-                rowspanCounter += 2
+                currentRowspanCounter += 2
             }
-
         }
     }
     return week
