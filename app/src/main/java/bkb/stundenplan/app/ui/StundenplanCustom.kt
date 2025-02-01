@@ -61,7 +61,8 @@ object StundenplanCustom {
                         it,
                         Color.Red,
                         textSizeCells,
-                        this.maxHeight / 10
+                        this.maxHeight / 10,
+                        viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle().value,
                     )
                 }
 
@@ -164,7 +165,8 @@ object StundenplanCustom {
         week: Week,
         farbeVertretung: Color,
         standardTextSize: TextUnit,
-        cellHeight: Dp
+        cellHeight: Dp,
+        mergeCells: Boolean
     ) {
 
 
@@ -177,7 +179,8 @@ object StundenplanCustom {
                         farbeVertretung,
                         standardTextSize,
                         cellHeight,
-                        customCellColor = week.customCellColor)
+                        customCellColor = week.customCellColor,
+                        mergeCells = mergeCells)
                 } ?: run { Text(text = "Fehler") }
             }
 
@@ -194,7 +197,8 @@ fun DayColumn(
     standardTextSize: TextUnit,
     cellHeight: Dp,
     showDate: Boolean = false,
-    customCellColor: Boolean
+    customCellColor: Boolean,
+    mergeCells: Boolean
 ) {
 
     Column(modifier = modifier) {
@@ -204,23 +208,31 @@ fun DayColumn(
             )
         }
 
-        day.subjects.forEach { subject ->
-            for (count in 1..(subject.multiplier / 2)) {
+        var currentIndex = 1
+        while (currentIndex <= day.subjects.size) {
+            val subject = day.subjects[currentIndex-1]
 
+            val itemsToSkip = if(mergeCells)(subject.multiplier / 2)-1 else 0
+
+
+            for (count in 1..(subject.multiplier / 2)) {
+                val newCellHeight = cellHeight / subject.multiplier / 2
                 Box {
                     SubjectToComposeable(
-                        Modifier
-                            .height(cellHeight)
+                        modifier = Modifier
+                            .height(cellHeight+ cellHeight* itemsToSkip)
                             .padding(vertical = 3.dp, horizontal = 1.dp)
                             .clip(MaterialTheme.shapes.medium)
                             .background(MaterialTheme.colorScheme.secondaryContainer),
-                        subject,
-                        farbeVertretung,
-                        standardTextSize,
+                        subject = subject,
+                        farbeVertretung = farbeVertretung,
+                        standardTextSize = standardTextSize,
                         customCellColor = customCellColor
                     )
                 }
             }
+
+            currentIndex += 1 + itemsToSkip
         }
     }
 }

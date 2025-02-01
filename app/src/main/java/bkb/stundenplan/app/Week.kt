@@ -127,7 +127,7 @@ private fun String.toDate(): LocalDate? {
 /**
  * Return the Week as `List<Day>?`
  */
-fun Document.getWeek(): Week {
+fun Document.getWeek(mergeExtraCells: Boolean = false): Week {
     val week: Week = Week()
     var rowspanCounter = 2 //max 20 Eine Zelle nimmt 2, startet deswegen für die erste zeile bei 2
     var cDayOne = 0

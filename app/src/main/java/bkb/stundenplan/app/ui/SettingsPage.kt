@@ -107,16 +107,29 @@ object SettingsPage {
 
                 Spacer(modifier = Modifier.padding(10.dp))
 
+                val fancyStundenplan by viewModel.saveHandler.fancyStundenplan.collectAsStateWithLifecycle()
                 SwitchAbfrage(
                     mainText = stringResource(R.string.fancy_stundenplan),
                     subText = stringResource(R.string.verwendet_eine_eigene_ansicht_f_r_die_stundenpl_ne_inspiriert_von_google_calendar),
-                    checked = viewModel.saveHandler.fancyStundenplan.collectAsStateWithLifecycle().value,
+                    checked = fancyStundenplan,
                     onCheckedChange = {
                         viewModel.saveHandler.saveFancyStundenplan(it)
                     })
 
                 Spacer(modifier = Modifier.padding(15.dp))
+                if(fancyStundenplan)
+                {
+                    SwitchAbfrage(
+                        mainText = "Verbinde Zellen",
+                        subText = "verbindet die Zellen der Fächer",
+                        checked = viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle().value,
+                        onCheckedChange = {
+                            viewModel.saveHandler.saveMergeCells(it)
+                        })
 
+                    Spacer(modifier = Modifier.padding(15.dp))
+
+                }
 
 
 
