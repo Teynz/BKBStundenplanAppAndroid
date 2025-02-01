@@ -216,8 +216,8 @@ fun Document.getWeek(): Week {
 
     val rowspanTracker = IntArray(5)
     var currentRowspanCounter = 2
-    val defaultColor = tbody.select("> tr > td").firstOrNull()?.attr("bgcolor")
-    week.customCellColor = defaultColor.isNullOrEmpty()
+    val Cells = this.selectFirst("table > tbody")?.select("> tr > td")
+    week.customCellColor= Cells?.attr("bgcolor")?.isEmpty()?: false
 
     rows.forEachIndexed { rowIndex, row ->
         when {
