@@ -13,8 +13,12 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNIS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -85,6 +89,9 @@ class ScrapingJSoup(
 
     var _stundenplanSite = MutableStateFlow<Document?>(null)
     val stundenplanSite = _stundenplanSite.asStateFlow()
+
+
+
 
 
 

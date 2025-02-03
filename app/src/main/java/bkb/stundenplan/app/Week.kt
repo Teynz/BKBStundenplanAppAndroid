@@ -95,11 +95,11 @@ class Week(
 
     fun mergeAndRemoveRedundantAll(mergeCells: Boolean, removeRedundantNumbers: Boolean):Week {
         return Week(
-        monday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
-        tuesday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
-        wednesday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
-        thursday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
-        friday.mergeCellsRemoveRedundant(mergeCells = true, removeRedundantNumbers = true),
+        monday.mergeCellsRemoveRedundant(mergeCells = mergeCells, removeRedundantNumbers = removeRedundantNumbers),
+        tuesday.mergeCellsRemoveRedundant(mergeCells = mergeCells, removeRedundantNumbers = removeRedundantNumbers),
+        wednesday.mergeCellsRemoveRedundant(mergeCells = mergeCells, removeRedundantNumbers = removeRedundantNumbers),
+        thursday.mergeCellsRemoveRedundant(mergeCells = mergeCells, removeRedundantNumbers = removeRedundantNumbers),
+        friday.mergeCellsRemoveRedundant(mergeCells = mergeCells, removeRedundantNumbers = removeRedundantNumbers),
             this.customCellColor)
 
     }

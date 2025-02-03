@@ -42,9 +42,9 @@ object StundenplanCustom {
     fun StundenplanCompose(
         modifier: Modifier, viewModel: ViewModelStundenplanData
     ) {
-        val textSizeCells = if (viewModel.isPortrait) 9.3.sp else 7.5.sp
+        val textSizeCells = if (viewModel.isPortrait) 11.sp else 7.5.sp
 
-        val week = viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.getWeek()
+        val week = viewModel.week.collectAsStateWithLifecycle().value
 
         BoxWithConstraints(modifier = modifier) {
 
@@ -57,7 +57,7 @@ object StundenplanCustom {
                     val mergeCells by viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle()
                     WeekRow(
                         modifier = Modifier,
-                        it.mergeAndRemoveRedundantAll(mergeCells,false),
+                        it,
                         Color.Red,
                         textSizeCells,
                         this.maxHeight / 10,
@@ -273,8 +273,6 @@ fun SubjectToComposeable(
                     row.select("> td").forEach { cell ->
 
 
-                       // val fontSize = cell.select("> font").attr("size")
-
                         val fontColor = cell.select("> font").attr("color")
                         val composeColor: Color =
                             if(!customCellColor){
@@ -292,7 +290,7 @@ fun SubjectToComposeable(
                             } else Color.Unspecified
 
 
-                        if (cell.text().isNotEmpty() && !regexFilterRedundantNumbers.matches(cell.text())) {
+                        if (cell.text().isNotEmpty() ) {
 
                             val isBold = try {cell.children()[0].children()[0].tagName() == "b"} catch (e:Exception){false
                             }

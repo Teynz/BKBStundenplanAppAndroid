@@ -109,7 +109,7 @@ class SaveHandler(
                     async { darkmode = loadInitialDarkMode() },
                     async { adaptiveColor = loadPreference(Keys.ADAPTIVECOLOR, true) },
                     async { _experimentellerStundenplan.value = loadPreference(Keys.EXPERIMENTELLERSTUNDENPLAN, true) },
-                    async { _stundenplanZoom.value = loadPreference(Keys.STUNDENPLANZOOM, false) },
+                    async { _stundenplanZoom.value = loadPreference(Keys.STUNDENPLANZOOM, true) },
                     async { _fancyStundenplan.value = loadPreference(Keys.FANCYSTUNDENPLAN, true) },
                     async { _mergeCells.value = loadPreference(Keys.VERBINDEFÄCHER, true) },
                     async { alteStundenplaene = loadPreference(Keys.ALTESTUNDENPLENE, true) },
