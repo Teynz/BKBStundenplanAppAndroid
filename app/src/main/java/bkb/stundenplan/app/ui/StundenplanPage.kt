@@ -140,6 +140,7 @@ object StundenplanPage {
             }
 
         } else {
+            val urlStundenplan = viewModel.urlMaker.urlStundenplan.collectAsStateWithLifecycle().value
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
@@ -148,7 +149,7 @@ object StundenplanPage {
                 }
             }, update = {
 
-                it.loadUrl(viewModel.urlMaker.urlStundenplan.value)
+                it.loadUrl(urlStundenplan)
                 it.settings.loadWithOverviewMode = true
                 it.settings.useWideViewPort = true
                 it.settings.builtInZoomControls = true

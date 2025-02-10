@@ -39,6 +39,8 @@ class SaveHandler(
             const val VALUEDATE = "ValueDate"
             const val VALUETYPE = "ValueType"
             const val VALUEELEMENT = "ValueElement"
+            const val VALUETEXTSIZEVERTICAL = "ValueTextSizeVertical"
+            const val VALUETEXTSIZEHORIZONTAL = "ValueTextSizeHorizontal"
         }
 
         private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(SETTINGS)
@@ -79,6 +81,12 @@ class SaveHandler(
 
     private val _valueElement = MutableStateFlow(0)
     val valueElement = _valueElement.asStateFlow()
+
+    private val _valueTextSizeStundenPlanVertical = MutableStateFlow(11)
+    val valueTextSizeStundenPlanVertical = _valueTextSizeStundenPlanVertical.asStateFlow()
+
+    private val _valueTextSizeStundenPlanHorizontal = MutableStateFlow(7.5)
+    val valueTextSizeStundenPlanHorizontal = _valueTextSizeStundenPlanHorizontal.asStateFlow()
 
     // Region: Combined Flows
     val effectiveTeacherMode = combine(
@@ -121,7 +129,8 @@ class SaveHandler(
                     async { _valuePassword.value = loadPreference(Keys.PASSWORD, "") },
                     async { _valueDate.value = loadPreference(Keys.VALUEDATE, 0) },
                     async { _valueType.value = loadPreference(Keys.VALUETYPE, "c") },
-                    async { _valueElement.value = loadPreference(Keys.VALUEELEMENT, 0) }
+                    async { _valueElement.value = loadPreference(Keys.VALUEELEMENT, 0) },
+                    async { _valueTextSizeStundenPlanVertical.value = loadPreference(Keys.VALUETEXTSIZEVERTICAL, 11) },
                 )
 
                 settings.awaitAll()
@@ -171,7 +180,7 @@ class SaveHandler(
     private inline fun <reified T> loadPreference(key: String, defaultValue: T): T {
         val store = when (T::class) {
             Boolean::class -> context.settingsStore
-            String::class, Int::class -> context.valuesStore
+            String::class, Int::class, Float::class -> context.valuesStore
             else -> throw IllegalArgumentException("Unsupported type")
         }
 
@@ -193,7 +202,7 @@ class SaveHandler(
     private suspend fun <T> savePreference(key: String, value: T) {
         val store = when (value) {
             is Boolean -> context.settingsStore
-            is String, is Int -> context.valuesStore
+            is String, is Int, is Float -> context.valuesStore
             else -> throw IllegalArgumentException("Unsupported type")
         }
 
@@ -202,6 +211,7 @@ class SaveHandler(
                 is Boolean -> preferences[booleanPreferencesKey(key)] = value
                 is String -> preferences[stringPreferencesKey(key)] = value
                 is Int -> preferences[intPreferencesKey(key)] = value
+                is Float -> preferences[floatPreferencesKey(key)] = value
             }
         }
     }
@@ -211,6 +221,7 @@ class SaveHandler(
         Boolean::class -> booleanPreferencesKey(key) as Preferences.Key<T>
         String::class -> stringPreferencesKey(key) as Preferences.Key<T>
         Int::class -> intPreferencesKey(key) as Preferences.Key<T>
+        Float::class -> floatPreferencesKey(key) as Preferences.Key<T>
         else -> throw IllegalArgumentException("Unsupported type")
     }
 }

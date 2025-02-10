@@ -26,8 +26,6 @@ data class Subject(
 class Day(
     var date: LocalDate? = null, var subjects: MutableList<Subject> = mutableListOf()
 ) {
-
-
     fun mergeCellsRemoveRedundant(mergeCells: Boolean, removeRedundantNumbers: Boolean): Day {
         var subjects = subjects
         //RemoveRedundantNumbers
@@ -35,18 +33,23 @@ class Day(
         if (removeRedundantNumbers) {
             var newWithoutRedundantSubjectsList = subjects.map { subject ->
                 val modifiedContent = subject.content.clone()
+
+
+
                 modifiedContent.select("font").forEach { font ->
                     font?.let{ font ->
                     if (font.text().contains(regexFilterRedundantNumbers)) {
                         font.remove()
                     }}
                 }
+
+
+
                 subject.copy(content = modifiedContent)
             }
 
             subjects = newWithoutRedundantSubjectsList.toMutableList()
         }
-
 
         //Merging Cells
         if (mergeCells)
@@ -55,31 +58,24 @@ class Day(
         var lastNewSubjectAsString: String? = null
         var indexCounter = 0
         while (indexCounter < subjects.size) {
-
             lastNewSubjectAsString?.let {
-                if (lastNewSubjectAsString == subjects[indexCounter].content.toString()) {
+                if (lastNewSubjectAsString == subjects[indexCounter].content.text()) {
                     newMergedSubjectsList[newMergedSubjectsList.size - 1].multiplier += subjects[indexCounter].multiplier
                 } else {
                     newMergedSubjectsList.add(subjects[indexCounter])
                 }
-
                 lastNewSubjectAsString =
-                    newMergedSubjectsList[newMergedSubjectsList.size - 1].content.toString()
+                    newMergedSubjectsList[newMergedSubjectsList.size - 1].content.text()
             } ?: run {
                 newMergedSubjectsList.add(subjects[0])
-                lastNewSubjectAsString = subjects[0].content.toString()
+                lastNewSubjectAsString = subjects[0].content.text()
             }
-
             indexCounter++
-
-
         }
-
     subjects = newMergedSubjectsList
     }
         return Day(date, subjects)
     }
-
 }
 
 
