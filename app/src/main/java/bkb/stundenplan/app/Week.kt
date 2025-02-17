@@ -212,7 +212,8 @@ fun Document.getWeek(): Week {
     val tbody = this.selectFirst("table > tbody") ?: return week
     val rows = tbody.select("> tr")
 
-    rows?.forEachIndexed {indexRow, currentRow ->
+    for (indexRow in 0 until tbody.childrenSize()) {
+        val currentRow = rows[indexRow]
 
         if (currentRow.childrenSize() != 0) {
             if (indexRow == 0) {
@@ -222,18 +223,11 @@ fun Document.getWeek(): Week {
                 val cells = currentRow.select(">td")
                 var dayCounter = 1//diese Variable steht für Montag bis freitag
 
-
-
-                cells?.forEachIndexed {indexCell, currentCell ->
-
-                    if (indexCell != 0) {
-
-
+                for (indexCell in 1 until currentRow.childrenSize()){
+                    val currentCell = cells[indexCell]
 
                         while (rowspanCounter <= rowspanTracker[dayCounter-1] && dayCounter <= 5) {
                             dayCounter++
-
-
                         }
                         if (dayCounter in 1..5){
                             val multiplier = currentCell.attributes()["rowspan"]?.toInt() ?: 0
@@ -250,7 +244,7 @@ fun Document.getWeek(): Week {
 
                         }
                         dayCounter++
-                    }
+
                 }
                 rowspanCounter += 2
             }
