@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id ("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.compose.compiler)
-
 }
 
 android {
@@ -12,13 +11,13 @@ android {
         resources.excludes.add("mozilla/public-suffix-list.txt")
     }
     namespace = "bkb.stundenplan.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "bkb.stundenplan.app"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 8
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 10
         versionName = "@string/app_Version"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,6 +33,10 @@ android {
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
                          )
+        }
+        debug{
+            applicationIdSuffix = ".debug"
+
         }
     }
     compileOptions {
@@ -71,7 +74,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.webkit)
-    implementation(libs.skrapeit)
     implementation(libs.jsoup)
     implementation(libs.androidx.datastore.preferences)
 
@@ -91,6 +93,4 @@ dependencies {
     //kapt(libs.androidx.lifecycle.compiler) removed 18.11.24
     // alternately - if using Java8, use the following instead of lifecycle-compiler
     //implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
-
-
 }

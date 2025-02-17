@@ -1,9 +1,5 @@
 package bkb.stundenplan.app
 
-import android.os.Build
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CLASSES_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.CORRIDORS_FULL
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.FLC1
@@ -17,14 +13,41 @@ import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.VERZEICHNIS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
+import java.util.Locale
+
+class DateMap : LinkedHashMap<Int, String>() {
+    override fun get(key: Int): String {
+        return super.get(key) ?: getMondayDateForWeek(key)
+    }
+
+    private fun getMondayDateForWeek(weekNumber: Int): String {
+        val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+        return try {
+            val date = LocalDate.now()
+                .with(WeekFields.of(Locale.getDefault()).weekOfYear(), weekNumber.toLong())
+                .with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1)
+            date.format(formatter)
+        } catch (e: Exception) {
+            "Kalenderwoche: $weekNumber"
+        }
+    }
+}
+
+
 
 class ScrapingJSoup(
     private var teacherMode: StateFlow<Boolean>,
@@ -41,22 +64,38 @@ class ScrapingJSoup(
         var flte: Float = 1F
     )
 
-    var typeArrays by mutableStateOf<TypeArrays?>(null)
-    private val _datesPairMap = MutableStateFlow<Pair<String?, Map<Int, String>?>?>(null)
+    var typeArrays = MutableStateFlow<TypeArrays?>(null)
+    private val _datesPairMap = MutableStateFlow<Pair<String?, DateMap?>?>(null)
     val datesPairMap = _datesPairMap.asStateFlow()
 
 
-    var typesPairMap by mutableStateOf<Pair<String?, Map<String, String>?>?>(null)
+
+
+
+
+
+
+
+    var _typesPairMap = MutableStateFlow<Pair<String?, Map<String, String>?>?>(null)
+    val typesPairMap = _typesPairMap.asStateFlow()
 
 
     private val getNavBarURL: (Boolean) -> String = { teacherMode ->
         "https://stundenplan.bkb.nrw/${if (teacherMode) VERZEICHNISSNAMELEHRER else VERZEICHNISSNAMESCHUELER}/frames/navbar.htm"
     }
-    private var selectBoxes by mutableStateOf<Elements?>(null)
-    private var navBarDoc by mutableStateOf<Document?>(null)
+    private var selectBoxes = MutableStateFlow<Elements?>(null)
+    private var navBarDoc = MutableStateFlow<Document?>(null)
 
 
-    var stundenplanSite by mutableStateOf<Document?>(null)
+    var _stundenplanSite = MutableStateFlow<Document?>(null)
+    val stundenplanSite = _stundenplanSite.asStateFlow()
+
+
+
+
+
+
+
     fun updateStundenplanSite(url: String) {
         val login = "${if(teacherMode.value)loginName.value else STUNDENPLANLOGIN}:${if(teacherMode.value)password.value else STUNDENPLANPASSWORT}"
         val base64login = encodeToBase64(login)
@@ -64,13 +103,13 @@ class ScrapingJSoup(
 
         try {
 
-            stundenplanSite =
+            _stundenplanSite.value =
                 Jsoup.connect(url).header("Authorization", "Basic $base64login").timeout(10000)
                     .userAgent("Mozilla/5.0").get()
 
         }
         catch (e: Exception) {
-            stundenplanSite = null
+            _stundenplanSite.value = null
             println("Could not fetch StundenplanSite from the Web")
         }
     }
@@ -78,13 +117,8 @@ class ScrapingJSoup(
 
     private fun encodeToBase64(input: String): String {
         val bytes = input.toByteArray()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            java.util.Base64.getEncoder().encodeToString(bytes)
-        }
-        else {
-            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        return java.util.Base64.getEncoder().encodeToString(bytes)
 
-        }
     }
 
 
@@ -121,7 +155,7 @@ class ScrapingJSoup(
 
     private fun updateSelectBoxes() {
 
-        selectBoxes = getSelectBoxes(navBarDoc, teacherMode.value)
+        selectBoxes.value = getSelectBoxes(navBarDoc.value, teacherMode.value)
     }
 
     private fun getSelectBoxes(
@@ -205,13 +239,17 @@ class ScrapingJSoup(
             CoroutineScope(Dispatchers.IO).launch {
 
 
-                navBarDoc = getNavBarDoc(teacherMode.value, loginName.value, password.value)
-                selectBoxes = getSelectBoxes(navBarDoc, teacherMode.value)
+                navBarDoc.value = getNavBarDoc(teacherMode.value, loginName.value, password.value)
+                selectBoxes.value = getSelectBoxes(navBarDoc.value, teacherMode.value)
 
-                if (selectBoxes == null) updateSelectBoxes()
-                typeArrays = extractVariables(navBarDoc.toString())
-                _datesPairMap.value = getMap(selectBoxes?.get(0))
-                typesPairMap = getMap(selectBoxes?.get(1))
+                if (selectBoxes.value == null) updateSelectBoxes()
+                typeArrays.value = extractVariables(navBarDoc.value.toString())
+                val map = getMap<Int, String>(selectBoxes.value?.get(0))
+
+                _datesPairMap.value  = getMap<Int, String>(selectBoxes.value?.get(0))?.let { (string, map) ->
+                    Pair(string, map?.let { DateMap().apply { putAll(it) } })
+                }
+                _typesPairMap.value = getMap(selectBoxes.value?.get(1))
 
             }
 
@@ -226,5 +264,8 @@ class ScrapingJSoup(
             }
         }
     }
+
+    //fun updateStundenplanCustomObject
+
 
 }

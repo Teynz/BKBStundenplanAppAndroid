@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -35,7 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ui.MenuContent
 import bkb.stundenplan.app.ui.SettingsPage
@@ -84,11 +86,12 @@ class MainActivity : ComponentActivity() {
 
             appViewModel.isPortrait =
                 LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
-            appViewModel.heightTopAppBar.value =
-                if (!appViewModel.isPortrait) 60.dp else 100.dp
+            appViewModel.heightTopAppBar.value = if (!appViewModel.isPortrait) 60.dp else 100.dp
 
             BKBStundenplanTheme(viewModel = appViewModel) {
-                AppContent(modifier = Modifier.fillMaxSize(), appViewModel)
+                LeftSideBar(
+                    Modifier.fillMaxSize(), appViewModel
+                )
             }
         }
     }
@@ -96,12 +99,91 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun AppContent(
-    modifier: Modifier = Modifier, appViewModel: ViewModelStundenplanData = viewModel()
-) {
-    LeftSideBar(modifier, appViewModel)
+fun AppBarAction(viewModel: ViewModelStundenplanData, onCalendarClick: () -> Unit) {
+
+
+    //backbutton per week
+    IconButton(onClick = {
+        if (viewModel.saveHandler.valueDate.value - 1 <= 0) {
+            viewModel.saveHandler.saveValueDate(52)
+
+        } else viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value - 1)
+
+    }) {
+        Icon(
+            painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.scale(0.60f)
+        )
+
+
+    }
+
+
+    //select Button per week
+    IconButton(onClick = {
+        onCalendarClick()
+
+    }) {
+        Icon(
+            painter = painterResource(id = R.drawable.outline_calendar_month_24),
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.scale(0.60f)
+        )
+
+
+    }
+
+
+//forwardButton per week
+    IconButton(onClick = {
+        val lastKey = viewModel.scraping.datesPairMap.value?.second?.keys?.maxOrNull()
+        lastKey?.let { itLastKey ->
+            if (itLastKey != (viewModel.saveHandler.valueDate.value)) {
+
+                if (viewModel.saveHandler.valueDate.value + 1 >= 53) {
+                    viewModel.saveHandler.saveValueDate(1)
+                } else {
+                    viewModel.saveHandler.saveValueDate(viewModel.saveHandler.valueDate.value + 1)
+                }
+
+
+            }
+        }
+
+
+    }) {
+        Icon(
+            painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
+            tint = MaterialTheme.colorScheme.onSurface,
+            contentDescription = "",
+            modifier = Modifier
+                .scale(scaleX = -1f, scaleY = 1f)
+                .scale(0.60f)
+        )
+
+
+    }
 }
 
+@Composable
+fun AppBarTitle(viewModel: ViewModelStundenplanData) {
+
+
+    val elementString = ParameterWhichMayChangeOverTime.selectType(
+        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value,
+        viewModel.scraping.typeArrays.collectAsStateWithLifecycle().value
+    )?.get(viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value)
+    val dateString =
+        viewModel.scraping.datesPairMap.collectAsStateWithLifecycle().value?.second?.get(viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value)
+    var title = "$elementString - $dateString"
+
+    Text(text = title)
+
+
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,14 +192,11 @@ fun LeftSideBar(
 ) {
     var stateSelected by rememberSaveable { mutableStateOf(StateSelectedEnum.STUNDENPLAN) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
+    var stateSelectionDialog by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = false,
-        drawerContent = {
-            ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
+    ModalNavigationDrawer(drawerState = drawerState, gesturesEnabled = false, drawerContent = {
+        ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
             Row(
                 horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
@@ -133,8 +212,9 @@ fun LeftSideBar(
                     }
                 }, content = {
                     Icon(
-                        painter = painterResource(id = R.drawable.back),
-                        contentDescription = "Zurück Pfeil"
+                        painter = painterResource(id = R.drawable.baseline_arrow_back_ios_new_24),
+                        contentDescription = "Zurück Pfeil",
+                        modifier = Modifier.scale(0.65f)
                     )
                 })
             }
@@ -168,15 +248,21 @@ fun LeftSideBar(
         }
     }) {
         Scaffold(topBar = {
-            CenterAlignedTopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
+            CenterAlignedTopAppBar(title = {
+                if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                    AppBarTitle(appViewModel)
+                } else Text(stringResource(id = R.string.app_name))
+            },
+//MaterialTheme.colorScheme.secondaryContainer
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
                 modifier = Modifier.height(appViewModel.heightTopAppBar.value),
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Gray),
                 navigationIcon = {
 
 
-                    IconButton(
-                        modifier = Modifier,
-                        onClick = {
+                    IconButton(modifier = Modifier, onClick = {
                         scope.launch {
                             drawerState.apply {
                                 if (isClosed) open() else close()
@@ -184,12 +270,25 @@ fun LeftSideBar(
                         }
                     }) {
                         Icon(
-                            painter = painterResource(id = R.drawable.baseline_menu_24),
+
+                            painter = painterResource(id = R.drawable.menu_24px),
                             contentDescription = stringResource(R.string.menu),
-                            tint = Color.Unspecified
+                            modifier = Modifier.scale(1.2f),
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
 
 
+                    }
+
+
+                },
+                actions = {
+                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                        AppBarAction(viewModel = appViewModel) {
+                            stateSelectionDialog = true
+
+
+                        }
                     }
 
 
@@ -206,14 +305,18 @@ fun LeftSideBar(
                         .fillMaxSize(), viewModel = appViewModel
                 )
             } else if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                StundenplanPage.MainPage(
-                    Modifier
-                        .padding(contentPadding)
-                        .fillMaxSize(), viewModel = appViewModel
-                )
+                StundenplanPage.MainPage(Modifier
+                    .padding(contentPadding)
+                    .fillMaxSize(),
+                    viewModel = appViewModel,
+                    dialogState = stateSelectionDialog,
+                    onDialogStateChange = { value -> stateSelectionDialog = value })
             }
         }
+
+
     }
+
 
 }
 

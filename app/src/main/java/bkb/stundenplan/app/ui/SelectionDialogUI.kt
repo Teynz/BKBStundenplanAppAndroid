@@ -1,7 +1,6 @@
 package bkb.stundenplan.app.ui
 
 import android.annotation.SuppressLint
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +25,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -43,7 +43,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
 import bkb.stundenplan.app.ViewModelStundenplanData
-import bkb.stundenplan.app.ui.StundenplanPage.DialogStateEnum
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -52,8 +51,8 @@ import java.time.format.DateTimeFormatter
 fun SelectionDialog(
     modifier: Modifier = Modifier,
     viewModel: ViewModelStundenplanData = viewModel(),
-    dialogState: DialogStateEnum,
-    ondialogStateChange: (DialogStateEnum) -> Unit
+    dialogState: Boolean,
+    ondialogStateChange: (Boolean) -> Unit
 ) {
     val searchFilter = rememberSaveable { mutableStateOf("") }
 
@@ -61,7 +60,7 @@ fun SelectionDialog(
     val horizontalPaddingRowsSpacer = if (viewModel.isPortrait) 10.dp else 3.dp
 
     val currentElementMap = ParameterWhichMayChangeOverTime.selectType(
-        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, viewModel.scraping.typeArrays
+        viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value, viewModel.scraping.typeArrays.collectAsStateWithLifecycle().value
     )
 
     val filteredElementMap: Map<Int, String>? = if (searchFilter.value.trim().isNotEmpty()) {
@@ -73,9 +72,9 @@ fun SelectionDialog(
     else currentElementMap
 
 
-    if (dialogState == DialogStateEnum.DATE || dialogState == DialogStateEnum.ELEMENT || dialogState == DialogStateEnum.TYPE) {
+    if (dialogState) {
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
-            onDismissRequest = { ondialogStateChange(DialogStateEnum.NONE) }) {
+            onDismissRequest = { ondialogStateChange(false) }) {
             Column(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
@@ -95,12 +94,12 @@ fun SelectionDialog(
                             verticalArrangement = Arrangement.Bottom,
                             modifier = Modifier.weight((1 / columnMultiplier.toFloat()))
                         ) {
-                            val weeksBackMap =
-                                if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.collectAsState().value?.second) else null
+                            val datesPairMap by viewModel.scraping.datesPairMap.collectAsStateWithLifecycle()
+
                             SectionSelectionDialog(
                                 modifier = Modifier,
-                                map = viewModel.scraping.datesPairMap.collectAsState().value?.second,
-                                secondMap = weeksBackMap,
+                                map = viewModel.scraping.datesPairMap.collectAsStateWithLifecycle().value?.second,
+                                secondMap =  if (viewModel.saveHandler.alteStundenplaene) weeksAgo(viewModel.scraping.datesPairMap.collectAsState().value?.second) else null,
                                 rowsOfSections = 1,
                                 onButtonClick = {
                                     viewModel.saveHandler.saveValueDate(it)
@@ -117,7 +116,7 @@ fun SelectionDialog(
                             ) {
                                 SectionSelectionDialog(
                                     modifier = Modifier,
-                                    map = viewModel.scraping.typesPairMap?.second,
+                                    map = viewModel.scraping.typesPairMap.collectAsStateWithLifecycle().value?.second,
                                     rowsOfSections = 1,
                                     onButtonClick = {
                                         viewModel.saveHandler.saveValueType(it)
@@ -144,7 +143,7 @@ fun SelectionDialog(
 
                             if (!viewModel.isPortrait) {
                                 Row(horizontalArrangement = Arrangement.Center) {
-                                    FindAndSave(
+                                    FindAndSave(/*todo replace with search material you*/
                                         searchFilter,
                                         ondialogStateChange,
                                         modifierSearchTextField = Modifier
@@ -184,7 +183,6 @@ fun SelectionDialog(
     }
 }
 
-
 fun weeksAgo(
     datesMap: Map<Int, String>?, weeksAgo: Int = 8
 ): Map<Int, String> {
@@ -195,14 +193,9 @@ fun weeksAgo(
     for (weekCounter in weeksAgo downTo 1) {
         val entryValue = firstValue?.minus(weekCounter)
         val dateString = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
-                LocalDate.parse(datesMap?.values?.first(), formatter)
-                    .minusWeeks(weekCounter.toLong()).format(formatter)
-            }
-            else {
-                null
-            }
+            val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+            LocalDate.parse(datesMap?.values?.first(), formatter)
+                .minusWeeks(weekCounter.toLong()).format(formatter)
         }
         catch (_: Exception) {
             null
@@ -227,10 +220,11 @@ fun weeksAgo(
 }
 
 
+
 @Composable
 private fun FindAndSave(
     searchFilter: MutableState<String>,
-    ondialogStateChange: (DialogStateEnum) -> Unit,
+    ondialogStateChange: (Boolean) -> Unit,
     @SuppressLint("ModifierParameter") modifierSearchTextField: Modifier,
     modifierSaveButton: Modifier
 ) {
@@ -254,7 +248,7 @@ private fun FindAndSave(
 
     Button(
         modifier = modifierSaveButton,
-        onClick = { ondialogStateChange(DialogStateEnum.NONE) },
+        onClick = { ondialogStateChange(false) },
         contentPadding = PaddingValues(8.dp),
     ) {
         Text(

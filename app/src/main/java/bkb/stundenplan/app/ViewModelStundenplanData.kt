@@ -8,8 +8,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -42,7 +45,13 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
     var heightTopAppBar = mutableStateOf(80.dp)
     var isPortrait by mutableStateOf(true)
 
+    val week = scraping._stundenplanSite.map()
+    {
 
+        it?.getWeek()?.mergeAndRemoveRedundantAll(saveHandler.mergeCells.value,true)
+
+
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
     @Suppress("MemberVisibilityCanBePrivate")
 
     fun viewModelInit() {
