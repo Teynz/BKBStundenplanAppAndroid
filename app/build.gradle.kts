@@ -16,8 +16,8 @@ android {
     defaultConfig {
         applicationId = "bkb.stundenplan.app"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 9
+        targetSdk = 35
+        versionCode = 10
         versionName = "@string/app_Version"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

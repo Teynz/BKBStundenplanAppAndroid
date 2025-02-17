@@ -229,6 +229,7 @@ fun Document.getWeek(): Week {
                         while (rowspanCounter <= rowspanTracker[dayCounter-1] && dayCounter <= 5) {
                             dayCounter++
                         }
+
                         if (dayCounter in 1..5){
                             val multiplier = currentCell.attributes()["rowspan"]?.toInt() ?: 0
                             rowspanTracker[dayCounter-1] += multiplier

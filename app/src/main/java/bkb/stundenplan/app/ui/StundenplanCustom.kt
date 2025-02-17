@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -29,11 +30,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import bkb.stundenplan.app.Day
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
-import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.regexFilterRedundantNumbers
 import bkb.stundenplan.app.Subject
 import bkb.stundenplan.app.ViewModelStundenplanData
 import bkb.stundenplan.app.Week
-import bkb.stundenplan.app.getWeek
+import org.jsoup.nodes.Element
 
 
 object StundenplanCustom {
@@ -169,17 +169,18 @@ object StundenplanCustom {
     ) {
 
 
-
         Row(modifier = modifier) {
             week.asList().forEach { day ->
                 day?.let {
-                    DayColumn(Modifier.weight(1f),
+                    DayColumn(
+                        Modifier.weight(1f),
                         day,
                         farbeVertretung,
                         standardTextSize,
                         cellHeight,
                         customCellColor = week.customCellColor,
-                        mergeCells = mergeCells)
+                        mergeCells = mergeCells
+                    )
                 } ?: run { Text(text = "Fehler") }
             }
 
@@ -215,19 +216,19 @@ fun DayColumn(
 
 
 
-                Box {
-                    SubjectToComposeable(
-                        modifier = Modifier
-                            .height(cellHeight*subject.multiplier/2)
-                            .padding(vertical = 3.dp, horizontal = 1.dp)
-                            .clip(MaterialTheme.shapes.medium)
-                            .background(MaterialTheme.colorScheme.secondaryContainer),
-                        subject = subject,
-                        farbeVertretung = farbeVertretung,
-                        standardTextSize = standardTextSize,
-                        customCellColor = customCellColor
-                    )
-                }
+            Box {
+                SubjectToComposeable(
+                    modifier = Modifier
+                        .height(cellHeight * subject.multiplier / 2)
+                        .padding(vertical = 3.dp, horizontal = 1.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    subject = subject,
+                    farbeVertretung = farbeVertretung,
+                    standardTextSize = standardTextSize,
+                    customCellColor = customCellColor
+                )
+            }
 
 
             currentIndex++
@@ -245,16 +246,17 @@ fun SubjectToComposeable(
 ) {
 
 
-
     //start at td
     //continue at > table > tbody > tr
     val subjectIsEmpty = subject.content.select("> table > tbody > tr > td > font").isEmpty()
     if (!subjectIsEmpty) {
 
-        val subjectBGColor =if(customCellColor) Color.Unspecified else try {
+        val subjectBGColor = if (customCellColor) Color.Unspecified else try {
             Color(android.graphics.Color.parseColor(subject.content.attr("bgcolor")))
 
-        }catch(e:Exception){Color.White}
+        } catch (e: Exception) {
+            Color.White
+        }
 
         Column(
             modifier = modifier.background(subjectBGColor),
@@ -274,41 +276,54 @@ fun SubjectToComposeable(
 
 
                         val fontColor = cell.select("> font").attr("color")
-                        val composeColor: Color =
-                            if(!customCellColor){
-                                try{Color(android.graphics.Color.parseColor(fontColor))}catch(e:Exception){Color.Black}
-
+                        val composeColor: Color = if (!customCellColor) {
+                            try {
+                                Color(android.graphics.Color.parseColor(fontColor))
+                            } catch (e: Exception) {
+                                Color.Black
                             }
-                            else if (fontColor != "#000000" && fontColor != "#ff0000") {
-                                try {
-                                    Color(android.graphics.Color.parseColor(fontColor))
-                                } catch (e: Exception) {
-                                    Color.Unspecified
+
+                        } else if (fontColor != "#000000" && fontColor != "#ff0000") {
+                            try {
+                                Color(android.graphics.Color.parseColor(fontColor))
+                            } catch (e: Exception) {
+                                Color.Unspecified
+                            }
+                        } else if (fontColor == "#ff0000") {
+                            farbeVertretung
+                        } else Color.Unspecified
+
+
+                        if (cell.text().isNotEmpty()) {
+
+                            fun hasTagInChildren(element: Element, tagName: String): Boolean {
+                                if (element.tagName() == tagName) return true
+                                for (child in element.children()) {
+                                    if (hasTagInChildren(child, tagName)) return true
                                 }
-                            } else if (fontColor == "#ff0000") {
-                                farbeVertretung
-                            } else Color.Unspecified
-
-
-                        if (cell.text().isNotEmpty() ) {
-
-                            val isBold = try {cell.children()[0].children()[0].tagName() == "b"} catch (e:Exception){false
+                                return false
                             }
+
+                            val isBold = hasTagInChildren(cell, "b")
+                            val isItalic = hasTagInChildren(cell, "i")
+
+
+
                             val textSize = try {
                                 standardTextSize //* fontSize.toInt() / 2
                             } catch (e: Exception) {
                                 standardTextSize
                             }
 
-                            Text(
-                                text = ParameterWhichMayChangeOverTime.extractGebaeudeUndNummer(cell.text())
-                                    ?.let { "${it.first}\n${it.second}" } ?: cell.text(),
+                            Text(text = ParameterWhichMayChangeOverTime.extractGebaeudeUndNummer(
+                                cell.text()
+                            )?.let { "${it.first}\n${it.second}" } ?: cell.text(),
                                 color = composeColor,
                                 textAlign = TextAlign.Center,
                                 lineHeight = textSize,
                                 fontSize = textSize,
-                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal
-                            )
+                                fontStyle = if(isItalic) FontStyle.Italic else FontStyle.Normal,
+                                fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
 
 
                         }
