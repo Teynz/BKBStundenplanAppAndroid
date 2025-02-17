@@ -1,6 +1,5 @@
 package bkb.stundenplan.app
 
-import androidx.compose.ui.graphics.Color
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime.Companion.regexFilterRedundantNumbers
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -10,9 +9,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 
-data class Text(
-    val text: String?, val bold: Boolean, val color: Color
-)
 
 /**Ein einzelnes Fach
  * multiplier liegt zwischen 2 und 20
@@ -31,7 +27,7 @@ class Day(
         //RemoveRedundantNumbers
 
         if (removeRedundantNumbers) {
-            var newWithoutRedundantSubjectsList = subjects.map { subject ->
+            val newWithoutRedundantSubjectsList = subjects.map { subject ->
                 val modifiedContent = subject.content.clone()
 
 
@@ -54,7 +50,7 @@ class Day(
         //Merging Cells
         if (mergeCells)
         {
-        var newMergedSubjectsList = mutableListOf<Subject>()
+        val newMergedSubjectsList = mutableListOf<Subject>()
         var lastNewSubjectAsString: String? = null
         var indexCounter = 0
         while (indexCounter < subjects.size) {
@@ -157,9 +153,9 @@ class Week(
         return null
     }
 
-    fun setDates(Element: Element) {
+    fun setDates(element: Element) {
         var count = 1
-        Element.select("td > table > tbody > tr > td > font").forEach { font ->
+        element.select("td > table > tbody > tr > td > font").forEach { font ->
             getDay(count).date = font.text().toDate()
             count++
         }
@@ -200,54 +196,65 @@ private fun String.toDate(): LocalDate? {
 
 }
 
-
 /**
  * Return the Week as `List<Day>?`
  */
+
 fun Document.getWeek(): Week {
     val week = Week()
+    week.customCellColor= this.selectFirst("table > tbody")?.select("> tr > td")?.attr("bgcolor")?.isEmpty()?: false
+
+
+    var rowspanCounter = 2 //max 20 Eine Zelle nimmt 2, startet deswegen für die erste zeile bei 2
+    val rowspanTracker = IntArray(5) { 0 }
+
+
     val tbody = this.selectFirst("table > tbody") ?: return week
     val rows = tbody.select("> tr")
 
+    rows?.forEachIndexed {indexRow, currentRow ->
 
-    val rowspanTracker = IntArray(5)
-    var currentRowspanCounter = 2
-    val Cells = this.selectFirst("table > tbody")?.select("> tr > td")
-    week.customCellColor= Cells?.attr("bgcolor")?.isEmpty()?: false
-
-    rows.forEachIndexed { rowIndex, row ->
-        when {
-            rowIndex == 0 -> week.setDates(row)
-            else -> {
-                val cells = row.select("> td")
-                var currentDay = 0
-                var cellIndex = 0
-
-                while (cellIndex < cells.size && currentDay < 5) {
-                    if (cellIndex == 0) {
-                        cellIndex++
-                        continue
-                    }
-
-                    val cell = cells[cellIndex]
-                    val rowspan = cell.attr("rowspan").toIntOrNull() ?: 1
-
-
-                    while (currentDay < 5 && rowspanTracker[currentDay] > currentRowspanCounter) {
-                        currentDay++
-                    }
-
-                    if (currentDay < 5) {
-                        rowspanTracker[currentDay] = currentRowspanCounter + rowspan
-                        week.accessDay(currentDay + 1) {
-                            it.subjects.add(Subject(rowspan, cell))
-                        }
-                        currentDay++
-                    }
-                    cellIndex++
-                }
-                currentRowspanCounter += 2
+        if (currentRow.childrenSize() != 0) {
+            if (indexRow == 0) {
+                week.setDates(currentRow)
             }
+            else {
+                val cells = currentRow.select(">td")
+                var dayCounter = 1//diese Variable steht für Montag bis freitag
+
+
+
+                cells?.forEachIndexed {indexCell, currentCell ->
+
+                    if (indexCell != 0) {
+
+
+
+                        while (rowspanCounter <= rowspanTracker[dayCounter-1] && dayCounter <= 5) {
+                            dayCounter++
+
+
+                        }
+                        if (dayCounter in 1..5){
+                            val multiplier = currentCell.attributes()["rowspan"]?.toInt() ?: 0
+                            rowspanTracker[dayCounter-1] += multiplier
+
+                            week.accessDay(dayCounter)
+                            {
+                                it.subjects.add(
+                                    Subject(
+                                        multiplier, currentCell
+                                    )
+                                )
+                            }
+
+                        }
+                        dayCounter++
+                    }
+                }
+                rowspanCounter += 2
+            }
+
         }
     }
     return week
