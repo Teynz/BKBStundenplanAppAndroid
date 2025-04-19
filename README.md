@@ -9,4 +9,4 @@ Eine Stundenplan App für das Berufskolleg der Stadt Bottrop, entwickelt von Pau
   Wichtig: Die Funktionalität des Stundenplanes ist abhängig von der Funktionsweise der Schulwebsite. Das heißt, dass eine Dowtime vom Schulserver zu einem Ausfall der Stundenplan App führt. Zudem können Änderungen die von den Schuladmins vorgenommen worden sind dazu   
   führen, dass die App nicht mehr Ordnungsgemäß Funktioniert.
 
-  Credits: https://github.com/skrapeit/skrape.it
+  Credits: https://jsoup.org/
