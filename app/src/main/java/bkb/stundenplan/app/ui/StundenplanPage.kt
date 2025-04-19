@@ -7,18 +7,22 @@ import android.content.res.Configuration
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -39,12 +43,8 @@ object StundenplanPage {
     fun MainPage(
         modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData,  dialogState: Boolean, onDialogStateChange: (Boolean) -> Unit
     ) {
-
         val configuration = LocalConfiguration.current
         val orientationVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-
-
 
         if (orientationVertical) {
 
@@ -65,13 +65,13 @@ object StundenplanPage {
                             viewModel = viewModel,
                                )
 
-
                 }
 
 
             }
 
-        } else {
+        }
+        else {
             Row(
                 verticalAlignment = Alignment.Top, modifier = modifier.fillMaxWidth()
             ) {
@@ -101,7 +101,7 @@ object StundenplanPage {
 
 
 
-        SelectionDialog(modifier = modifier,
+        SelectionDialog(modifier = Modifier.fillMaxSize().windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.systemBars),
             dialogState = dialogState,
             ondialogStateChange = { newState ->
                 onDialogStateChange(newState)

@@ -8,16 +8,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -73,17 +79,25 @@ fun SelectionDialog(
 
 
     if (dialogState) {
+
+
         Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
             onDismissRequest = { ondialogStateChange(false) }) {
-            Column(
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .padding(horizontal = if (viewModel.isPortrait) 30.dp else 80.dp)
-                    .padding(bottom = 20.dp)
-                    .fillMaxSize(),
+
+
+            Surface(
+                modifier = modifier
+
             ) {
-                // This column will take all available space except for the bottom row
-                Column(modifier = Modifier.weight(1f)) {
+
+            Column(
+                modifier = Modifier.fillMaxSize().padding(WindowInsets.systemBars.asPaddingValues())
+
+            ) {
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(scrollState)) {
                     Row(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = androidx.compose.ui.Alignment.Bottom
@@ -178,8 +192,9 @@ fun SelectionDialog(
                         )
                     }
                 }
-            }
+            }}
         }
+
     }
 }
 

@@ -65,10 +65,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.material)
-    //implementation(libs.androidx.runner) removed 18.11.24
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    // androidTestImplementation(libs.androidx.espresso.core) removed 18.11.24 typically used for ui testing
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
@@ -77,20 +75,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.androidx.datastore.preferences)
 
-    // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    // ViewModel utilities for Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    // LiveData
-    //implementation(libs.androidx.lifecycle.livedata.ktx) removed 18.11.24
-    // Lifecycle utilities for Compose
     implementation(libs.lifecycle.runtime.compose)
-
-    // Saved state module for ViewModel
-    //implementation(libs.androidx.lifecycle.viewmodel.savedstate) removed 18.11.24
-
-    // Annotation processor
-    //kapt(libs.androidx.lifecycle.compiler) removed 18.11.24
-    // alternately - if using Java8, use the following instead of lifecycle-compiler
-    //implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycle_version")
 }
