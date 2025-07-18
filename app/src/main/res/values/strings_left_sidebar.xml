@@ -4,4 +4,5 @@
     <string name="einstellungen">Einstellungen</string>
     <string name="menu">Menu</string>
     <string name="version" translatable="false">Version: %1$s</string>
+    <string name="lehrer_mail">Lehrer Mail</string>
 </resources>

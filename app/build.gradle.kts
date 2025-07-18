@@ -78,4 +78,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+
+//added 21.4.2025 19:05 for image web loading
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }

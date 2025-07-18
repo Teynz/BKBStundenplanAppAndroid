@@ -9,17 +9,17 @@ class ScrapingEMail {
         val mail: String, val pictureLink: String
     )
 
-    fun getLehrerEMail(): List<LehrerEMail>? {
+    public fun getLehrerEMail(): List<LehrerEMail>? {
 
         var list: List<LehrerEMail> = mutableListOf()
 
         try {
 
             var Kollegium = Jsoup.connect(url).timeout(10000).userAgent("Mozilla/5.0").get()
-            var Lehrer = Kollegium.select("body > div.uk-modal.uk-open > div")
+            var Lehrer = Kollegium.select("#module-gallery-239-particle > div > div > div")
             Lehrer.forEach {
-                var mail = it.select("#gallery-modal-info-1963109349 > div").text()
-                var pictureLink = it.select("body > div.uk-modal.uk-open > div > div.uk-lightbox-content > img").attr("href")
+                var mail = it.text()
+                var pictureLink = "https://www.berufskolleg-bottrop.de" + it.select("img").attr("src")
                 list += LehrerEMail(mail, pictureLink)
             }
 

@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -18,7 +19,9 @@ object MenuContent {
     @Composable
     fun LoadMenuContent(
         onStateSettingsChange: () -> Unit,//teil vor -> sind die parameter, der darauffolgende teil sind die Rückgabewerte
-        onStateStundenplanChange: () -> Unit, stateSelected: StateSelectedEnum
+        onStateStundenplanChange: () -> Unit,
+        onStateMailChange: () -> Unit,
+        stateSelected: StateSelectedEnum
     ) {
         NavigationDrawerItem(
             label = { Text(text = stringResource(R.string.stundenplan)) },
@@ -32,6 +35,21 @@ object MenuContent {
             },
             selected = stateSelected == StateSelectedEnum.STUNDENPLAN,
             onClick = { onStateStundenplanChange() })
+
+
+        NavigationDrawerItem(
+            label = { Text(text = stringResource(R.string.lehrer_mail)) },
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.mail_foreground),
+                    modifier = androidx.compose.ui.Modifier.size(28.dp).scale(1.7f),
+                    contentDescription = "Mail icon",
+                    tint = Color.Unspecified
+                )
+            },
+            selected = stateSelected == StateSelectedEnum.MAIL,
+            onClick = { onStateMailChange() })
+
 
         NavigationDrawerItem(
             label = { Text(text = stringResource(R.string.einstellungen)) },
@@ -50,5 +68,5 @@ object MenuContent {
 
 
 enum class StateSelectedEnum {
-    STUNDENPLAN, SETTINGS, UNSELECTED
+    STUNDENPLAN, SETTINGS, MAIL, UNSELECTED
 }

@@ -4,22 +4,18 @@ package bkb.stundenplan.app
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
@@ -53,6 +49,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import bkb.stundenplan.app.ui.LehrerEMailPage
 import bkb.stundenplan.app.ui.MenuContent
 import bkb.stundenplan.app.ui.SettingsPage
 import bkb.stundenplan.app.ui.StateSelectedEnum
@@ -184,7 +181,7 @@ fun AppBarTitle(viewModel: ViewModelStundenplanData) {
     )?.get(viewModel.saveHandler.valueElement.collectAsStateWithLifecycle().value)
     val dateString =
         viewModel.scraping.datesPairMap.collectAsStateWithLifecycle().value?.second?.get(viewModel.saveHandler.valueDate.collectAsStateWithLifecycle().value)
-    var title = "$elementString - $dateString"
+    val title = "$elementString - $dateString"
 
     Text(text = title)
 
@@ -236,7 +233,17 @@ fun LeftSideBar(
                 stateSelected =
                     if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
                     else StateSelectedEnum.STUNDENPLAN
-            }, stateSelected = stateSelected
+            },
+                onStateMailChange = {
+                    stateSelected =
+                        if (stateSelected == StateSelectedEnum.MAIL) StateSelectedEnum.UNSELECTED
+                        else StateSelectedEnum.MAIL
+                },
+
+
+
+
+                stateSelected = stateSelected
             )
             Spacer(modifier.weight(1f))
             Text(
@@ -253,71 +260,83 @@ fun LeftSideBar(
             )
         }
     }) {
-        Scaffold(topBar = {
-            CenterAlignedTopAppBar(title = {
-                if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                    AppBarTitle(appViewModel)
-                } else Text(stringResource(id = R.string.app_name))
-            },
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(title = {
+                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                        AppBarTitle(appViewModel)
+                    } else Text(stringResource(id = R.string.app_name))
+                },
 //MaterialTheme.colorScheme.secondaryContainer
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-                modifier = Modifier.height(appViewModel.heightTopAppBar.value),
-                navigationIcon = {
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    modifier = Modifier.height(appViewModel.heightTopAppBar.value),
+                    navigationIcon = {
 
 
-                    IconButton(modifier = Modifier, onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                        IconButton(modifier = Modifier, onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
+                            }
+                        }) {
+                            Icon(
+
+                                painter = painterResource(id = R.drawable.menu_24px),
+                                contentDescription = stringResource(R.string.menu),
+                                modifier = Modifier.scale(1.2f),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+
+
+                        }
+
+
+                    },
+                    actions = {
+                        if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                            AppBarAction(viewModel = appViewModel) {
+                                stateSelectionDialog = true
+
+
                             }
                         }
-                    }) {
-                        Icon(
-
-                            painter = painterResource(id = R.drawable.menu_24px),
-                            contentDescription = stringResource(R.string.menu),
-                            modifier = Modifier.scale(1.2f),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
 
 
-                    }
-
-
-                },
-                actions = {
-                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                        AppBarAction(viewModel = appViewModel) {
-                            stateSelectionDialog = true
-
-
-                        }
-                    }
-
-
-                })
-        },
-            contentWindowInsets = WindowInsets.systemBars
+                    })
+            }, contentWindowInsets = WindowInsets.systemBars
 
 
         ) { contentPadding ->
             // Screen content
-            if (stateSelected == StateSelectedEnum.SETTINGS) {
-                SettingsPage.MainPage(
-                    Modifier
+            when (stateSelected) {
+                StateSelectedEnum.SETTINGS -> {
+                    SettingsPage.MainPage(
+                        Modifier
+                            .padding(contentPadding)
+                            .fillMaxSize(), viewModel = appViewModel
+                    )
+                }
+                StateSelectedEnum.STUNDENPLAN -> {
+                    StundenplanPage.MainPage(Modifier
                         .padding(contentPadding)
-                        .fillMaxSize(), viewModel = appViewModel
-                )
-            } else if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                StundenplanPage.MainPage(Modifier
-                    .padding(contentPadding)
-                    .fillMaxSize(),
-                    viewModel = appViewModel,
-                    dialogState = stateSelectionDialog,
-                    onDialogStateChange = { value -> stateSelectionDialog = value })
+                        .fillMaxSize(),
+                        viewModel = appViewModel,
+                        dialogState = stateSelectionDialog,
+                        onDialogStateChange = { value -> stateSelectionDialog = value })
+                }
+                StateSelectedEnum.MAIL -> {
+                    LehrerEMailPage.MainPage(
+                        Modifier
+                            .padding(contentPadding)
+                            .fillMaxSize()
+                    )
+
+                }
+                else ->{}
             }
         }
 
