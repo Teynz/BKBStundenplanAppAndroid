@@ -200,7 +200,8 @@ private fun String.toDate(): LocalDate? {
  * Return the Week as `List<Day>?`
  */
 
-fun Document.getWeek(): Week {
+fun Document.getWeek(): Week? {
+    try{
     val week = Week()
     week.customCellColor= this.selectFirst("table > tbody")?.select("> tr > td")?.attr("bgcolor")?.isEmpty()?: false
 
@@ -253,4 +254,6 @@ fun Document.getWeek(): Week {
         }
     }
     return week
+}catch (e: Exception){ return null}
+
 }

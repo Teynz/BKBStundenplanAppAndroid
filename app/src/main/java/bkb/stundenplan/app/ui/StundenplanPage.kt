@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -50,7 +51,8 @@ object StundenplanPage {
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier
+                    .fillMaxWidth()
             ) {
                 Box(
                     modifier = Modifier
@@ -73,7 +75,8 @@ object StundenplanPage {
         }
         else {
             Row(
-                verticalAlignment = Alignment.Top, modifier = modifier.fillMaxWidth()
+                verticalAlignment = Alignment.Top, modifier = modifier
+                    .fillMaxWidth()
             ) {
 
 
@@ -101,7 +104,7 @@ object StundenplanPage {
 
 
 
-        SelectionDialog(modifier = Modifier.fillMaxSize().windowInsetsPadding(androidx.compose.foundation.layout.WindowInsets.systemBars),
+        SelectionDialog(modifier = Modifier.fillMaxSize(),
             dialogState = dialogState,
             ondialogStateChange = { newState ->
                 onDialogStateChange(newState)

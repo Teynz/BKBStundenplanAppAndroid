@@ -307,7 +307,7 @@ fun LeftSideBar(
 
 
                     })
-            }, contentWindowInsets = WindowInsets.systemBars
+            }
 
 
         ) { contentPadding ->

@@ -11,12 +11,12 @@ android {
         resources.excludes.add("mozilla/public-suffix-list.txt")
     }
     namespace = "bkb.stundenplan.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "bkb.stundenplan.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 10
         versionName = "@string/app_Version"
 

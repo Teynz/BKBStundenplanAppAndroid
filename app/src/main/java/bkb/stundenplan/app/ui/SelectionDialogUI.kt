@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,7 +14,11 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -81,17 +87,19 @@ fun SelectionDialog(
     if (dialogState) {
 
 
-        Dialog(properties = DialogProperties(usePlatformDefaultWidth = false),
+
+
+        Dialog(properties = DialogProperties(usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false),
+
             onDismissRequest = { ondialogStateChange(false) }) {
 
 
-            Surface(
-                modifier = modifier
 
-            ) {
 
             Column(
-                modifier = Modifier.fillMaxSize().padding(WindowInsets.systemBars.asPaddingValues())
+                modifier = Modifier.fillMaxSize().safeDrawingPadding()
+
 
             ) {
                 val scrollState = rememberScrollState()
@@ -192,7 +200,9 @@ fun SelectionDialog(
                         )
                     }
                 }
-            }}
+            }
+
+
         }
 
     }
