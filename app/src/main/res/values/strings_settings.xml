@@ -12,7 +12,7 @@
     <string name="impressum_Credits">"Die App wurde in der Programmiersprache Kotlin mit dem Framework Jetpack Compose entwickelt. Damit die App die Stundenpläne von dem Server laden kann, wird die JSoup library verwendet"</string>
     <string name="impressum_kontakt">Verantwortlich für den Inhalt:  Paul Brandt\nStudent\nBerufskolleg der Stadt Bottrop\nAn der Berufsschule 20\n46236 Bottrop\nTelefon: 02041 70627–0\nTelefax: 02041 70627–77\nschule@bkb.nrw</string>
     <string name="impressum_zusatz" translatable="false">Bei Beschwerden Hinweisen oder Anregungen richten sie sich an den momentanen Instandhalter der App\n\nPaul Brandt: bkb.stundenplan@gmail.com</string>
-    <string name="impressum_urheberrecht">Urheberrechtshinweis\n\nDer akutelle Quellcode wird auf Anfrage bereitgestellt, es werden zudem regelmäßig neue Versionen an die Schule ausgehändigt. Der App Instandshalter übernimmt keinerlei Haftung für die richtigkeit der Stundenpläne.</string>
+    <string name="impressum_urheberrecht">Urheberrechtshinweis\n\nDer App Instandshalter übernimmt keinerlei Haftung für die richtigkeit der Stundenpläne.</string>
     <string name="odin_der_feini">\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDas ist Odin, Odin ist ein Feini</string>
     <string name="stundenplan_padding">Stundenplan Seitenabstand</string>
     <string name="stundenplan_padding_label">Ganze Zahl</string>
@@ -25,4 +25,6 @@
     <string name="zoomt_den_stundenplan_heran">Zoomt den Stundenplan heran</string>
     <string name="fancy_stundenplan">Fancy Stundenplan</string>
     <string name="verwendet_eine_eigene_ansicht_f_r_die_stundenpl_ne_inspiriert_von_google_calendar">verwendet eine eigene Ansicht für die Stundenpläne. Inspiriert von Google Calendar</string>
+    <string name="verbinde_zellen">Verbinde Zellen</string>
+    <string name="verbindet_die_zellen_der_f_cher">verbindet die Zellen der Fächer</string>
 </resources>

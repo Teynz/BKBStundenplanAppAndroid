@@ -38,10 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ScrapingEMail
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.CoroutineScope
@@ -99,7 +101,7 @@ object LehrerEMailPage {
                     ),
                     value = filter,
                     onValueChange = { filter = it },
-                    label = { Text("Element Suchen") },
+                    label = { Text(stringResource(R.string.element_suchen)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Text, imeAction = ImeAction.Done

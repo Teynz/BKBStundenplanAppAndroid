@@ -44,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -55,6 +56,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.ParameterWhichMayChangeOverTime
+import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ViewModelStundenplanData
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -99,7 +101,9 @@ fun SelectionDialog(
 
 
             Column(
-                modifier = Modifier.fillMaxSize().safeDrawingPadding()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .safeDrawingPadding()
 
 
 
@@ -283,7 +287,7 @@ private fun FindAndSave(
     ),
         value = searchFilter.value,
         onValueChange = { searchFilter.value = it },
-        label = { Text("Element Suchen") },
+        label = { Text(stringResource(R.string.element_suchen)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
@@ -307,7 +311,7 @@ private fun FindAndSave(
                 )
                 .clip(RoundedCornerShape(80.dp)),
             textAlign = TextAlign.Center,
-            text = "Speichern",
+            text = stringResource(R.string.speichern),
             color = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.primary)
         )
     }

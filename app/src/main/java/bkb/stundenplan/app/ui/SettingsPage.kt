@@ -118,8 +118,8 @@ object SettingsPage {
 
                 Spacer(modifier = Modifier.padding(15.dp))
                 if (fancyStundenplan) {
-                    SwitchAbfrage(mainText = "Verbinde Zellen",
-                        subText = "verbindet die Zellen der Fächer",
+                    SwitchAbfrage(mainText = stringResource(R.string.verbinde_zellen),
+                        subText = stringResource(R.string.verbindet_die_zellen_der_f_cher),
                         checked = viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle().value,
                         onCheckedChange = {
                             viewModel.saveHandler.saveMergeCells(it)
