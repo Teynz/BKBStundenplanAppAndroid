@@ -16,7 +16,7 @@ class ScrapingEMail {
         try {
 
             var Kollegium = Jsoup.connect(url).timeout(10000).userAgent("Mozilla/5.0").get()
-            var Lehrer = Kollegium.select("#module-gallery-239-particle > div > div > div")
+            var Lehrer = Kollegium.select("#module-gallery-239-particle > div > div > div, #module-gallery-278-particle > div > div > div")
             Lehrer.forEach {
                 var mail = it.text()
                 var pictureLink = "https://www.berufskolleg-bottrop.de" + it.select("img").attr("src")
