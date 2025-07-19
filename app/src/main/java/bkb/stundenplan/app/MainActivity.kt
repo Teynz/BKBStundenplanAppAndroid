@@ -302,6 +302,17 @@ fun LeftSideBar(
                                 stateSelectionDialog = true
 
 
+
+                                    if ((appViewModel.scraping.typesPairMap.value?.second?.size  ?: 1) < 5 && (appViewModel.saveHandler.effectiveTeacherMode.value))
+                                    {
+                                        appViewModel.scraping.smartUpdate(
+                                            true, true
+                                        )
+                                    }
+
+
+
+
                             }
                         }
 

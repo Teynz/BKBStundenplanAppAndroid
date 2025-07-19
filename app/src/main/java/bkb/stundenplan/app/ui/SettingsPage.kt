@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -30,13 +31,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -46,7 +53,6 @@ import bkb.stundenplan.app.ViewModelStundenplanData
 
 
 object SettingsPage {
-
 
 
     @Composable
@@ -69,24 +75,21 @@ object SettingsPage {
                 .verticalScroll(rememberScrollState())
         ) {
 
-            SwitchAbfrage(
-                mainText = stringResource(R.string.darkmode),
+            SwitchAbfrage(mainText = stringResource(R.string.darkmode),
                 subText = null,
                 checked = viewModel.saveHandler.darkmode,
                 onCheckedChange = { viewModel.saveHandler.saveDarkMode(it) })
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(
-                mainText = stringResource(R.string.adaptive_farben),
+            SwitchAbfrage(mainText = stringResource(R.string.adaptive_farben),
                 subText = stringResource(R.string.adaptive_farben_description),
                 checked = viewModel.saveHandler.adaptiveColor,
                 onCheckedChange = { viewModel.saveHandler.saveAdaptiveColor(it) })
             Spacer(modifier = Modifier.padding(10.dp))
 
-            SwitchAbfrage(
-                mainText = stringResource(R.string.experimenteller_stundenplan),
+            SwitchAbfrage(mainText = stringResource(R.string.experimenteller_stundenplan),
                 subText = stringResource(R.string.experimenteller_stundenplan_description),
-                checked = experimentellerStundenplan ,
+                checked = experimentellerStundenplan,
                 onCheckedChange = {
                     viewModel.saveHandler.saveExperimentellerStundenplan(it)
                 })
@@ -94,11 +97,9 @@ object SettingsPage {
 
             Spacer(modifier = Modifier.padding(10.dp))
 
-            if(experimentellerStundenplan)
-            {
+            if (experimentellerStundenplan) {
                 Spacer(modifier = Modifier.padding(5.dp))
-                SwitchAbfrage(
-                    mainText = stringResource(R.string.stundenplan_zoom),
+                SwitchAbfrage(mainText = stringResource(R.string.stundenplan_zoom),
                     subText = stringResource(R.string.zoomt_den_stundenplan_heran),
                     checked = viewModel.saveHandler.stundenplanZoom.collectAsStateWithLifecycle().value,
                     onCheckedChange = {
@@ -108,8 +109,7 @@ object SettingsPage {
                 Spacer(modifier = Modifier.padding(10.dp))
 
                 val fancyStundenplan by viewModel.saveHandler.fancyStundenplan.collectAsStateWithLifecycle()
-                SwitchAbfrage(
-                    mainText = stringResource(R.string.fancy_stundenplan),
+                SwitchAbfrage(mainText = stringResource(R.string.fancy_stundenplan),
                     subText = stringResource(R.string.verwendet_eine_eigene_ansicht_f_r_die_stundenpl_ne_inspiriert_von_google_calendar),
                     checked = fancyStundenplan,
                     onCheckedChange = {
@@ -117,10 +117,8 @@ object SettingsPage {
                     })
 
                 Spacer(modifier = Modifier.padding(15.dp))
-                if(fancyStundenplan)
-                {
-                    SwitchAbfrage(
-                        mainText = "Verbinde Zellen",
+                if (fancyStundenplan) {
+                    SwitchAbfrage(mainText = "Verbinde Zellen",
                         subText = "verbindet die Zellen der Fächer",
                         checked = viewModel.saveHandler.mergeCells.collectAsStateWithLifecycle().value,
                         onCheckedChange = {
@@ -132,13 +130,9 @@ object SettingsPage {
                 }
 
 
-
-
-
             }
 
-            SwitchAbfrage(
-                mainText = stringResource(R.string.alte_stundenpl_ne),
+            SwitchAbfrage(mainText = stringResource(R.string.alte_stundenpl_ne),
                 subText = stringResource(R.string.alte_stundenplaene_description),
                 checked = viewModel.saveHandler.alteStundenplaene,
                 onCheckedChange = {
@@ -254,12 +248,10 @@ object SettingsPage {
         val teacherMode by viewModel.saveHandler.teacherMode.collectAsStateWithLifecycle()
 
         Column(modifier = modifier) {
-            SwitchAbfrage(
-                mainText = stringResource(R.string.lehrer_modus),
+            SwitchAbfrage(mainText = stringResource(R.string.lehrer_modus),
                 subText = stringResource(R.string.schaltet_die_lehrer_stundenpl_ne_frei_anmeldename_und_passwort_m_ssen_daf_r_einmalig_eingetragen_werden),
                 checked = teacherMode,
-                onCheckedChange = { viewModel.saveHandler.saveTeacherMode(it) }
-            )
+                onCheckedChange = { viewModel.saveHandler.saveTeacherMode(it) })
 
             if (teacherMode) {
                 Spacer(modifier = Modifier.padding(5.dp))
@@ -274,87 +266,112 @@ object SettingsPage {
         modifier: Modifier = Modifier, onStateChange: (Boolean) -> Unit
     ) {
 
-            Dialog(onDismissRequest = { onStateChange(false) }, content = {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(550.dp)
-                        .padding(5.dp),
-                ) {
+        Dialog(onDismissRequest = { onStateChange(false) }, content = {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(550.dp)
+                    .padding(5.dp),
+            ) {
 
-                    Column {
-                        Spacer(modifier = Modifier.padding(6.dp))
-                        Text(
-                            modifier = modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center,
-                            text = stringResource(id = R.string.app_information),
+                Column {
+                    Spacer(modifier = Modifier.padding(6.dp))
+                    Text(
+                        modifier = modifier.align(Alignment.CenterHorizontally),
+                        textAlign = TextAlign.Center,
+                        text = stringResource(id = R.string.app_information),
+                    )
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.background
                         )
-
-                        Card(
+                    ) {
+                        LazyColumn(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.background
-                            )
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(8.dp)
-                            ) {
-                                item {
-                                    Text(
-                                        modifier = modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .fillMaxWidth(),
-                                        textAlign = TextAlign.Left,
-                                        text = stringResource(id = R.string.impressum_kontakt)
-                                    )
+                            item {
+                                Text(
+                                    modifier = modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .fillMaxWidth(),
+                                    textAlign = TextAlign.Left,
+                                    text = stringResource(id = R.string.impressum_kontakt)
+                                )
 
-                                }
+                            }
 
-                                item {
-                                    Text(
-                                        modifier = modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .fillMaxWidth(),
-                                        textAlign = TextAlign.Left,
-                                        text = stringResource(
-                                            R.string.e_mail
-                                        ) + stringResource(
-                                            R.string.impressum_Credits
-                                        ) + "\n\n" + stringResource(R.string.impressum_zusatz) + "\n\n" + stringResource(
-                                            R.string.impressum_urheberrecht
+                            item {
+                                Text(modifier = modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .fillMaxWidth(),
+                                    textAlign = TextAlign.Left,
+                                    text = buildAnnotatedString {
+                                        append(
+                                            stringResource(
+                                                R.string.e_mail
+                                            ) + stringResource(
+                                                R.string.impressum_Credits
+                                            ) + "\n\n" + stringResource(R.string.impressum_zusatz) + "\n\n" + stringResource(
+                                                R.string.impressum_urheberrecht
+                                            )
                                         )
 
-                                    )
-                                }
-                                item {
-                                    Text(
-                                        modifier = modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .fillMaxWidth(),
-                                        textAlign = TextAlign.Center,
-                                        text = stringResource(R.string.odin_der_feini)
-                                    )
-                                }
-                                item {
-                                    Image(
-                                        modifier = modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(16.dp)),
-                                        painter = painterResource(id = R.drawable.odin),
-                                        contentDescription = "Odin lololol"
-                                    )
-                                }
+
+
+
+
+
+                                    })
+                            }
+                            item {
+                                BasicText(
+                                    buildAnnotatedString {
+                                        withLink(
+                                            LinkAnnotation.Url(
+                                                "https://github.com/Teynz/BKBStundenplanAppAndroid",
+                                                TextLinkStyles(style = SpanStyle(color = Color.Blue)),
+                                            )
+                                        ) {
+                                            append("Github Link")
+                                        }
+                                    },
+                                    Modifier.padding(top = 20.dp)
+
+                                )
+
+                            }
+                            item {
+                                Text(
+                                    modifier = modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .fillMaxWidth(),
+                                    textAlign = TextAlign.Center,
+                                    text = stringResource(R.string.odin_der_feini)
+                                )
+                            }
+                            item {
+                                Image(
+                                    modifier = modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp)),
+                                    painter = painterResource(id = R.drawable.odin),
+                                    contentDescription = "Odin lololol"
+                                )
                             }
                         }
                     }
                 }
-            })
+            }
+        })
 
     }
 }
@@ -380,7 +397,7 @@ fun Login(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             ),
 
-        )
+            )
 
         TextField(
             modifier = Modifier
