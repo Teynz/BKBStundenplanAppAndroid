@@ -233,14 +233,11 @@ fun LeftSideBar(
                 stateSelected =
                     if (stateSelected == StateSelectedEnum.STUNDENPLAN) StateSelectedEnum.UNSELECTED
                     else StateSelectedEnum.STUNDENPLAN
+            }, onStateMailChange = {
+                stateSelected =
+                    if (stateSelected == StateSelectedEnum.MAIL) StateSelectedEnum.UNSELECTED
+                    else StateSelectedEnum.MAIL
             },
-                onStateMailChange = {
-                    stateSelected =
-                        if (stateSelected == StateSelectedEnum.MAIL) StateSelectedEnum.UNSELECTED
-                        else StateSelectedEnum.MAIL
-                },
-
-
 
 
                 stateSelected = stateSelected
@@ -260,65 +257,61 @@ fun LeftSideBar(
             )
         }
     }) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(title = {
-                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                        AppBarTitle(appViewModel)
-                    } else Text(stringResource(id = R.string.app_name))
-                },
+        Scaffold(topBar = {
+            CenterAlignedTopAppBar(title = {
+                if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                    AppBarTitle(appViewModel)
+                } else Text(stringResource(id = R.string.app_name))
+            },
 //MaterialTheme.colorScheme.secondaryContainer
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    modifier = Modifier.height(appViewModel.heightTopAppBar.value),
-                    navigationIcon = {
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+                modifier = Modifier.height(appViewModel.heightTopAppBar.value),
+                navigationIcon = {
 
 
-                        IconButton(modifier = Modifier, onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                        }) {
-                            Icon(
-
-                                painter = painterResource(id = R.drawable.menu_24px),
-                                contentDescription = stringResource(R.string.menu),
-                                modifier = Modifier.scale(1.2f),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-
-
-                        }
-
-
-                    },
-                    actions = {
-                        if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
-                            AppBarAction(viewModel = appViewModel) {
-                                stateSelectionDialog = true
-
-
-
-                                    if ((appViewModel.scraping.typesPairMap.value?.second?.size  ?: 1) < 5 && (appViewModel.saveHandler.effectiveTeacherMode.value))
-                                    {
-                                        appViewModel.scraping.smartUpdate(
-                                            true, true
-                                        )
-                                    }
-
-
-
-
+                    IconButton(modifier = Modifier, onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
                             }
                         }
+                    }) {
+                        Icon(
+
+                            painter = painterResource(id = R.drawable.menu_24px),
+                            contentDescription = stringResource(R.string.menu),
+                            modifier = Modifier.scale(1.2f),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
 
 
-                    })
-            }
+                    }
+
+
+                },
+                actions = {
+                    if (stateSelected == StateSelectedEnum.STUNDENPLAN) {
+                        AppBarAction(viewModel = appViewModel) {
+                            stateSelectionDialog = true
+
+
+
+                            if ((appViewModel.scraping.typesPairMap.value?.second?.size
+                                    ?: 1) < 5 && (appViewModel.saveHandler.effectiveTeacherMode.value)
+                            ) {
+                                appViewModel.scraping.smartUpdate(
+                                    true, true
+                                )
+                            }
+                        }
+                    }
+
+
+                })
+        }
 
 
         ) { contentPadding ->
@@ -331,6 +324,7 @@ fun LeftSideBar(
                             .fillMaxSize(), viewModel = appViewModel
                     )
                 }
+
                 StateSelectedEnum.STUNDENPLAN -> {
                     StundenplanPage.MainPage(Modifier
                         .padding(contentPadding)
@@ -339,6 +333,7 @@ fun LeftSideBar(
                         dialogState = stateSelectionDialog,
                         onDialogStateChange = { value -> stateSelectionDialog = value })
                 }
+
                 StateSelectedEnum.MAIL -> {
                     LehrerEMailPage.MainPage(
                         Modifier
@@ -347,7 +342,8 @@ fun LeftSideBar(
                     )
 
                 }
-                else ->{}
+
+                else -> {}
             }
         }
 
