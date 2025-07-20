@@ -1,26 +1,23 @@
 package bkb.stundenplan.app.ui
 
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
@@ -43,6 +40,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import bkb.stundenplan.app.R
 import bkb.stundenplan.app.ScrapingEMail
 import coil3.compose.AsyncImage
@@ -55,7 +53,7 @@ object LehrerEMailPage {
 
     @Composable
     fun MainPage(
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier, isVertical: Boolean
     ) {
         var filter: String by rememberSaveable { mutableStateOf("") }
 
@@ -119,7 +117,7 @@ object LehrerEMailPage {
                     it.mail.contains(other = filter, ignoreCase = true) || it.pictureLink.contains(
                         other = filter, ignoreCase = true
                     )
-                })
+                }, isVertical = isVertical)
 
             }
         }
@@ -129,7 +127,7 @@ object LehrerEMailPage {
 
 
     //Source for sendMail : https://stackoverflow.com/questions/72731148/how-can-i-open-gmail-when-click-the-button-in-jetpack-compose
-    fun Context.sendMail(to: String) {
+    private fun Context.sendMail(to: String) {
         try {
             // 1. Include the recipient directly in the mailto URI
             val mailUri = Uri.parse("mailto:$to?subject=Hello&body=Message content")
@@ -152,56 +150,64 @@ object LehrerEMailPage {
             Toast.makeText(this, "Error launching email", Toast.LENGTH_SHORT).show()
             Log.e("SendEmail", "Failed to send email to $to", e)
         }
-        }
+    }
 
 
-    fun String.filterEMailString(): String {
+    private fun String.filterEMailString(): String {
         return this.trim().replace("E-Mail: ", "")
 
     }
 
     @Composable
     fun LehrerEMail(
-        modifier: Modifier = Modifier, listLehrerEMail: List<ScrapingEMail.LehrerEMail>?
+        modifier: Modifier = Modifier,
+        listLehrerEMail: List<ScrapingEMail.LehrerEMail>?,
+        isVertical: Boolean
     ) {
 
-        listLehrerEMail?.let() { listLehrerEMail ->
-            LazyColumn(
+        listLehrerEMail?.let { listLehrerEMail ->
+            LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 20.dp),
+                columns = GridCells.Fixed(if(isVertical) 1 else 2),
             ) {
-                items(listLehrerEMail.size) { index ->
+                items(listLehrerEMail.size )
+                {
+                TeacherBlock(context = LocalContext.current, teacher = listLehrerEMail[it])
 
-                    val context = LocalContext.current
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp)
-                            .clickable { context.sendMail(listLehrerEMail[index].mail.filterEMailString()) },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        AsyncImage(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(10.dp)),
-                            model = listLehrerEMail[index].pictureLink,
-                            contentDescription = null,
-
-                            )
-                        Text(
-                            text = listLehrerEMail[index].mail,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    Spacer(Modifier.size(10.dp))
 
                 }
 
-
             }
+        }
+
+
+    }
+
+    @Composable
+    fun TeacherBlock(context: Context, teacher: ScrapingEMail.LehrerEMail) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clickable { context.sendMail(teacher.mail.filterEMailString()) },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(10.dp)),
+                model = teacher.pictureLink,
+                contentDescription = null,
+
+                )
+            Text(
+                text = teacher.mail,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
         }
 
 

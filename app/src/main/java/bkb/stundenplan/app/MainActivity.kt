@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
                     }
                 })
 
-
+appViewModel.isPortrait = resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
 
             BKBStundenplanTheme(viewModel = appViewModel) {
@@ -354,7 +354,8 @@ fun LeftSideBar(
 
                 StateSelectedEnum.MAIL -> {
                     LehrerEMailPage.MainPage(
-                        Modifier.fillMaxSize()
+                        Modifier.fillMaxSize(),
+                        isVertical = appViewModel.isPortrait
                     )
 
                 }
