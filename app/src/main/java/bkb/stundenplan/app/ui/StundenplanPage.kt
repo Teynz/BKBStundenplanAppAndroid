@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
@@ -42,7 +43,10 @@ object StundenplanPage {
     @SuppressLint("AuthLeak")
     @Composable
     fun MainPage(
-        modifier: Modifier = Modifier, viewModel: ViewModelStundenplanData,  dialogState: Boolean, onDialogStateChange: (Boolean) -> Unit
+        modifier: Modifier = Modifier,
+        viewModel: ViewModelStundenplanData,
+        dialogState: Boolean,
+        onDialogStateChange: (Boolean) -> Unit
     ) {
         val configuration = LocalConfiguration.current
         val orientationVertical = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -51,8 +55,7 @@ object StundenplanPage {
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier
-                    .fillMaxWidth()
+                modifier = modifier.fillMaxWidth()
             ) {
                 Box(
                     modifier = Modifier
@@ -61,22 +64,20 @@ object StundenplanPage {
                 ) {
 
                     Stundenplan(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(0.dp),
-                            viewModel = viewModel,
-                               )
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(0.dp),
+                        viewModel = viewModel,
+                    )
 
                 }
 
 
             }
 
-        }
-        else {
+        } else {
             Row(
-                verticalAlignment = Alignment.Top, modifier = modifier
-                    .fillMaxWidth()
+                verticalAlignment = Alignment.Top, modifier = modifier.fillMaxWidth()
             ) {
 
 
@@ -86,15 +87,11 @@ object StundenplanPage {
 
 
                     Stundenplan(
-                            modifier = Modifier.padding(
-                                    start = 4.dp,
-                                    end = 8.dp,
-                                    top = 2.dp,
-                                    bottom = 2.dp
-                                                       ),
-                            viewModel = viewModel,
-                               )
-
+                        modifier = Modifier.padding(
+                            start = 4.dp, end = 8.dp, top = 2.dp, bottom = 2.dp
+                        ),
+                        viewModel = viewModel,
+                    )
 
 
                 }
@@ -125,17 +122,19 @@ object StundenplanPage {
             val screenWidth = configuration.screenWidthDp.dp
 
             StundenplanCompose(
-                modifier = modifier.padding(horizontal = 3.dp, vertical = 4.dp), viewModel = viewModel
+                modifier = modifier.padding(horizontal = 3.dp, vertical = 4.dp),
+                viewModel = viewModel
             )
 
         } else if (viewModel.saveHandler.effectiveStundenplanZoom.collectAsStateWithLifecycle().value) {
-            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")?.get(0)?.let { valueTablesScraped ->
-                TableWebView(
-                    viewModel = viewModel,
-                    htmlString = valueTablesScraped.toString(),
-                    modifier = modifier
-                )
-            } ?: run {
+            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")
+                ?.get(0)?.let { valueTablesScraped ->
+                    TableWebView(
+                        viewModel = viewModel,
+                        htmlString = valueTablesScraped.toString(),
+                        modifier = modifier
+                    )
+                } ?: run {
                 Text(
                     modifier = modifier, text = "Fehler: Experimenteller Stundenplan"
                 )
@@ -143,7 +142,8 @@ object StundenplanPage {
             }
 
         } else {
-            val urlStundenplan = viewModel.urlMaker.urlStundenplan.collectAsStateWithLifecycle().value
+            val urlStundenplan =
+                viewModel.urlMaker.urlStundenplan.collectAsStateWithLifecycle().value
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 WebView(it).apply {
                     layoutParams = ViewGroup.LayoutParams(
@@ -173,15 +173,16 @@ object StundenplanPage {
         viewModel: ViewModelStundenplanData,
     ) {
         if (viewModel.saveHandler.experimentellerStundenplan.collectAsStateWithLifecycle().value && viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value == "c") {
-            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")?.get(0)?.let { valueTablesScraped ->
-                TableWebView(
-                    viewModel = viewModel,
-                    htmlString = valueTablesScraped.toString(),
-                    modifier = modifier
-                )
+            viewModel.scraping.stundenplanSite.collectAsStateWithLifecycle().value?.select("table")
+                ?.get(0)?.let { valueTablesScraped ->
+                    TableWebView(
+                        viewModel = viewModel,
+                        htmlString = valueTablesScraped.toString(),
+                        modifier = modifier
+                    )
 
 
-            } ?: run {
+                } ?: run {
                 Text(
                     modifier = modifier, text = "Fehler: Experimenteller Stundenplan"
                 )
@@ -221,11 +222,10 @@ fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }
 fun TableWebView(
     modifier: Modifier, viewModel: ViewModelStundenplanData, htmlString: String
 ) {
-    val styleHTML: HTMLStrings.Styling =
-        HTMLStrings.Styling(
-            typeValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value,
-            darkMode = viewModel.saveHandler.darkmode
-        )
+    val styleHTML: HTMLStrings.Styling = HTMLStrings.Styling(
+        typeValue = viewModel.saveHandler.effectiveValueType.collectAsStateWithLifecycle().value,
+        darkMode = viewModel.saveHandler.darkmode
+    )
 
     val webView = remember { mutableStateOf<WebView?>(null) }
 

@@ -42,7 +42,6 @@ class ViewModelStundenplanData(context: Context) : ViewModel() {
             urlMaker.urlStundenplan
         )
     }
-    var heightTopAppBar = mutableStateOf(80.dp)
     var isPortrait by mutableStateOf(true)
 
     val week = scraping._stundenplanSite.map()

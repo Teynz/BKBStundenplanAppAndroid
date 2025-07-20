@@ -8,15 +8,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -87,15 +99,15 @@ class MainActivity : ComponentActivity() {
                 })
 
 
-            appViewModel.isPortrait =
-                LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
-            appViewModel.heightTopAppBar.value = if (!appViewModel.isPortrait) 60.dp else 100.dp
+
 
             BKBStundenplanTheme(viewModel = appViewModel) {
                 LeftSideBar(
-                    Modifier.fillMaxSize(), appViewModel
+                    Modifier.fillMaxSize().safeDrawingPadding(), appViewModel
                 )
             }
+
+
         }
     }
 }
@@ -199,7 +211,8 @@ fun LeftSideBar(
     val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(drawerState = drawerState, gesturesEnabled = false, drawerContent = {
-        ModalDrawerSheet(modifier = Modifier.width(160.dp)) {
+        ModalDrawerSheet(modifier = Modifier.width(160.dp + (WindowInsets.safeDrawing.asPaddingValues().calculateLeftPadding(LocalLayoutDirection.current)))) {
+            Column(modifier = Modifier.safeDrawingPadding()){
             Row(
                 horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
@@ -255,7 +268,7 @@ fun LeftSideBar(
                     .align(Alignment.End)
                     .padding(4.dp)
             )
-        }
+        }}
     }) {
         Scaffold(topBar = {
             CenterAlignedTopAppBar(title = {
@@ -268,7 +281,7 @@ fun LeftSideBar(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
-                modifier = Modifier.height(appViewModel.heightTopAppBar.value),
+                modifier = Modifier.height(WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding() + 35.dp),
                 navigationIcon = {
 
 
@@ -315,20 +328,25 @@ fun LeftSideBar(
 
 
         ) { contentPadding ->
+            Box(Modifier.windowInsetsPadding(
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Horizontal
+                )
+            ).padding(contentPadding)){
+
             // Screen content
             when (stateSelected) {
                 StateSelectedEnum.SETTINGS -> {
                     SettingsPage.MainPage(
                         Modifier
-                            .padding(contentPadding)
                             .fillMaxSize(), viewModel = appViewModel
                     )
                 }
 
                 StateSelectedEnum.STUNDENPLAN -> {
-                    StundenplanPage.MainPage(Modifier
-                        .padding(contentPadding)
-                        .fillMaxSize(),
+                    StundenplanPage.MainPage(
+
+                        Modifier.fillMaxSize(),
                         viewModel = appViewModel,
                         dialogState = stateSelectionDialog,
                         onDialogStateChange = { value -> stateSelectionDialog = value })
@@ -336,16 +354,14 @@ fun LeftSideBar(
 
                 StateSelectedEnum.MAIL -> {
                     LehrerEMailPage.MainPage(
-                        Modifier
-                            .padding(contentPadding)
-                            .fillMaxSize()
+                        Modifier.fillMaxSize()
                     )
 
                 }
 
                 else -> {}
             }
-        }
+        }}
 
 
     }
