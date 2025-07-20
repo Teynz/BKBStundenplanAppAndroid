@@ -1,7 +1,7 @@
 
 //Für diese Version des Savehandlers, habe ich eine KI nach Optimierungen gefragt, dass Ergebniss schien mir sinnvoll zu sein.
 package bkb.stundenplan.app
-
+import bkb.stundenplan.app.BuildConfig
 import android.app.UiModeManager
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -18,9 +18,13 @@ class SaveHandler(
     private val scope: CoroutineScope,
     private val viewModel: ViewModelStundenplanData
 ) {
+
     companion object {
         private const val SETTINGS = "settings"
         private const val VALUES = "values"
+
+
+
 
         private object Keys {
             // Settings
@@ -41,6 +45,8 @@ class SaveHandler(
             const val VALUEELEMENT = "ValueElement"
             const val VALUETEXTSIZEVERTICAL = "ValueTextSizeVertical"
             const val VALUETEXTSIZEHORIZONTAL = "ValueTextSizeHorizontal"
+            //app version
+            const val APP_VERSION_CODE = "app_version_code" // Neuer Key
         }
 
         private val Context.settingsStore: DataStore<Preferences> by preferencesDataStore(SETTINGS)
@@ -88,6 +94,29 @@ class SaveHandler(
     private val _valueTextSizeStundenPlanHorizontal = MutableStateFlow(7.5)
     val valueTextSizeStundenPlanHorizontal = _valueTextSizeStundenPlanHorizontal.asStateFlow()
 
+    fun resetSettingsWithoutLogin() {
+        scope.launch {
+            // Löscht alle Einträge im "settings" DataStore
+            context.settingsStore.edit { settings ->
+                settings.clear()
+            }
+
+            darkmode = loadInitialDarkMode()
+            adaptiveColor = true
+            alteStundenplaene = true
+            _experimentellerStundenplan.value = true
+            _stundenplanZoom.value = true
+            _fancyStundenplan.value = true
+            _mergeCells.value = true
+            _teacherMode.value = false
+        }
+    }
+
+
+
+
+
+
     // Region: Combined Flows
     val effectiveTeacherMode = combine(
         teacherMode,
@@ -109,9 +138,28 @@ class SaveHandler(
     }.stateIn(scope, SharingStarted.WhileSubscribed(5000), ParameterWhichMayChangeOverTime.CLASSES_SHORT)
 
 
+    private suspend fun checkForUpdate() {
+        val currentVersionCode = BuildConfig.VERSION_CODE
+        val savedVersionCodeKey = intPreferencesKey(Keys.APP_VERSION_CODE)
+
+        val savedVersionCode = context.valuesStore.data.map { preferences ->
+            preferences[savedVersionCodeKey] ?: 0
+        }.first()
+
+        if (currentVersionCode > savedVersionCode) {
+
+            resetSettingsWithoutLogin()
+
+            context.valuesStore.edit { values ->
+                values[savedVersionCodeKey] = currentVersionCode
+            }
+        }
+    }
+
     var saveHandlerInitJob: CompletableJob = Job()
     init {
         scope.launch {
+           // checkForUpdate()
 
                 val settings = listOf(
                     async { darkmode = loadInitialDarkMode() },

@@ -6,6 +6,8 @@ plugins {
 }
 
 android {
+
+
     packaging {
         resources.excludes.add("META-INF/DEPENDENCIES")
         resources.excludes.add("mozilla/public-suffix-list.txt")
@@ -48,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
